@@ -18,6 +18,10 @@ app.get("/", (req, res) => {
     return res.status(200).json({ message: 'Server is up and running.' })
 })
 
+const path = require('path');
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+
+
 
 // {alter:true}
 sequelize.sync().then(() => {

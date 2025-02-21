@@ -6,7 +6,7 @@ const {
   checkEmailAcrossModels,
   sendEmail,
 } = require("../../helpers/functions");
-const User = require("../../models/users_model");
+const { User } = require("../../models");
 
 const authCrtl = {
   register: async (req, res) => {
@@ -38,7 +38,7 @@ const authCrtl = {
         zip: Joi.string().required().default(null),
         app_acc_no: Joi.number().integer().required(),
         role: Joi.string()
-          .valid("admin", "backoffice", "client")
+          .valid("admin", "attorney")
           .required(),
         status: Joi.boolean().default(true).optional(),
         otp: Joi.string().optional().default(null),

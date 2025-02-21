@@ -1,15 +1,12 @@
 const Joi = require("joi");
-const User = require("../../models/users_model");
 const { generatePasswordHash } = require("../../helpers/functions");
+const { Op } = require("sequelize");
+const { User } = require("../../models");
+
 
 const usersCrtl = {
   create: async (req, res) => {
     try {
-
-      const { user_type, id: admin_id } = req.user
-      if (user_type !== "admin") {
-        return res.status(403).json({ error: "You are not authorized to perform this action." });
-      }
 
       // Joi schema for validation
       const schema = Joi.object({
@@ -35,13 +32,12 @@ const usersCrtl = {
         zip: Joi.string().required().default(null),
         app_acc_no: Joi.number().integer().required(),
         role: Joi.string()
-          .valid("admin", "backoffice", "client")
+          .valid("admin", "attorney")
           .required(),
         status: Joi.boolean().default(true).optional(),
         otp: Joi.string().optional().default(null),
         opt_used: Joi.boolean().default(false).optional(),
         otp_expire_time: Joi.date().optional().default(null),
-        updated_by: Joi.number().integer().optional().default(null),
       });
 
       // Validate request body
@@ -63,7 +59,6 @@ const usersCrtl = {
         zip,
         app_acc_no,
         role,
-        created_by,
       } = value;
 
       // Check if user already exists
@@ -93,16 +88,14 @@ const usersCrtl = {
         app_acc_no,
         role,
         status: true, // Default status
-        created_by: admin_id,
+        created_by: req.user.id,
+        updated_by: req.user.id,
       });
 
-      // Generate access token
-      const access_token = createAccessToken({ id: newUser.id, role });
 
       // Return success response
       return res.status(200).json({
         success: "User registered successfully",
-        access_token,
         data: newUser,
       });
     } catch (error) {
@@ -134,6 +127,7 @@ const usersCrtl = {
           attributes: { exclude: ["password"] }, // Exclude sensitive fields
           limit,
           offset,
+          where: { role: { [Op.ne]: "admin" } }, // Exclude admin users
         });
 
       return res.status(200).json({
@@ -166,7 +160,7 @@ const usersCrtl = {
       const { id } = value;
 
       const user = await User.findOne({
-        where: { id },
+        where: { id, role: { [Op.ne]: "admin" } },
         attributes: { exclude: ["password"] }, // Exclude sensitive fields
       });
 
@@ -185,10 +179,10 @@ const usersCrtl = {
   },
   update_one: async (req, res) => {
     try {
-      const { user_type, id: updater_id } = req.user;
+      const { role, id: updater_id } = req.user;
 
       // Authorization check - only admin can update users
-      if (user_type !== "admin") {
+      if (role !== "admin") {
         return res.status(403).json({ error: "Unauthorized action" });
       }
 
@@ -215,7 +209,7 @@ const usersCrtl = {
         zip: Joi.string().optional(),
         app_acc_no: Joi.number().integer().optional(),
         role: Joi.string()
-          .valid("admin", "backoffice", "client")
+          .valid("admin", "attorney")
           .optional(),
         status: Joi.boolean().optional(),
         otp: Joi.string().optional(),
