@@ -12,7 +12,7 @@ const authCrtl = {
   register: async (req, res) => {
     try {
 
-      return res.status(400).json({ message: 'This service in unavailable currently.' })
+      // return res.status(400).json({ message: 'This service in unavailable currently.' })
 
       // Joi schema for validation
       const schema = Joi.object({
@@ -37,15 +37,10 @@ const authCrtl = {
         state: Joi.string().required().default(null),
         zip: Joi.string().required().default(null),
         app_acc_no: Joi.number().integer().required(),
-        role: Joi.string()
-          .valid("admin", "attorney")
-          .required(),
         status: Joi.boolean().default(true).optional(),
         otp: Joi.string().optional().default(null),
         opt_used: Joi.boolean().default(false).optional(),
         otp_expire_time: Joi.date().optional().default(null),
-        created_by: Joi.number().integer().required(),
-        updated_by: Joi.number().integer().optional().default(null),
       });
 
       // Validate request body
@@ -67,7 +62,6 @@ const authCrtl = {
         zip,
         app_acc_no,
         role,
-        created_by,
       } = value;
 
       // Check if user already exists
@@ -96,9 +90,8 @@ const authCrtl = {
         state,
         zip,
         app_acc_no,
-        role,
+        role: "attorney",
         status: true, // Default status
-        created_by,
       });
 
       // Generate access token
