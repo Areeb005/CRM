@@ -6,7 +6,7 @@ const {
   checkEmailAcrossModels,
   sendEmail,
 } = require("../../helpers/functions");
-const { User } = require("../../models");
+const { User, ActivityLog } = require("../../models");
 
 const authCrtl = {
   register: async (req, res) => {
@@ -96,6 +96,13 @@ const authCrtl = {
 
       // Generate access token
       const access_token = createAccessToken({ id: newUser.id, role });
+
+      // Log user registration
+      await ActivityLog.create({
+        user_id: newUser.id,
+        action_type: "user_registered",
+        description: `New user registered with email {${email}} as {${newUser.userType}}.`,
+      });
 
       // Return success response
       return res.status(200).json({

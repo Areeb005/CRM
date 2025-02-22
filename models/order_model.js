@@ -1,8 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/dbConfig");
-const User = require("./users_model");
-const Participant = require("./participant_model");
-const DocumentLocation = require("./document_location_model");
+
 
 const Order = sequelize.define(
   "Order",
@@ -126,46 +124,64 @@ const Order = sequelize.define(
     },
 
     // Record Details
-    record_type: {
-      type: DataTypes.ENUM("Person", "Entity"),
-      allowNull: false,
-    },
-    first_name: {
-      type: DataTypes.STRING,
+
+    record_details: {
+      type: DataTypes.JSON,
       allowNull: true,
+      defaultValue: {
+        record_type: "Person",
+        first_name: "",
+        last_name: "",
+        aka: "",
+        ssn: "",
+        date_of_injury: "",
+        record_address: "",
+        record_city: "",
+        record_state: "",
+        record_zip: "",
+      },
     },
-    last_name: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    aka: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    ssn: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    date_of_injury: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    record_address: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    record_city: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    record_state: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    record_zip: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+
+    // record_type: {
+    //   type: DataTypes.ENUM("Person", "Entity"),
+    //   allowNull: false,
+    // },
+    // first_name: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // last_name: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // aka: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // ssn: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // date_of_injury: {
+    //   type: DataTypes.DATE,
+    //   allowNull: true,
+    // },
+    // record_address: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // record_city: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // record_state: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
+    // record_zip: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
 
 
 
@@ -213,13 +229,6 @@ const Order = sequelize.define(
   }
 );
 
-
-// Order.belongsTo(User, { foreignKey: 'updated_by' });
-// Order.belongsTo(User, { foreignKey: 'created_by' });
-// Order.belongsTo(User, { foreignKey: 'order_by' });
-
-// Order.hasMany(Participant, { foreignKey: "order_id" });
-// Order.hasMany(DocumentLocation, { foreignKey: "order_id" });
 
 
 

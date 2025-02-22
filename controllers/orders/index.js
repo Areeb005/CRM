@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { Order, Participant, DocumentLocation, User } = require('../../models');
+const { Order, Participant, DocumentLocation, User, ActivityLog } = require('../../models');
 const sequelize = require('../../config/dbConfig');
 
 
@@ -48,6 +48,29 @@ const documentLocationSchema = Joi.object({
   note: Joi.string().allow('').optional()
 });
 
+// Record Details Schema
+const recordDetailsSchema = Joi.object({
+  record_type: Joi.string().valid("Person", "Entity").required(),
+  first_name: Joi.string().allow("").optional(),
+  last_name: Joi.string().allow("").optional(),
+  name: Joi.string().allow("").optional(),
+  aka: Joi.string().allow("").optional(),
+  ssn: Joi.string().allow("").optional(),
+
+  // Date of Injury Range
+  date_of_injury: Joi.object({
+    from: Joi.date().allow(null).optional(),
+    to: Joi.date().greater(Joi.ref("from")).allow(null).optional(),
+  }).optional(),
+
+  record_address: Joi.string().allow("").optional(),
+  record_city: Joi.string().allow("").optional(),
+  record_state: Joi.string().allow("").optional(),
+  record_zip: Joi.string().allow("").optional(),
+});
+
+
+
 const orderSchema = Joi.object({
   // Order details
   order_by: Joi.number().integer().required(),
@@ -57,6 +80,11 @@ const orderSchema = Joi.object({
   case_name: Joi.string().required(),
   file_number: Joi.string().required(),
   case_number: Joi.string().required(),
+  status: Joi.string().valid("New",
+    "In Progress",
+    "Completed",
+    "Cancelled",
+    "Hold").default('pending'),
 
   // Court details
   court_name: Joi.string().required(),
@@ -66,16 +94,7 @@ const orderSchema = Joi.object({
   court_zip: Joi.string().required(),
 
   // Record details
-  record_type: Joi.string().valid('Person', 'Entity').required(),
-  first_name: Joi.string().allow('').optional(),
-  last_name: Joi.string().allow('').optional(),
-  aka: Joi.string().allow('').optional(),
-  ssn: Joi.string().allow('').optional(),
-  date_of_injury: Joi.date().allow(null).optional(),
-  record_address: Joi.string().allow('').optional(),
-  record_city: Joi.string().allow('').optional(),
-  record_state: Joi.string().allow('').optional(),
-  record_zip: Joi.string().allow('').optional(),
+  record_details: recordDetailsSchema.required(),
 
   // Billing and metadata
   bill_to: Joi.string().required(),
@@ -132,9 +151,19 @@ const orderController = {
         include: [
           { model: Participant },
           { model: DocumentLocation },
-          { model: User, attributes: userAttributes }
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
+
+
+      await ActivityLog.create({
+        order_id: completeOrder?.id,
+        action_type: 'order_created',
+        description: req.user.user_type === "admin" ? `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` : `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}}.`,
+      });
+
 
       res.status(201).json(completeOrder);
     } catch (error) {
@@ -149,7 +178,9 @@ const orderController = {
         include: [
           { model: Participant },
           { model: DocumentLocation },
-          { model: User, attributes: userAttributes }
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
       res.json(orders);
@@ -165,7 +196,9 @@ const orderController = {
         include: [
           { model: Participant },
           { model: DocumentLocation },
-          { model: User, attributes: userAttributes }
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
       if (!order) return res.status(404).json({ error: 'Order not found' });
@@ -229,13 +262,26 @@ const orderController = {
         return true;
       });
 
+
+
       const updatedOrder = await Order.findByPk(req.params.id, {
         include: [
           { model: Participant },
           { model: DocumentLocation },
-          { model: User, attributes: userAttributes }
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
+
+
+      if (value.status === 'Cancelled') {
+        await ActivityLog.create({
+          order_id: req.params.id,
+          action_type: 'order_cancelled',
+          description: `Order {${req.params.id}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
+        });
+      }
 
       res.json(updatedOrder);
     } catch (error) {

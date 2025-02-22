@@ -6,6 +6,8 @@ const orderCtrcl = require('../controllers/orders');
 const { uploadFile } = require('../middlewares/multer');
 const uploadCtrl = require('../controllers/upload');
 const dashboardCtrl = require('../controllers/dashboard');
+const SMTPController = require('../controllers/smtp');
+const OrganizationController = require('../controllers/organization');
 
 
 const router = express.Router();
@@ -25,7 +27,17 @@ router.get('/orders', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_
 router.get('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_one);
 router.patch('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.update);
 
-router.get('/dashboard', Auth, dashboardCtrl.getDashboardStats);
+router.get('/overview', Auth, allowedUsers(["admin"]), dashboardCtrl.overview);
+router.get('/near-deadline', Auth, allowedUsers(["admin"]), dashboardCtrl.nearDeadline);
+router.get('/recent-activities', Auth, allowedUsers(["admin"]), dashboardCtrl.recent_activities);
+router.get('/recent-orders', Auth, allowedUsers(["admin"]), dashboardCtrl.recent_orders);
+
+router.get("/smtp", Auth, allowedUsers(["admin"]), SMTPController.get_settings);
+router.post("/smtp", Auth, allowedUsers(["admin"]), SMTPController.save_settings);
+router.patch("/smtp", Auth, allowedUsers(["admin"]), SMTPController.update_settings);
+
+router.get("/organization", Auth, allowedUsers(["admin"]), OrganizationController.get_settings);
+router.patch("/organization", Auth, allowedUsers(["admin"]), OrganizationController.update_settings);
 
 
 router.post('/upload', Auth, allowedUsers(["admin", "attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);
