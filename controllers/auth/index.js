@@ -7,6 +7,7 @@ const {
   sendEmail,
 } = require("../../helpers/functions");
 const { User, ActivityLog } = require("../../models");
+const SMTPSettings = require("../../models/smtp_model");
 
 const authCrtl = {
   register: async (req, res) => {
@@ -193,8 +194,36 @@ const authCrtl = {
 
       const message = `${otp} is your OTP for password reset. It will expire in 5 minutes.`;
 
+      let options = {};
+
+      const settings = await SMTPSettings.findOne({ where: { id: 1 } });
+
+      if (settings) {
+        options = {
+          host: settings.smtp_server,
+          port: settings.smtp_port,
+          secure: settings.use_tls,
+          auth: {
+            user: settings.smtp_username,
+            pass: settings.smtp_password,
+          },
+        };
+      } else {
+        options = {
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          secure: true,
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        }
+      }
+
+
       // Send email
       await sendEmail({
+        options,
         to: user.email,
         subject: "Password Reset OTP",
         message,
@@ -252,8 +281,36 @@ const authCrtl = {
 
       const message = `Your password has been successfully updated.`;
 
+      let options = {};
+
+      const settings = await SMTPSettings.findOne({ where: { id: 1 } });
+
+      if (settings) {
+        options = {
+          host: settings.smtp_server,
+          port: settings.smtp_port,
+          secure: settings.use_tls,
+          auth: {
+            user: settings.smtp_username,
+            pass: settings.smtp_password,
+          },
+        };
+      } else {
+        options = {
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          secure: true,
+          auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        }
+      }
+
+
       // Send email
       await sendEmail({
+        options,
         to: user.email,
         subject: "Password Reset Confirmation",
         message,
