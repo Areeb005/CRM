@@ -39,6 +39,10 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     state: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -53,7 +57,7 @@ const User = sequelize.define(
     },
     app_acc_no: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     role: {
       type: DataTypes.ENUM(

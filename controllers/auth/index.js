@@ -35,8 +35,9 @@ const authCrtl = {
         phone: Joi.number().integer().required(),
         address: Joi.string().required().default(null),
         state: Joi.string().required().default(null),
+        city: Joi.string().required().default(null),
         zip: Joi.string().required().default(null),
-        app_acc_no: Joi.number().integer().required(),
+        app_acc_no: Joi.number().integer().optional(),
         status: Joi.boolean().default(true).optional(),
         otp: Joi.string().optional().default(null),
         opt_used: Joi.boolean().default(false).optional(),
@@ -62,6 +63,7 @@ const authCrtl = {
         zip,
         app_acc_no,
         role,
+        city
       } = value;
 
       // Check if user already exists
@@ -71,11 +73,12 @@ const authCrtl = {
 
       const existingUser = await User.findOne({ where: { username } });
       if (existingUser)
-        return res.status(409).json({ error: "Email already registered" });
+        return res.status(409).json({ error: "Username already registered" });
 
 
       // Hash password
       const hash = generatePasswordHash(password);
+
 
       // Create user
       const newUser = await User.create({
@@ -91,6 +94,7 @@ const authCrtl = {
         zip,
         app_acc_no,
         role: "attorney",
+        city,
         status: true, // Default status
       });
 
