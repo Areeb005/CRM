@@ -82,7 +82,7 @@ const Order = sequelize.define(
     },
     needed_by: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     case_type: {
       type: DataTypes.STRING,

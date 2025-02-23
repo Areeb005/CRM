@@ -30,7 +30,8 @@ const participantSchema = Joi.object({
   city: Joi.string().allow('').optional(),
   state: Joi.string().allow('').optional(),
   zip: Joi.string().allow('').optional(),
-  claim_adjuster: Joi.string().allow('').optional(),
+  claim: Joi.string().allow('').optional(),
+  adjuster: Joi.string().allow('').optional(),
   note: Joi.string().allow('').optional()
 });
 
@@ -75,7 +76,7 @@ const orderSchema = Joi.object({
   // Order details
   order_by: Joi.number().integer().required(),
   urgent: Joi.boolean().default(false),
-  needed_by: Joi.date().required(),
+  needed_by: Joi.date().optional(),
   case_type: Joi.string().required(),
   case_name: Joi.string().required(),
   file_number: Joi.string().required(),
@@ -98,9 +99,6 @@ const orderSchema = Joi.object({
 
   // Billing and metadata
   bill_to: Joi.string().required(),
-  created_by: Joi.number().integer().required(),
-  updated_by: Joi.number().integer().allow(null).optional(),
-
   // Related records
   participants: Joi.array().items(participantSchema),
   document_locations: Joi.array().items(documentLocationSchema)
@@ -117,7 +115,7 @@ const orderController = {
       // Create order with associations in a transaction
       const result = await sequelize.transaction(async (t) => {
         // Create the order
-        const order = await Order.create(orderData, { transaction: t });
+        const order = await Order.create({ ...orderData, created_by: req.user.id, updated_by: req.user.id }, { transaction: t });
 
         // Create participants if provided
         if (participants && participants.length > 0) {
@@ -193,7 +191,12 @@ const orderController = {
 
   get_one: async (req, res) => {
     try {
-      const order = await Order.findByPk(req.params.id, {
+
+      const order = await Order.findOne({
+        where: {
+          id: req.params.id,
+          ...(req.user.role === "attorney" ? { order_by: req.user.id } : {}),
+        },
         include: [
           { model: Participant },
           { model: DocumentLocation },

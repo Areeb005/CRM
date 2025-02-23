@@ -18,7 +18,8 @@ const Participant = sequelize.define("Participant", {
   city: DataTypes.STRING,
   state: DataTypes.STRING,
   zip: DataTypes.STRING,
-  claim_adjuster: DataTypes.STRING,
+  claim: DataTypes.STRING,
+  adjuster: DataTypes.STRING,
   note: DataTypes.TEXT,
   order_id: {
     type: DataTypes.INTEGER,
