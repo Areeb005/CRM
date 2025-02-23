@@ -105,7 +105,7 @@ const authCrtl = {
       await ActivityLog.create({
         user_id: newUser.id,
         action_type: "user_registered",
-        description: `New user registered with email {${email}} as {${newUser.userType}}.`,
+        description: `New user registered with email {${email}} as {${newUser.role}}.`,
       });
 
       // Return success response

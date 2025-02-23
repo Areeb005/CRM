@@ -7,6 +7,81 @@ const sequelize = require('../../config/dbConfig');
 
 const dashboardCtrl = {
 
+
+    dashboardOverview: async (req, res) => {
+        try {
+            // Default near deadline days to 2 if not provided
+            const { days = 2 } = req.query;
+            const currentDate = new Date();
+            const upcomingDate = new Date();
+            upcomingDate.setDate(currentDate.getDate() + parseInt(days));
+
+            // Fetch all required data in parallel
+            const [
+                totalOrders,
+                orderStatuses,
+                urgentOrders,
+                missedDeadlines,
+                participantCount,
+                documentLocationCount,
+                nearDeadlineOrders,
+                recentActivities,
+                recentOrders
+            ] = await Promise.all([
+                Order.count(), // Total orders count
+
+                Order.findAll({ // Order status count
+                    attributes: ["status", [sequelize.fn("COUNT", sequelize.col("status")), "count"]],
+                    group: ["status"],
+                }),
+
+                Order.count({ where: { urgent: true } }), // Urgent orders count
+
+                Order.count({ where: { needed_by: { [Op.lt]: currentDate } } }), // Missed deadline orders count
+
+                Participant.count(), // Participant count
+
+                DocumentLocation.count(), // Document location count
+
+                Order.findAll({ // Near deadline orders
+                    where: { needed_by: { [Op.between]: [currentDate, upcomingDate] } },
+                    order: [["needed_by", "ASC"]],
+                }),
+
+                ActivityLog.findAll({ // Recent activities
+                    order: [["createdAt", "DESC"]],
+                    limit: 10,
+                }),
+
+                Order.findAll({ // Recent orders
+                    order: [["createdAt", "DESC"]],
+                    limit: 10,
+                    include: [
+                        { model: User, as: "orderByUser", attributes: ["username"] },
+                        { model: User, as: "createdByUser", attributes: ["username"] },
+                        { model: User, as: "updatedByUser", attributes: ["username"] },
+                    ],
+                }),
+            ]);
+
+            // Send response
+            res.json({
+                totalOrders,
+                orderStatuses,
+                urgentOrders,
+                missedDeadlines,
+                participantCount,
+                documentLocationCount,
+                nearDeadlineOrders,
+                recentActivities,
+                recentOrders,
+            });
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+            res.status(500).json({ message: "Error fetching dashboard data", error });
+        }
+    },
+
     // Dashboard Overview API
     overview: async (req, res) => {
         try {

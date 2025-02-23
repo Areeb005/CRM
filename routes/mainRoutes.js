@@ -27,7 +27,7 @@ router.get('/orders', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_
 router.get('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_one);
 router.patch('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.update);
 
-router.get('/overview', Auth, allowedUsers(["admin"]), dashboardCtrl.overview);
+router.get('/overview', Auth, allowedUsers(["admin"]), dashboardCtrl.dashboardOverview);
 router.get('/near-deadline', Auth, allowedUsers(["admin"]), dashboardCtrl.nearDeadline);
 router.get('/recent-activities', Auth, allowedUsers(["admin"]), dashboardCtrl.recent_activities);
 router.get('/recent-orders', Auth, allowedUsers(["admin"]), dashboardCtrl.recent_orders);

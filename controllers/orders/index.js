@@ -161,7 +161,7 @@ const orderController = {
       await ActivityLog.create({
         order_id: completeOrder?.id,
         action_type: 'order_created',
-        description: req.user.user_type === "admin" ? `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` : `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}}.`,
+        description: req.user.role === "admin" ? `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` : `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}}.`,
       });
 
 
