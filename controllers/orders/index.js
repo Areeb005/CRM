@@ -175,6 +175,7 @@ const orderController = {
   get_all: async (req, res) => {
     try {
       const orders = await Order.findAll({
+        ...(req.user.role === "attorney" ? { where: { order_by: req.user.id } } : {}),
         include: [
           { model: Participant },
           { model: DocumentLocation },
