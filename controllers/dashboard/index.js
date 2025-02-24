@@ -35,9 +35,13 @@ const dashboardCtrl = {
                     group: ["status"],
                 }),
 
-                Order.count({ where: { urgent: true } }), // Urgent orders count
+                Order.findAll({ where: { urgent: true } }), // Urgent orders count
 
-                Order.count({ where: { needed_by: { [Op.lt]: currentDate } } }), // Missed deadline orders count
+                Order.count({
+                    where: { needed_by: { [Op.lt]: currentDate } },
+                    order: [["createdAt", "DESC"]],
+                    limit: 10,
+                }), // Missed deadline orders count
 
                 Participant.count(), // Participant count
 

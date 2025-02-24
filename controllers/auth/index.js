@@ -32,7 +32,7 @@ const authCrtl = {
             "string.pattern.base":
               "Password must contain at least one uppercase letter, one special character, one number, and be at least 8 characters long.",
           }),
-        firm_name: Joi.number().integer().required().default(null),
+        firm_name: Joi.string().required().default(null),
         phone: Joi.number().integer().required(),
         address: Joi.string().required().default(null),
         state: Joi.string().required().default(null),
@@ -100,7 +100,7 @@ const authCrtl = {
       });
 
       // Generate access token
-      const access_token = createAccessToken({ id: newUser.id, role });
+      const access_token = createAccessToken({ id: newUser.id, role: newUser.role });
 
       // Log user registration
       await ActivityLog.create({
