@@ -94,7 +94,7 @@ const authCrtl = {
         state,
         zip,
         app_acc_no,
-        role: "attorney",
+        role: "admin",
         city,
         status: true, // Default status
       });

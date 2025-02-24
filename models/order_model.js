@@ -27,6 +27,7 @@ const Order = sequelize.define(
         "New",
         "In Progress",
         "Completed",
+        "Pending_Cancellation",
         "Cancelled",
         "Hold"
       ),
