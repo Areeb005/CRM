@@ -14,6 +14,8 @@ const ActivityLog = sequelize.define(
         action_type: {
             type: DataTypes.ENUM(
                 "order_created",
+                "order_started",
+                "order_completed",
                 "order_deadline_missed",
                 "order_cancelled",
                 "order_cancellation_accepted",

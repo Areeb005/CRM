@@ -9,7 +9,7 @@ const Participant = sequelize.define("Participant", {
     autoIncrement: true
   },
   type: {
-    type: DataTypes.ENUM("Attorney", "Adjuster", "Claim", "Other"),
+    type: DataTypes.STRING,
     allowNull: false
   },
   represents: DataTypes.STRING,

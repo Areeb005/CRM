@@ -63,7 +63,6 @@ const authCrtl = {
         state,
         zip,
         app_acc_no,
-        role,
         city
       } = value;
 

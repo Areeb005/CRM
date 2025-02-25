@@ -11,22 +11,33 @@ const dashboardCtrl = {
     dashboardOverview: async (req, res) => {
         try {
             // Default near deadline days to 2 if not provided
-            const { days = 2 } = req.query;
+            const { days = 2, fromDate, toDate } = req.query;
             const currentDate = new Date();
             const upcomingDate = new Date();
             upcomingDate.setDate(currentDate.getDate() + parseInt(days));
+
+            // Set default date range for trends (last 7 days)
+            const startDate = fromDate ? new Date(fromDate) : new Date(currentDate.setDate(currentDate.getDate() - 6));
+            const endDate = toDate ? new Date(toDate) : new Date();
 
             // Fetch all required data in parallel
             const [
                 totalOrders,
                 orderStatuses,
                 urgentOrders,
+                pendingOrders,
+                // pendingCancellations,
+                cancelledOrders,
+                ordersOnTime,
+                // pendingApprovals,
                 missedDeadlines,
                 participantCount,
                 documentLocationCount,
                 nearDeadlineOrders,
                 recentActivities,
-                recentOrders
+                recentOrders,
+                orderTrends,
+                ordersNearingDeadline
             ] = await Promise.all([
                 Order.count(), // Total orders count
 
@@ -35,7 +46,27 @@ const dashboardCtrl = {
                     group: ["status"],
                 }),
 
-                Order.findAll({ where: { urgent: true } }), // Urgent orders count
+                Order.count({ where: { urgent: true } }), // Urgent orders count
+
+                Order.count({ where: { status: "In Progress" } }), // Pending orders count
+
+                // Order.count({ where: { status: "pending_cancellation" } }), // Pending cancellation count
+
+                Order.count({ where: { status: "Cancelled" } }), // Cancelled orders count
+
+                // Order.count({ where: { status: "approved" } }), // Pending approvals count
+
+                // Orders On Time Percentage Calculation
+                (async () => {
+                    const totalCompletedOrders = await Order.count({ where: { status: "Completed" } });
+                    const onTimeOrders = await Order.count({
+                        where: {
+                            status: "Completed",
+                            completed_at: { [Op.lte]: sequelize.col("needed_by") }
+                        }
+                    });
+                    return totalCompletedOrders > 0 ? ((onTimeOrders / totalCompletedOrders) * 100).toFixed(2) : "0";
+                })(),
 
                 Order.count({
                     where: { needed_by: { [Op.lt]: currentDate } },
@@ -66,6 +97,66 @@ const dashboardCtrl = {
                         { model: User, as: "updatedByUser", attributes: ["username"] },
                     ],
                 }),
+
+                // Fetch order trends for the last few days
+                (async () => {
+                    const orderPlaced = await Order.findAll({
+                        attributes: [
+                            [sequelize.fn("DATE", sequelize.col("createdAt")), "date"],
+                            [sequelize.fn("COUNT", sequelize.col("id")), "count"]
+                        ],
+                        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+                        group: ["date"],
+                        order: [["date", "ASC"]],
+                    });
+
+                    const documentUploaded = await DocumentLocation.findAll({
+                        attributes: [
+                            [sequelize.fn("DATE", sequelize.col("createdAt")), "date"],
+                            [sequelize.fn("COUNT", sequelize.col("id")), "count"]
+                        ],
+                        where: { createdAt: { [Op.between]: [startDate, endDate] } },
+                        group: ["date"],
+                        order: [["date", "ASC"]],
+                    });
+
+                    const orderCompleted = await Order.findAll({
+                        attributes: [
+                            [sequelize.fn("DATE", sequelize.col("completed_at")), "date"],
+                            [sequelize.fn("COUNT", sequelize.col("id")), "count"]
+                        ],
+                        where: {
+                            status: "Completed",
+                            completed_at: { [Op.between]: [startDate, endDate] }
+                        },
+                        group: ["date"],
+                        order: [["date", "ASC"]],
+                    });
+
+                    return {
+                        orderPlaced,
+                        documentUploaded,
+                        orderCompleted,
+                    };
+                })(),
+
+                // Orders Nearing Deadline Over Time (For Graph)
+                (async () => {
+                    const results = await Order.findAll({
+                        attributes: [
+                            [sequelize.fn("DATE", sequelize.col("needed_by")), "date"],
+                            [sequelize.fn("COUNT", sequelize.col("id")), "count"]
+                        ],
+                        where: {
+                            needed_by: { [Op.between]: [startDate, endDate] },
+                            status: { [Op.notIn]: ["Completed", "Cancelled"] } // Exclude completed/cancelled orders
+                        },
+                        group: ["date"],
+                        order: [["date", "ASC"]],
+                    });
+
+                    return results;
+                })()
             ]);
 
             // Send response
@@ -73,12 +164,19 @@ const dashboardCtrl = {
                 totalOrders,
                 orderStatuses,
                 urgentOrders,
+                pendingOrders,
+                // pendingCancellations,
+                cancelledOrders,
+                // pendingApprovals,
+                ordersOnTime: `${ordersOnTime}%`,
                 missedDeadlines,
                 participantCount,
                 documentLocationCount,
                 nearDeadlineOrders,
                 recentActivities,
                 recentOrders,
+                orderTrends,
+                ordersNearingDeadline // New Data for Graph
             });
         } catch (error) {
             console.error("Error fetching dashboard data:", error);
@@ -164,7 +262,7 @@ const dashboardCtrl = {
     // Cron Job for Missed Deadlines
     checkMissedDeadlines: async () => {
         try {
-            const overdueOrders = await Order.findAll({ where: { needed_by: { [Op.lt]: new Date() }, status: { [Op.ne]: 'completed' } } });
+            const overdueOrders = await Order.findAll({ where: { needed_by: { [Op.lt]: new Date() }, status: { [Op.ne]: 'Completed' } } });
             for (const order of overdueOrders) {
                 await ActivityLog.create({ order_id: order.id, action_type: 'order_deadline_missed', description: `Order {${order.id}} missed its deadline.` });
             }

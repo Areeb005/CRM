@@ -23,7 +23,7 @@ let userAttributes = [
 
 // Validation schemas
 const participantSchema = Joi.object({
-  type: Joi.string().valid('Attorney', 'Adjuster', 'Claim', 'Other').required(),
+  type: Joi.string().required(),
   represents: Joi.string().allow('').optional(),
   phone: Joi.string().allow('').optional(),
   address: Joi.string().allow('').optional(),
@@ -115,7 +115,7 @@ const orderController = {
       // Create order with associations in a transaction
       const result = await sequelize.transaction(async (t) => {
         // Create the order
-        const order = await Order.create({ ...orderData, created_by: req.user.id, updated_by: req.user.id }, { transaction: t });
+        const order = await Order.create({ ...orderData, created_by: req.user.id, updated_by: req.user.id, status: "New" }, { transaction: t });
 
         // Create participants if provided
         if (participants && participants.length > 0) {
@@ -284,6 +284,20 @@ const orderController = {
           order_id: req.params.id,
           action_type: 'order_cancelled',
           description: `Order {${req.params.id}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
+        });
+      }
+      else if (value.status === 'In Progress') {
+        await ActivityLog.create({
+          order_id: req.params.id,
+          action_type: 'order_started',
+          description: `Order {${req.params.id}} has been started by user {${updatedOrder?.updatedByUser?.username}}.`,
+        });
+      }
+      else if (value.status === 'Completed') {
+        await ActivityLog.create({
+          order_id: req.params.id,
+          action_type: 'order_completed',
+          description: `Order {${req.params.id}} has been completed by user {${updatedOrder?.updatedByUser?.username}}.`,
         });
       }
 

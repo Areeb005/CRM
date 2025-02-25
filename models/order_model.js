@@ -211,6 +211,10 @@ const Order = sequelize.define(
       onDelete: "CASCADE",
       onUpdate: "CASCADE",
     },
+    completed_at: {
+      type: DataTypes.DATE,
+      allowNull: true
+    }
   },
   {
     tableName: "orders",
