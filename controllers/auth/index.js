@@ -135,7 +135,7 @@ const authCrtl = {
       const { username, password } = value;
 
       // Check if user exists
-      const user = await User.findOne({
+      let user = await User.findOne({
         where: { username }, // Find user by username
         attributes: { exclude: ["createdAt", "updatedAt"] }, // Exclude unnecessary fields
       });
@@ -154,6 +154,9 @@ const authCrtl = {
 
       // Generate access token
       const access_token = createAccessToken({ id: user.id, role: user.role });
+
+      user = user.toJSON()
+      delete user.password
 
       // Return success response
       return res.status(200).json({

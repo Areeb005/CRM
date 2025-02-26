@@ -12,6 +12,8 @@ const Participant = sequelize.define("Participant", {
     type: DataTypes.STRING,
     allowNull: false
   },
+  attorney: DataTypes.STRING,
+  participant: DataTypes.STRING,
   represents: DataTypes.STRING,
   phone: DataTypes.STRING,
   address: DataTypes.STRING,

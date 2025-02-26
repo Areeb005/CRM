@@ -33,7 +33,7 @@ const dashboardCtrl = {
                 missedDeadlines,
                 participantCount,
                 documentLocationCount,
-                nearDeadlineOrders,
+                // nearDeadlineOrders,
                 recentActivities,
                 recentOrders,
                 orderTrends,
@@ -78,10 +78,6 @@ const dashboardCtrl = {
 
                 DocumentLocation.count(), // Document location count
 
-                Order.findAll({ // Near deadline orders
-                    where: { needed_by: { [Op.between]: [currentDate, upcomingDate] } },
-                    order: [["needed_by", "ASC"]],
-                }),
 
                 ActivityLog.findAll({ // Recent activities
                     order: [["createdAt", "DESC"]],
@@ -142,20 +138,24 @@ const dashboardCtrl = {
 
                 // Orders Nearing Deadline Over Time (For Graph)
                 (async () => {
+                    const nextWeek = new Date();
+                    nextWeek.setDate(currentDate.getDate() + 30); // Get date 7 days ahead
+
                     const results = await Order.findAll({
                         attributes: [
                             [sequelize.fn("DATE", sequelize.col("needed_by")), "date"],
                             [sequelize.fn("COUNT", sequelize.col("id")), "count"]
                         ],
                         where: {
-                            needed_by: { [Op.between]: [startDate, endDate] },
+                            needed_by: { [Op.between]: [currentDate, nextWeek] }, // Orders due in the next 7 days
                             status: { [Op.notIn]: ["Completed", "Cancelled"] } // Exclude completed/cancelled orders
                         },
                         group: ["date"],
                         order: [["date", "ASC"]],
+                        raw: true // Ensure raw output (avoids unnecessary metadata)
                     });
 
-                    return results;
+                    return results; // Will return only [{ date: "YYYY-MM-DD", count: N }]
                 })()
             ]);
 
@@ -172,7 +172,7 @@ const dashboardCtrl = {
                 missedDeadlines,
                 participantCount,
                 documentLocationCount,
-                nearDeadlineOrders,
+                // nearDeadlineOrders,
                 recentActivities,
                 recentOrders,
                 orderTrends,

@@ -10,6 +10,10 @@ const Order = sequelize.define(
       autoIncrement: true,
       primaryKey: true,
     },
+    order_code: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     // Order By Section
 
     order_by: {

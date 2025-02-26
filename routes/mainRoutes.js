@@ -8,6 +8,7 @@ const uploadCtrl = require('../controllers/upload');
 const dashboardCtrl = require('../controllers/dashboard');
 const SMTPController = require('../controllers/smtp');
 const OrganizationController = require('../controllers/organization');
+const locationCtrl = require('../controllers/location');
 
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.post('/order', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.crea
 router.get('/orders', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_all);
 router.get('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_one);
 router.patch('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.update);
+router.patch('/document-location/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.updateDocumentLocationStatus);
 
 router.get('/overview', Auth, allowedUsers(["admin"]), dashboardCtrl.dashboardOverview);
 router.get('/near-deadline', Auth, allowedUsers(["admin"]), dashboardCtrl.nearDeadline);
@@ -38,6 +40,11 @@ router.patch("/smtp", Auth, allowedUsers(["admin"]), SMTPController.update_setti
 
 router.get("/organization", Auth, allowedUsers(["admin"]), OrganizationController.get_settings);
 router.patch("/organization", Auth, allowedUsers(["admin"]), OrganizationController.update_settings);
+
+
+router.get("/locations", locationCtrl.get_locations);
+router.get("/customers", locationCtrl.get_customers);
+router.get("/courts", locationCtrl.get_courts);
 
 
 router.post('/upload', Auth, allowedUsers(["admin", "attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);

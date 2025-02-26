@@ -8,6 +8,15 @@ const DocumentLocation = sequelize.define("DocumentLocation", {
     primaryKey: true,
     autoIncrement: true
   },
+  status: {
+    type: DataTypes.ENUM(
+      "New",
+      "Completed",
+      "Cancelled",
+    ),
+    allowNull: false,
+    defaultValue: "New",
+  },
   name: DataTypes.STRING,
   address: DataTypes.STRING,
   city: DataTypes.STRING,

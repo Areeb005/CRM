@@ -25,10 +25,11 @@ const usersCrtl = {
             "string.pattern.base":
               "Password must contain at least one uppercase letter, one special character, one number, and be at least 8 characters long.",
           }),
-        firm_name: Joi.number().integer().required().default(null),
+        firm_name: Joi.string().required().default(null),
         phone: Joi.number().integer().required(),
         address: Joi.string().required().default(null),
         state: Joi.string().required().default(null),
+        city: Joi.string().required().default(null),
         zip: Joi.string().required().default(null),
         app_acc_no: Joi.number().integer().required(),
         role: Joi.string()
@@ -59,6 +60,7 @@ const usersCrtl = {
         zip,
         app_acc_no,
         role,
+        city
       } = value;
 
       // Check if user already exists
@@ -87,6 +89,7 @@ const usersCrtl = {
         zip,
         app_acc_no,
         role,
+        city,
         status: true, // Default status
         created_by: req.user.id,
         updated_by: req.user.id,
@@ -202,11 +205,12 @@ const usersCrtl = {
             "string.pattern.base":
               "Password must contain at least one uppercase letter, one special character, one number, and be at least 8 characters long.",
           }),
-        firm_name: Joi.number().integer().optional(),
+        firm_name: Joi.string().optional(),
         phone: Joi.number().integer().optional(),
         address: Joi.string().optional(),
         state: Joi.string().optional(),
         zip: Joi.string().optional(),
+        city: Joi.string().optional(),
         app_acc_no: Joi.number().integer().optional(),
         role: Joi.string()
           .valid("admin", "attorney")
@@ -260,8 +264,6 @@ const usersCrtl = {
       // Perform update
       const [affectedCount] = await User.update(updateData, {
         where: { id },
-        returning: true, // For PostgreSQL
-        individualHooks: true
       });
 
       if (affectedCount === 0) {
@@ -279,7 +281,7 @@ const usersCrtl = {
       });
 
     } catch (error) {
-      console.error("Update error:", error.message);
+      console.error("Update error:", error);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },

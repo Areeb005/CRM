@@ -1,8 +1,7 @@
 const Joi = require('joi');
 const { Order, Participant, DocumentLocation, User, ActivityLog } = require('../../models');
 const sequelize = require('../../config/dbConfig');
-
-
+const crypto = require('crypto');
 
 let userAttributes = [
   "id",
@@ -24,6 +23,7 @@ let userAttributes = [
 // Validation schemas
 const participantSchema = Joi.object({
   type: Joi.string().required(),
+  participant: Joi.string().required(),
   represents: Joi.string().allow('').optional(),
   phone: Joi.string().allow('').optional(),
   address: Joi.string().allow('').optional(),
@@ -32,6 +32,7 @@ const participantSchema = Joi.object({
   zip: Joi.string().allow('').optional(),
   claim: Joi.string().allow('').optional(),
   adjuster: Joi.string().allow('').optional(),
+  attorney: Joi.string().allow('').optional(),
   note: Joi.string().allow('').optional()
 });
 
@@ -112,19 +113,27 @@ const orderController = {
 
       const { participants, document_locations, ...orderData } = value;
 
+      // Generate unique order code
+      const timestamp = Date.now(); // Get current timestamp
+      const randomString = crypto.randomBytes(3).toString("hex"); // Generate a 6-character hex string
+      const orderCode = `ORD-${timestamp}-${randomString}`; // Format: ORD-1732695633-6baac8
+
       // Create order with associations in a transaction
       const result = await sequelize.transaction(async (t) => {
-        // Create the order
-        const order = await Order.create({ ...orderData, created_by: req.user.id, updated_by: req.user.id, status: "New" }, { transaction: t });
+        // Create the order with the generated orderCode
+        const order = await Order.create({
+          ...orderData,
+          order_code: orderCode, // Assign generated order code
+          created_by: req.user.id,
+          updated_by: req.user.id,
+          status: "New"
+        }, { transaction: t });
 
         // Create participants if provided
         if (participants && participants.length > 0) {
           await Promise.all(
             participants.map(participant =>
-              Participant.create({
-                ...participant,
-                order_id: order.id
-              }, { transaction: t })
+              Participant.create({ ...participant, order_id: order.id }, { transaction: t })
             )
           );
         }
@@ -133,10 +142,7 @@ const orderController = {
         if (document_locations && document_locations.length > 0) {
           await Promise.all(
             document_locations.map(docLocation =>
-              DocumentLocation.create({
-                ...docLocation,
-                order_id: order.id
-              }, { transaction: t })
+              DocumentLocation.create({ ...docLocation, order_id: order.id, status: "New" }, { transaction: t })
             )
           );
         }
@@ -155,13 +161,14 @@ const orderController = {
         ]
       });
 
-
+      // Log activity
       await ActivityLog.create({
         order_id: completeOrder?.id,
         action_type: 'order_created',
-        description: req.user.role === "admin" ? `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` : `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}}.`,
+        description: req.user.role === "admin" ?
+          `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` :
+          `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}}.`,
       });
-
 
       res.status(201).json(completeOrder);
     } catch (error) {
@@ -320,6 +327,58 @@ const orderController = {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
+    }
+  },
+
+  updateDocumentLocationStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body; // Assuming is sent from frontend
+
+      const updatedByUser = await User.findByPk(req.user.id);
+
+      // Validate input
+      if (!id) {
+        return res.status(400).json({ error: "DocumentLocation ID is required." });
+      }
+
+      if (!status || !["New", "Completed", "Cancelled"].includes(status)) {
+        return res.status(400).json({ error: "Invalid status value." });
+      }
+
+      // Find the DocumentLocation by ID
+      const documentLocation = await DocumentLocation.findByPk(id);
+
+      if (!documentLocation) {
+        return res.status(404).json({ error: "DocumentLocation not found." });
+      }
+
+      // Update the status
+      await documentLocation.update({ status });
+
+      // Create activity log
+      let actionType, description;
+      if (status === "Cancelled") {
+        actionType = "document_location_cancelled";
+        description = `DocumentLocation {${id}} has been cancelled by user {${updatedByUser?.username || "Unknown"}}.`;
+      } else if (status === "Completed") {
+        actionType = "document_location_completed";
+        description = `DocumentLocation {${id}} has been completed by user {${updatedByUser?.username || "Unknown"}}.`;
+      }
+
+      if (actionType && description) {
+        await ActivityLog.create({
+          order_id: documentLocation.order_id, // Assuming it's related to an order_id, adjust if necessary
+          action_type: actionType,
+          description: description,
+        });
+      }
+
+      res.json({ message: "Status updated successfully." });
+
+    } catch (error) {
+      console.error("Error updating document location status:", error);
+      res.status(500).json({ error: "Internal server error." });
     }
   }
 };
