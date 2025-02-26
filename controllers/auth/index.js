@@ -326,6 +326,45 @@ const authCrtl = {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  changePassword: async (req, res) => {
+    try {
+      const schema = Joi.object({
+        oldPassword: Joi.string().required(),
+        newPassword: Joi.string()
+          .min(6)
+          .pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$"))
+          .required(),
+      });
+
+      const { error, value } = schema.validate(req.body);
+
+      if (error)
+        return res.status(400).json({ error: error.details[0].message });
+
+      const user = await User.findByPk(req.user.id); // Assuming req.user contains logged-in user info
+
+      if (!user)
+        return res.status(404).json({ error: "User not found" });
+
+      // Verify old password
+      const isMatch = verifyPassword(value.oldPassword, false, user.password);
+      if (!isMatch)
+        return res.status(400).json({ error: "Incorrect old password" });
+
+      // Hash new password
+      const hash =  generatePasswordHash(value.newPassword);
+
+      // Update user password
+      user.password = hash;
+      user.salt = "argon"; // Optional: If using Argon2 hashing
+      await user.save();
+
+      return res.status(200).json({ success: "Password updated successfully." });
+    } catch (err) {
+      console.error("Error changing password:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
 };
 
 const createAccessToken = (payload) => {

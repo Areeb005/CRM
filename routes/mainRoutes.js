@@ -17,6 +17,7 @@ router.post('/register', authCrtl.register);
 router.post('/login', authCrtl.login);
 router.post('/forgot-password', authCrtl.forgotPassword);
 router.post('/reset-password', authCrtl.resetPassword);
+router.patch('/change-password', Auth, authCrtl.changePassword);
 
 router.post('/user', Auth, allowedUsers(["admin"]), usersCrtl.create);
 router.get('/users', Auth, allowedUsers(["admin", "attorney"]), usersCrtl.get_all);
@@ -42,9 +43,9 @@ router.get("/organization", Auth, allowedUsers(["admin"]), OrganizationControlle
 router.patch("/organization", Auth, allowedUsers(["admin"]), OrganizationController.update_settings);
 
 
-router.get("/locations", locationCtrl.get_locations);
-router.get("/customers", locationCtrl.get_customers);
-router.get("/courts", locationCtrl.get_courts);
+router.get("/locations", Auth, locationCtrl.get_locations);
+router.get("/customers", Auth, locationCtrl.get_customers);
+router.get("/courts", Auth, locationCtrl.get_courts);
 
 
 router.post('/upload', Auth, allowedUsers(["admin", "attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);
