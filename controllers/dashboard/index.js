@@ -25,7 +25,8 @@ const dashboardCtrl = {
                 totalOrders,
                 orderStatuses,
                 urgentOrders,
-                pendingOrders,
+                activeOrders,
+                completedOrders,
                 // pendingCancellations,
                 cancelledOrders,
                 ordersOnTime,
@@ -37,18 +38,38 @@ const dashboardCtrl = {
                 recentActivities,
                 recentOrders,
                 orderTrends,
-                ordersNearingDeadline
+                ordersNearingDeadline,
+                topTenUrgentOrders,
             ] = await Promise.all([
                 Order.count(), // Total orders count
 
-                Order.findAll({ // Order status count
-                    attributes: ["status", [sequelize.fn("COUNT", sequelize.col("status")), "count"]],
-                    group: ["status"],
-                }),
+                (async () => {
+                    const defaultData = [
+                        { status: "Active", count: 0 },
+                        { status: "Completed", count: 0 },
+                        { status: "Cancelled", count: 0 }
+                    ];
+
+                    // Fetch the status count from the database
+                    let data = await Order.findAll({
+                        attributes: ["status", [sequelize.fn("COUNT", sequelize.col("status")), "count"]],
+                        group: ["status"],
+                        raw: true
+                    });
+
+                    // Merge database results with default values
+                    data = defaultData.map(defaultItem => {
+                        const found = data.find(dbItem => dbItem.status === defaultItem.status);
+                        return found ? found : defaultItem;
+                    });
+
+                    return data;
+                })(),
 
                 Order.count({ where: { urgent: true } }), // Urgent orders count
 
-                Order.count({ where: { status: "In Progress" } }), // Pending orders count
+                Order.count({ where: { status: "Active" } }), // Acitve orders count
+                Order.count({ where: { status: "Completed" } }), // Completed orders count
 
                 // Order.count({ where: { status: "pending_cancellation" } }), // Pending cancellation count
 
@@ -58,14 +79,14 @@ const dashboardCtrl = {
 
                 // Orders On Time Percentage Calculation
                 (async () => {
-                    const totalCompletedOrders = await Order.count({ where: { status: "Completed" } });
+                    // const totalCompletedOrders = await Order.count({ where: { status: "Completed" } });
                     const onTimeOrders = await Order.count({
                         where: {
                             status: "Completed",
                             completed_at: { [Op.lte]: sequelize.col("needed_by") }
                         }
                     });
-                    return totalCompletedOrders > 0 ? ((onTimeOrders / totalCompletedOrders) * 100).toFixed(2) : "0";
+                    return onTimeOrders;
                 })(),
 
                 Order.count({
@@ -156,53 +177,63 @@ const dashboardCtrl = {
                     });
 
                     return results; // Will return only [{ date: "YYYY-MM-DD", count: N }]
-                })()
+                })(),
+
+
+                Order.findAll({
+                    where: { urgent: true },
+                    limit: 10,
+                    order: [['createdAt', 'DESC']] // Optional: Order by latest created records
+                })                
+
             ]);
 
-            // Send response
-            res.json({
-                totalOrders,
-                orderStatuses,
-                urgentOrders,
-                pendingOrders,
-                // pendingCancellations,
-                cancelledOrders,
-                // pendingApprovals,
-                ordersOnTime: `${ordersOnTime}%`,
-                missedDeadlines,
-                participantCount,
-                documentLocationCount,
-                // nearDeadlineOrders,
-                recentActivities,
-                recentOrders,
-                orderTrends,
-                ordersNearingDeadline // New Data for Graph
-            });
+// Send response
+res.json({
+    totalOrders,
+    orderStatuses,
+    urgentOrders,
+    activeOrders,
+    completedOrders,
+    // pendingCancellations,
+    cancelledOrders,
+    // pendingApprovals,
+    ordersOnTime,
+    missedDeadlines,
+    participantCount,
+    documentLocationCount,
+    // nearDeadlineOrders,
+    recentActivities,
+    recentOrders,
+    orderTrends,
+    ordersNearingDeadline, // New Data for Graph
+    topTenUrgentOrders
+});
         } catch (error) {
-            console.error("Error fetching dashboard data:", error);
-            res.status(500).json({ message: "Error fetching dashboard data", error });
-        }
+    console.error("Error fetching dashboard data:", error);
+    res.status(500).json({ message: "Error fetching dashboard data", error });
+}
     },
 
-    // Dashboard Overview API
-    overview: async (req, res) => {
-        try {
-            const totalOrders = await Order.count();
-            const orderStatuses = await Order.findAll({
-                attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
-                group: ['status'],
-            });
+// Dashboard Overview API
+overview: async (req, res) => {
+    try {
+        const totalOrders = await Order.count();
+        const orderStatuses = await Order.findAll({
+            attributes: ['status', [sequelize.fn('COUNT', sequelize.col('status')), 'count']],
+            group: ['status'],
+        });
 
-            const urgentOrders = await Order.count({ where: { urgent: true } });
-            const missedDeadlines = await Order.count({ where: { needed_by: { [Op.lt]: new Date() } } });
-            const participantCount = await Participant.count();
-            const documentLocationCount = await DocumentLocation.count();
+        const urgentOrders = await Order.count({ where: { urgent: true } });
+        const missedDeadlines = await Order.count({ where: { needed_by: { [Op.lt]: new Date() } } });
+        const participantCount = await Participant.count();
+        const documentLocationCount = await DocumentLocation.count();
 
-            res.json({ totalOrders, orderStatuses, urgentOrders, missedDeadlines, participantCount, documentLocationCount });
-        } catch (error) {
-            res.status(500).json({ message: 'Error fetching dashboard data', error });
-        }
-    },
+        res.json({ totalOrders, orderStatuses, urgentOrders, missedDeadlines, participantCount, documentLocationCount });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching dashboard data', error });
+    }
+},
 
     nearDeadline: async (req, res) => {
         try {
@@ -226,51 +257,51 @@ const dashboardCtrl = {
         }
     },
 
-    // Recent Activity API
-    recent_activities: async (req, res) => {
-        try {
-            const activities = await ActivityLog.findAll({
-                order: [['createdAt', 'DESC']],
-                limit: 10,
-            });
-            res.json(activities);
-        } catch (error) {
-            res.status(500).json({ message: 'Error fetching activities', error });
-        }
-    },
-
-    // Recent Orders API
-    recent_orders: async (req, res) => {
-        try {
-            const orders = await Order.findAll({
-                order: [['createdAt', 'DESC']],
-                limit: 10,
-                include: [
-                    { model: User, as: "orderByUser", attributes: ["username"] },
-                    { model: User, as: "createdByUser", attributes: ["username"] },
-                    { model: User, as: "updatedByUser", attributes: ["username"] },
-                ],
-            });
-
-            res.json(orders);
-        } catch (error) {
-            console.log(error)
-            res.status(500).json({ message: 'Error fetching orders', error });
-        }
-    },
-
-    // Cron Job for Missed Deadlines
-    checkMissedDeadlines: async () => {
-        try {
-            const overdueOrders = await Order.findAll({ where: { needed_by: { [Op.lt]: new Date() }, status: { [Op.ne]: 'Completed' } } });
-            for (const order of overdueOrders) {
-                await ActivityLog.create({ order_id: order.id, action_type: 'order_deadline_missed', description: `Order {${order.id}} missed its deadline.` });
+        // Recent Activity API
+        recent_activities: async (req, res) => {
+            try {
+                const activities = await ActivityLog.findAll({
+                    order: [['createdAt', 'DESC']],
+                    limit: 10,
+                });
+                res.json(activities);
+            } catch (error) {
+                res.status(500).json({ message: 'Error fetching activities', error });
             }
-            console.log('Checked missed deadlines');
-        } catch (error) {
-            console.error('Error checking missed deadlines', error);
-        }
-    }
+        },
+
+            // Recent Orders API
+            recent_orders: async (req, res) => {
+                try {
+                    const orders = await Order.findAll({
+                        order: [['createdAt', 'DESC']],
+                        limit: 10,
+                        include: [
+                            { model: User, as: "orderByUser", attributes: ["username"] },
+                            { model: User, as: "createdByUser", attributes: ["username"] },
+                            { model: User, as: "updatedByUser", attributes: ["username"] },
+                        ],
+                    });
+
+                    res.json(orders);
+                } catch (error) {
+                    console.log(error)
+                    res.status(500).json({ message: 'Error fetching orders', error });
+                }
+            },
+
+                // Cron Job for Missed Deadlines
+                checkMissedDeadlines: async () => {
+                    try {
+                        const overdueOrders = await Order.findAll({ where: { needed_by: { [Op.lt]: new Date() }, status: { [Op.ne]: 'Completed' } } });
+                        for (const order of overdueOrders) {
+                            await ActivityLog.create({ order_id: order.id, action_type: 'order_deadline_missed', description: `Order {${order.id}} missed its deadline.` });
+                        }
+                        console.log('Checked missed deadlines');
+                    } catch (error) {
+                        console.error('Error checking missed deadlines', error);
+                    }
+                }
 
 
 }

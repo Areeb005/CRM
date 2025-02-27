@@ -28,15 +28,15 @@ const Order = sequelize.define(
     },
     status: {
       type: DataTypes.ENUM(
-        "New",
-        "In Progress",
+        "Active",
+        // "In Progress",
         "Completed",
-        "Pending_Cancellation",
+        // "Pending_Cancellation",
         "Cancelled",
-        "Hold"
+        // "Hold"
       ),
       allowNull: false,
-      defaultValue: "New",
+      defaultValue: "Active",
     },
 
     cancellation_requested: {
