@@ -111,6 +111,10 @@ const usersCrtl = {
       const schema = Joi.object({
         page: Joi.number().integer().min(1).default(1),
         limit: Joi.number().integer().min(1).max(100).default(10),
+        username: Joi.string().optional(),
+        email: Joi.string().email().optional(),
+        role: Joi.string().valid("admin", "attorney").optional(),
+        status: Joi.boolean().optional(),
       });
 
       // Validate query parameters
@@ -119,19 +123,27 @@ const usersCrtl = {
         return res.status(400).json({ error: error.details[0].message });
       }
 
-      const { page, limit } = value;
+      const { page, limit, username, email, role, status } = value;
 
-      // Calculate offset
+      // Calculate offset for pagination
       const offset = (page - 1) * limit;
 
-      // Fetch users with pagination
-      const { rows: users, count: totalUsers } =
-        await User.findAndCountAll({
-          attributes: { exclude: ["password"] }, // Exclude sensitive fields
-          limit,
-          offset,
-          where: { role: { [Op.ne]: "admin" } }, // Exclude admin users
-        });
+      // Build dynamic filters using spread operator
+      let whereConditions = {
+        role: { [Op.ne]: "admin" }, // Exclude admin users by default
+        ...(username ? { username: { [Op.like]: `%${username}%` } } : {}),
+        ...(email ? { email: { [Op.like]: `%${email}%` } } : {}),
+        ...(role ? { role } : {}),
+        ...(status !== undefined ? { status } : {}),
+      };
+
+      // Fetch users with pagination and filters
+      const { rows: users, count: totalUsers } = await User.findAndCountAll({
+        attributes: { exclude: ["password"] }, // Exclude sensitive fields
+        limit,
+        offset,
+        where: whereConditions,
+      });
 
       return res.status(200).json({
         success: "Users fetched successfully",

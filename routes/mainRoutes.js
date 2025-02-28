@@ -31,6 +31,7 @@ router.get('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.g
 router.patch('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.update);
 router.patch('/cancel/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.cancel);
 router.patch('/complete/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.complete);
+router.delete('/delete/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.delete);
 router.patch('/document-location/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.updateDocumentLocationStatus);
 
 router.get('/overview', Auth, allowedUsers(["admin"]), dashboardCtrl.dashboardOverview);

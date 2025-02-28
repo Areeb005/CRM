@@ -180,34 +180,63 @@ const orderController = {
 
   get_all: async (req, res) => {
     try {
-      const orders = await Order.findAll({
-        ...(req.user.role === "attorney" ? { where: { order_by: req.user.id } } : {}),
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
+
+      const { status, case_type, order_code, needed_by, created_by, order_by } = req.query;
+
+      let whereClause = { deletedAt: null };
+
+      // Apply filters dynamically
+      if (req.user.role === "attorney") {
+        whereClause.order_by = req.user.id;
+      }
+
+      if (status) whereClause.status = status;
+      if (case_type) whereClause.case_type = case_type;
+      if (order_code) whereClause.order_code = order_code;
+      if (needed_by) whereClause.needed_by = needed_by;
+      if (created_by) whereClause.created_by = created_by;
+      if (order_by) whereClause.order_by = order_by;
+
+      const { count, rows: orders } = await Order.findAndCountAll({
+        where: whereClause,
         include: [
           { model: Participant },
           { model: DocumentLocation },
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
           { model: User, as: "updatedByUser", attributes: userAttributes },
-        ]
+        ],
+        limit,
+        offset,
+        order: [['createdAt', 'DESC']],
+        distinct: true,
+        paranoid: true,
       });
 
       // ✅ Parse files field in DocumentLocations
-      const formattedOrders = orders.map(order => {
-        return {
-          ...order.toJSON(),
-          DocumentLocations: order.toJSON().DocumentLocations.map(doc => ({
-            ...doc,
-            files: doc.files ? JSON.parse(doc.files) : [], // Parse files field
-          })),
-        };
-      });
+      const formattedOrders = orders.map(order => ({
+        ...order.toJSON(),
+        DocumentLocations: order.DocumentLocations.map(doc => ({
+          ...doc,
+          files: doc.files ? JSON.parse(doc.files) : [],
+        })),
+      }));
 
-      res.json(formattedOrders);
+      res.json({
+        totalOrders: count,
+        currentPage: page,
+        totalPages: Math.ceil(count / limit),
+        orders: formattedOrders,
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
     }
   },
+
 
   get_one: async (req, res) => {
     try {
@@ -341,14 +370,26 @@ const orderController = {
 
   delete: async (req, res) => {
     try {
+
+
+      const order = await Order.findByPk(req.params.id);
+      const user = await User.findByPk(req.user.id);
+
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+
+      await ActivityLog.create({
+        order_id: order.id,
+        action_type: 'order_cancelled',
+        description: `Order {${order.order_code}} has been deleted by user {${user?.username}}.`,
+      });
+
       const deleted = await Order.destroy({
         where: { id: req.params.id }
       });
 
-      if (!deleted) return res.status(404).json({ error: 'Order not found' });
 
 
-      res.status(204).send();
+      res.status(200).json({ message: "Order Deleted Successfully" });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
