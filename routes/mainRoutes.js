@@ -17,7 +17,8 @@ router.post('/register', authCrtl.register);
 router.post('/login', authCrtl.login);
 router.post('/forgot-password', authCrtl.forgotPassword);
 router.post('/reset-password', authCrtl.resetPassword);
-router.patch('/change-password', Auth, authCrtl.changePassword);
+router.get('/me', Auth, authCrtl.get_me);
+router.patch('/me', Auth, authCrtl.update_me);
 
 router.post('/user', Auth, allowedUsers(["admin"]), usersCrtl.create);
 router.get('/users', Auth, allowedUsers(["admin", "attorney"]), usersCrtl.get_all);
@@ -28,6 +29,8 @@ router.post('/order', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.crea
 router.get('/orders', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_all);
 router.get('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_one);
 router.patch('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.update);
+router.patch('/cancel/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.cancel);
+router.patch('/complete/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.complete);
 router.patch('/document-location/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.updateDocumentLocationStatus);
 
 router.get('/overview', Auth, allowedUsers(["admin"]), dashboardCtrl.dashboardOverview);
@@ -39,7 +42,7 @@ router.get("/smtp", Auth, allowedUsers(["admin"]), SMTPController.get_settings);
 router.post("/smtp", Auth, allowedUsers(["admin"]), SMTPController.save_settings);
 router.patch("/smtp", Auth, allowedUsers(["admin"]), SMTPController.update_settings);
 
-router.get("/organization", Auth, allowedUsers(["admin"]), OrganizationController.get_settings);
+router.get("/organization", Auth, OrganizationController.get_settings);
 router.patch("/organization", Auth, allowedUsers(["admin"]), OrganizationController.update_settings);
 
 

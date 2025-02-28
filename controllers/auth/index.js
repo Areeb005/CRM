@@ -8,6 +8,7 @@ const {
 } = require("../../helpers/functions");
 const { User, ActivityLog } = require("../../models");
 const SMTPSettings = require("../../models/smtp_model");
+const { Op } = require("sequelize");
 
 const authCrtl = {
   register: async (req, res) => {
@@ -93,7 +94,7 @@ const authCrtl = {
         state,
         zip,
         app_acc_no,
-        role: "admin",
+        role: "attorney",
         city,
         status: true, // Default status
       });
@@ -326,42 +327,78 @@ const authCrtl = {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
-  changePassword: async (req, res) => {
+  get_me: async (req, res) => {
     try {
+      const user = await User.findByPk(req.user.id, {
+        attributes: { exclude: ["password", "otp", "otp_expire_time", "opt_used"] }, // Exclude sensitive fields
+      });
+
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      return res.status(200).json({ success: "User fetched successfully.", user });
+    } catch (err) {
+      console.error("Error fetching user:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+  update_me: async (req, res) => {
+    try {
+      // Define validation schema
       const schema = Joi.object({
-        oldPassword: Joi.string().required(),
-        newPassword: Joi.string()
-          .min(6)
-          .pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$"))
-          .required(),
+        username: Joi.string().optional(),
+        full_name: Joi.string().optional(),
+        profile_picture: Joi.string().uri().optional(),
+        email: Joi.string().email().optional(),
+        firm_name: Joi.string().optional(),
+        phone: Joi.number().optional(),
+        address: Joi.string().optional(),
+        city: Joi.string().optional(),
+        state: Joi.string().optional(),
+        zip: Joi.string().optional(),
+        password: Joi.string().min(6).pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$")).optional(),
+        oldPassword: Joi.string().min(6).pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$")).optional(),
       });
 
       const { error, value } = schema.validate(req.body);
 
-      if (error)
-        return res.status(400).json({ error: error.details[0].message });
+      if (error) return res.status(400).json({ error: error.details[0].message });
 
-      const user = await User.findByPk(req.user.id); // Assuming req.user contains logged-in user info
+      const user = await User.findByPk(req.user.id);
 
-      if (!user)
-        return res.status(404).json({ error: "User not found" });
+      if (!user) return res.status(404).json({ error: "User not found" });
 
-      // Verify old password
-      const isMatch = verifyPassword(value.oldPassword, false, user.password);
-      if (!isMatch)
-        return res.status(400).json({ error: "Incorrect old password" });
+      // ✅ Check if email or username already exists for other users
+      if (value.email || value.username) {
+        const existingUser = await User.findOne({
+          where: {
+            [Op.or]: [
+              { email: value.email },
+              { username: value.username },
+            ],
+            id: { [Op.ne]: req.user.id }, // Exclude current user from check
+          },
+        });
 
-      // Hash new password
-      const hash =  generatePasswordHash(value.newPassword);
+        if (existingUser) {
+          return res.status(400).json({ error: "Email or username already in use" });
+        }
+      }
 
-      // Update user password
-      user.password = hash;
-      user.salt = "argon"; // Optional: If using Argon2 hashing
-      await user.save();
+      // ✅ If updating password, verify old password first
+      if (value.password && req.body.oldPassword) {
+        const isMatch = verifyPassword(value.oldPassword, false, user.password);
+        if (!isMatch) return res.status(400).json({ error: "Incorrect old password" });
 
-      return res.status(200).json({ success: "Password updated successfully." });
+        // Hash new password
+        value.password = generatePasswordHash(value.password);
+      }
+
+      // ✅ Update user
+      await user.update(value);
+
+      return res.status(200).json({ success: "User updated successfully.", user });
     } catch (err) {
-      console.error("Error changing password:", err);
+      console.error("Error updating user:", err);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },

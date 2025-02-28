@@ -15,6 +15,7 @@ let userAttributes = [
   "state",
   "zip",
   "app_acc_no",
+  "city"
 ]
 
 
@@ -77,16 +78,16 @@ const orderSchema = Joi.object({
   // Order details
   order_by: Joi.number().integer().required(),
   urgent: Joi.boolean().default(false),
-  needed_by: Joi.date().optional(),
+  needed_by: Joi.date().allow(null).optional(),
   case_type: Joi.string().required(),
   case_name: Joi.string().required(),
   file_number: Joi.string().required(),
   case_number: Joi.string().required(),
-  status: Joi.string().valid("New",
-    "In Progress",
+  status: Joi.string().valid(
+    "Active",
     "Completed",
     "Cancelled",
-    "Hold").default('pending'),
+  ).default('Active'),
 
   // Court details
   court_name: Joi.string().required(),
@@ -126,7 +127,7 @@ const orderController = {
           order_code: orderCode, // Assign generated order code
           created_by: req.user.id,
           updated_by: req.user.id,
-          status: "New"
+          status: "Active"
         }, { transaction: t });
 
         // Create participants if provided
@@ -166,8 +167,8 @@ const orderController = {
         order_id: completeOrder?.id,
         action_type: 'order_created',
         description: req.user.role === "admin" ?
-          `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` :
-          `Order {${completeOrder?.id}} created by user {${completeOrder?.createdByUser?.username}}.`,
+          `Order {${completeOrder?.order_code}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` :
+          `Order {${completeOrder?.order_code}} created by user {${completeOrder?.createdByUser?.username}}.`,
       });
 
       res.status(201).json(completeOrder);
@@ -189,7 +190,19 @@ const orderController = {
           { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
-      res.json(orders);
+
+      // ✅ Parse files field in DocumentLocations
+      const formattedOrders = orders.map(order => {
+        return {
+          ...order.toJSON(),
+          DocumentLocations: order.toJSON().DocumentLocations.map(doc => ({
+            ...doc,
+            files: doc.files ? JSON.parse(doc.files) : [], // Parse files field
+          })),
+        };
+      });
+
+      res.json(formattedOrders);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
@@ -213,7 +226,18 @@ const orderController = {
         ]
       });
       if (!order) return res.status(404).json({ error: 'Order not found' });
-      res.json(order);
+
+
+      // ✅ Parse files field in DocumentLocations
+      const formattedOrders = {
+        ...order.toJSON(),
+        DocumentLocations: order.toJSON().DocumentLocations.map(doc => ({
+          ...doc,
+          files: doc.files ? JSON.parse(doc.files) : [], // Parse files field
+        })),
+      };
+
+      res.json(formattedOrders);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
@@ -288,23 +312,23 @@ const orderController = {
 
       if (value.status === 'Cancelled') {
         await ActivityLog.create({
-          order_id: req.params.id,
+          order_id: updatedOrder.id,
           action_type: 'order_cancelled',
-          description: `Order {${req.params.id}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
+          description: `Order {${updatedOrder.order_code}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
         });
       }
       else if (value.status === 'In Progress') {
         await ActivityLog.create({
-          order_id: req.params.id,
+          order_id: updatedOrder.id,
           action_type: 'order_started',
-          description: `Order {${req.params.id}} has been started by user {${updatedOrder?.updatedByUser?.username}}.`,
+          description: `Order {${updatedOrder.order_code}} has been started by user {${updatedOrder?.updatedByUser?.username}}.`,
         });
       }
       else if (value.status === 'Completed') {
         await ActivityLog.create({
-          order_id: req.params.id,
+          order_id: updatedOrder.id,
           action_type: 'order_completed',
-          description: `Order {${req.params.id}} has been completed by user {${updatedOrder?.updatedByUser?.username}}.`,
+          description: `Order {${updatedOrder.order_code}} has been completed by user {${updatedOrder?.updatedByUser?.username}}.`,
         });
       }
 
@@ -323,7 +347,94 @@ const orderController = {
 
       if (!deleted) return res.status(404).json({ error: 'Order not found' });
 
+
       res.status(204).send();
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  },
+
+  cancel: async (req, res) => {
+    try {
+
+      const order = await Order.findByPk(req.params.id);
+
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+
+      if (order.status === 'Completed') return res.status(400).json({ error: 'Order already Completed' });
+      if (order.status === 'Cancelled') return res.status(400).json({ error: 'Order already Cancelled' });
+
+      const cancelled = await Order.update(
+        {
+          status: 'Cancelled'
+        },
+        {
+          where: { id: req.params.id }
+        }
+      );
+
+      const updatedOrder = await Order.findByPk(req.params.id, {
+        include: [
+          { model: Participant },
+          { model: DocumentLocation },
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
+        ]
+      });
+
+
+      await ActivityLog.create({
+        order_id: updatedOrder.id,
+        action_type: 'order_cancelled',
+        description: `Order {${updatedOrder.order_code}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
+      });
+
+      res.status(200).send({ message: 'Order cancelled successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Server error' });
+    }
+  },
+  complete: async (req, res) => {
+    try {
+
+      const order = await Order.findByPk(req.params.id);
+
+      if (!order) return res.status(404).json({ error: 'Order not found' });
+
+      if (order.status === 'Completed') return res.status(400).json({ error: 'Order already Completed' });
+      if (order.status === 'Cancelled') return res.status(400).json({ error: 'Order already Cancelled' });
+
+
+      const Completed = await Order.update(
+        {
+          status: 'Completed'
+        },
+        {
+          where: { id: req.params.id }
+        }
+      );
+
+      const updatedOrder = await Order.findByPk(req.params.id, {
+        include: [
+          { model: Participant },
+          { model: DocumentLocation },
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
+        ]
+      });
+
+
+      await ActivityLog.create({
+        order_id: updatedOrder.id,
+        action_type: 'order_completed',
+        description: `Order {${updatedOrder.order_code}} has been completed by user {${updatedOrder?.updatedByUser?.username}}.`,
+      });
+
+      res.status(200).send({ message: 'Order completed successfully' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Server error' });
@@ -360,10 +471,10 @@ const orderController = {
       let actionType, description;
       if (status === "Cancelled") {
         actionType = "document_location_cancelled";
-        description = `DocumentLocation {${id}} has been cancelled by user {${updatedByUser?.username || "Unknown"}}.`;
+        description = `DocumentLocation {${documentLocation.name}} has been cancelled by user {${updatedByUser?.username || "Unknown"}}.`;
       } else if (status === "Completed") {
         actionType = "document_location_completed";
-        description = `DocumentLocation {${id}} has been completed by user {${updatedByUser?.username || "Unknown"}}.`;
+        description = `DocumentLocation {${documentLocation.name}} has been completed by user {${updatedByUser?.username || "Unknown"}}.`;
       }
 
       if (actionType && description) {
