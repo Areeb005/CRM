@@ -100,7 +100,7 @@ const authCrtl = {
       });
 
       // Generate access token
-      const access_token = createAccessToken({ id: newUser.id, role: newUser.role });
+      const access_token = createAccessToken({ id: newUser.id, role: newUser.role, username: newUser.username, });
 
       // Log user registration
       await ActivityLog.create({
@@ -154,7 +154,7 @@ const authCrtl = {
         return res.status(401).json({ error: "Incorrect password" });
 
       // Generate access token
-      const access_token = createAccessToken({ id: user.id, role: user.role });
+      const access_token = createAccessToken({ id: user.id, role: user.role, username: user.username });
 
       user = user.toJSON()
       delete user.password

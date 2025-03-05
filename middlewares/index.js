@@ -22,6 +22,7 @@ const Auth = (req, res, next) => {
             if (err)
                 return res.status(401).json({ error: "Invalid Authentication" });
 
+
             req.user = user
             const { id } = user
 

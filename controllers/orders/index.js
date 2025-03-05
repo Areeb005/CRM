@@ -178,6 +178,93 @@ const orderController = {
     }
   },
 
+  create_bulk_orders: async (req, res) => {
+    try {
+      // Validate input: Ensure `orders` is an array
+      if (!Array.isArray(req.body.orders) || req.body.orders.length === 0) {
+        return res.status(400).json({ error: "Invalid request. 'orders' must be a non-empty array." });
+      }
+
+      // Start a transaction for bulk order creation
+      const results = await sequelize.transaction(async (t) => {
+        const createdOrders = [];
+
+        for (const orderData of req.body.orders) {
+          const { error, value } = orderSchema.validate(orderData);
+          if (error) throw new Error(error.details[0].message);
+
+          const { participants, document_locations, ...orderDetails } = value;
+
+          // Generate unique order code
+          const timestamp = Date.now();
+          const randomString = crypto.randomBytes(3).toString("hex");
+          const orderCode = `ORD-${timestamp}-${randomString}`;
+
+          // Create the order
+          const order = await Order.create({
+            ...orderDetails,
+            order_code: orderCode,
+            created_by: req.user.id,
+            updated_by: req.user.id,
+            status: "Active",
+          }, { transaction: t });
+
+          // Create participants if provided
+          if (participants && participants.length > 0) {
+            await Promise.all(
+              participants.map(participant =>
+                Participant.create({ ...participant, order_id: order.id }, { transaction: t })
+              )
+            );
+          }
+
+          // Create document locations if provided
+          if (document_locations && document_locations.length > 0) {
+            await Promise.all(
+              document_locations.map(docLocation =>
+                DocumentLocation.create({ ...docLocation, order_id: order.id, status: "New" }, { transaction: t })
+              )
+            );
+          }
+
+
+
+          createdOrders.push(order);
+        }
+
+        return createdOrders;
+      });
+
+      // Fetch full order details
+      const completeOrders = await Order.findAll({
+        where: { id: results.map(order => order.id) },
+        include: [
+          { model: Participant },
+          { model: DocumentLocation },
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "updatedByUser", attributes: userAttributes },
+        ],
+      });
+
+      for (const order of results) {
+        // Log activity
+        await ActivityLog.create({
+          order_id: order.id,
+          action_type: "order_created",
+          description: req.user.role === "admin"
+            ? `Order {${order.order_code}} created by user {${req.user.username}} on behalf of another user.`
+            : `Order {${order.order_code}} created by user {${req.user.username}}.`,
+        });
+      }
+
+      return res.status(201).json({ success: true, data: completeOrders });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: error.message || "Server error" });
+    }
+  },
+
   get_all: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;

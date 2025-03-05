@@ -26,6 +26,7 @@ router.get('/user/:id', Auth, allowedUsers(["admin", "attorney"]), usersCrtl.get
 router.patch('/user/:id', Auth, allowedUsers(["admin"]), usersCrtl.update_one);
 
 router.post('/order', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.create);
+router.post('/bulk-orders', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.create_bulk_orders);
 router.get('/orders', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_all);
 router.get('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.get_one);
 router.patch('/order/:id', Auth, allowedUsers(["admin", "attorney"]), orderCtrcl.update);
