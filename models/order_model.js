@@ -139,6 +139,7 @@ const Order = sequelize.define(
         last_name: "",
         aka: "",
         ssn: "",
+        continuous_trauma: false,
         date_of_injury: "",
         record_address: "",
         record_city: "",

@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { Order, Participant, DocumentLocation, User, ActivityLog } = require('../../models');
+const { Order, Participant, DocumentLocation, User, ActivityLog, Court, Location } = require('../../models');
 const sequelize = require('../../config/dbConfig');
 const crypto = require('crypto');
 
@@ -23,8 +23,8 @@ let userAttributes = [
 
 // Validation schemas
 const participantSchema = Joi.object({
-  type: Joi.string().required(),
-  participant: Joi.string().required(),
+  type: Joi.string().optional(),
+  participant: Joi.string().optional(),
   represents: Joi.string().allow('').optional(),
   phone: Joi.string().allow('').optional(),
   address: Joi.string().allow('').optional(),
@@ -65,6 +65,7 @@ const recordDetailsSchema = Joi.object({
     from: Joi.date().allow(null).optional(),
     to: Joi.date().greater(Joi.ref("from")).allow(null).optional(),
   }).optional(),
+  continuous_trauma: Joi.boolean().default(false),
 
   record_address: Joi.string().allow("").optional(),
   record_city: Joi.string().allow("").optional(),
@@ -106,31 +107,111 @@ const orderSchema = Joi.object({
   document_locations: Joi.array().items(documentLocationSchema)
 });
 
+const bulkOrderSchema = Joi.object({
+  // Order details
+  order_by: Joi.string().required(),
+  urgent: Joi.boolean().default(false),
+  needed_by: Joi.date().allow(null).optional(),
+  case_type: Joi.string().required(),
+  case_name: Joi.string().required(),
+  file_number: Joi.string().required(),
+  case_number: Joi.string().required(),
+  status: Joi.string().valid(
+    "Active",
+    "Completed",
+    "Cancelled",
+  ).default('Active'),
+
+  // Court details
+  court_name: Joi.string().required(),
+  court_address: Joi.string().required(),
+  court_city: Joi.string().required(),
+  court_state: Joi.string().required(),
+  court_zip: Joi.string().required(),
+
+  // Record details
+  record_details: recordDetailsSchema.required(),
+
+  // Billing and metadata
+  bill_to: Joi.string().required(),
+  // Related records
+  participants: Joi.array().items(participantSchema),
+  document_locations: Joi.array().items(documentLocationSchema)
+});
+
 const orderController = {
   create: async (req, res) => {
     try {
       const { error, value } = orderSchema.validate(req.body);
       if (error) return res.status(400).json({ error: error.details[0].message });
 
-      const { participants, document_locations, ...orderData } = value;
+      const {
+        participants,
+        document_locations,
+        court_name,
+        court_address,
+        court_city,
+        court_state,
+        court_zip,
+        // court_type,
+        court_branchid,
+        court_courtTypeId,
+        ...orderData
+      } = value;
 
       // Generate unique order code
-      const timestamp = Date.now(); // Get current timestamp
-      const randomString = crypto.randomBytes(3).toString("hex"); // Generate a 6-character hex string
-      const orderCode = `ORD-${timestamp}-${randomString}`; // Format: ORD-1732695633-6baac8
+      const timestamp = Date.now();
+      const randomString = crypto.randomBytes(3).toString("hex");
+      const orderCode = `ORD-${timestamp}-${randomString}`;
 
-      // Create order with associations in a transaction
       const result = await sequelize.transaction(async (t) => {
-        // Create the order with the generated orderCode
+        // ✅ Step 1: Find or Create Location for Court
+        let [courtLocation] = await Location.findOrCreate({
+          where: {
+            locat_name: court_name,
+            locat_address: court_address,
+            locat_city: court_city,
+            locat_state: court_state,
+            locat_zip: court_zip
+          },
+          defaults: {
+            locat_contact: "CUSTODIAN OF RECORDS" // Default value
+          },
+          transaction: t
+        });
+
+        // ✅ Step 2: Find or Create Court using found/created Location
+        let [court] = await Court.findOrCreate({
+          where: { locatid: courtLocation.locatid },
+          defaults: {
+            locatid: courtLocation.locatid,
+            court_type: null,
+            branchid: court_branchid || null,
+            CourtTypeId: court_courtTypeId || null
+          },
+          transaction: t
+        });
+
+        // ✅ Step 3: Create Order & Embed Court Details (Instead of court_id)
         const order = await Order.create({
           ...orderData,
-          order_code: orderCode, // Assign generated order code
+          order_code: orderCode,
           created_by: req.user.id,
           updated_by: req.user.id,
-          status: "Active"
+          status: "Active",
+
+          // Embed full court details
+          court_name: court_name,
+          court_address: court_address,
+          court_city: court_city,
+          court_state: court_state,
+          court_zip: court_zip,
+          court_type: court_type || "General",
+          court_branchid: court_branchid || null,
+          court_courtTypeId: court_courtTypeId || null
         }, { transaction: t });
 
-        // Create participants if provided
+        // ✅ Step 4: Create Participants if provided
         if (participants && participants.length > 0) {
           await Promise.all(
             participants.map(participant =>
@@ -139,7 +220,7 @@ const orderController = {
           );
         }
 
-        // Create document locations if provided
+        // ✅ Step 5: Create Document Locations if provided
         if (document_locations && document_locations.length > 0) {
           await Promise.all(
             document_locations.map(docLocation =>
@@ -190,10 +271,16 @@ const orderController = {
         const createdOrders = [];
 
         for (const orderData of req.body.orders) {
-          const { error, value } = orderSchema.validate(orderData);
+          const { error, value } = bulkOrderSchema.validate(orderData);
           if (error) throw new Error(error.details[0].message);
 
-          const { participants, document_locations, ...orderDetails } = value;
+          const { participants, document_locations, order_by, ...orderDetails } = value;
+
+          // Find user by username (order_by)
+          const orderByUser = await User.findOne({ where: { username: order_by } });
+          if (!orderByUser) {
+            throw new Error(`User with username '${order_by}' not found.`);
+          }
 
           // Generate unique order code
           const timestamp = Date.now();
@@ -203,6 +290,7 @@ const orderController = {
           // Create the order
           const order = await Order.create({
             ...orderDetails,
+            order_by: orderByUser.id,
             order_code: orderCode,
             created_by: req.user.id,
             updated_by: req.user.id,
