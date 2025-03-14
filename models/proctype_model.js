@@ -50,7 +50,7 @@ const Proctype = sequelize.define("Proctype", {
     allowNull: false,
     defaultValue: 0,
   },
-  webrequest: {
+  wcabrequest: {
     type: DataTypes.TINYINT(4),
     allowNull: false,
     defaultValue: 0,
@@ -70,7 +70,7 @@ const Proctype = sequelize.define("Proctype", {
     allowNull: false,
     defaultValue: 0,
   },
-  lallowatch: {
+  lallowattach: {
     type: DataTypes.TINYINT(4),
     allowNull: false,
     defaultValue: 0,
@@ -85,7 +85,7 @@ const Proctype = sequelize.define("Proctype", {
     allowNull: false,
     defaultValue: 0,
   },
-  incopounsel: {
+  incopcounsel: {
     type: DataTypes.TINYINT(4),
     allowNull: false,
     defaultValue: 0,
@@ -108,7 +108,7 @@ const Proctype = sequelize.define("Proctype", {
     allowNull: true,
     comment: "1 - compname, 2 - depos place, 3 - court",
   },
-  proofofservice: {
+  proofofservdoc: {
     type: DataTypes.TEXT("long"),
     allowNull: true,
   },
@@ -130,7 +130,7 @@ const Proctype = sequelize.define("Proctype", {
     type: DataTypes.STRING(50),
     allowNull: true,
   },
-  Sdt3Label: {
+  Sdt4Label: {
     type: DataTypes.STRING(50),
     allowNull: true,
   },
