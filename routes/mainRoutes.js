@@ -9,6 +9,8 @@ const dashboardCtrl = require('../controllers/dashboard');
 const SMTPController = require('../controllers/smtp');
 const OrganizationController = require('../controllers/organization');
 const locationCtrl = require('../controllers/location');
+const CaseTypeCtrl = require('../controllers/casetype');
+const ProcTypeCtrl = require('../controllers/proctype');
 
 
 const router = express.Router();
@@ -51,6 +53,8 @@ router.patch("/organization", Auth, allowedUsers(["admin"]), OrganizationControl
 router.get("/locations", Auth, locationCtrl.get_locations);
 router.get("/customers", Auth, locationCtrl.get_customers);
 router.get("/courts", Auth, locationCtrl.get_courts);
+router.get("/casetypes", Auth, CaseTypeCtrl.get_all_casetypes);
+router.get("/proctypes/:casetypeid", Auth, ProcTypeCtrl.get_proctypes_by_casetype);
 
 
 router.post('/upload', Auth, allowedUsers(["admin", "attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);

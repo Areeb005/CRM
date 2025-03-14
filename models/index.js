@@ -7,6 +7,8 @@ const ActivityLog = require("./logs_model");
 const Location = require("./location_model");
 const Customer = require("./customer_model");
 const Court = require("./court_model");
+const CaseType = require("./casetype_model");
+const ProcType = require("./proctype_model");
 
 // Define Associations
 Order.belongsTo(User, { foreignKey: "order_by", as: "orderByUser" });
@@ -42,5 +44,7 @@ module.exports = {
     ActivityLog,
     Location,
     Customer,
-    Court
+    Court,
+    CaseType,
+    ProcType
 };

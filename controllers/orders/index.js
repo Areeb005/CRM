@@ -91,11 +91,11 @@ const orderSchema = Joi.object({
   ).default('Active'),
 
   // Court details
-  court_name: Joi.string().required(),
-  court_address: Joi.string().required(),
-  court_city: Joi.string().required(),
-  court_state: Joi.string().required(),
-  court_zip: Joi.string().required(),
+  court_name: Joi.string().optional(),
+  court_address: Joi.string().optional(),
+  court_city: Joi.string().optional(),
+  court_state: Joi.string().optional(),
+  court_zip: Joi.string().optional(),
 
   // Record details
   record_details: recordDetailsSchema.required(),
@@ -123,11 +123,11 @@ const bulkOrderSchema = Joi.object({
   ).default('Active'),
 
   // Court details
-  court_name: Joi.string().required(),
-  court_address: Joi.string().required(),
-  court_city: Joi.string().required(),
-  court_state: Joi.string().required(),
-  court_zip: Joi.string().required(),
+  court_name: Joi.string().optional(),
+  court_address: Joi.string().optional(),
+  court_city: Joi.string().optional(),
+  court_state: Joi.string().optional(),
+  court_zip: Joi.string().optional(),
 
   // Record details
   record_details: recordDetailsSchema.required(),
@@ -145,6 +145,7 @@ const orderController = {
       const { error, value } = orderSchema.validate(req.body);
       if (error) return res.status(400).json({ error: error.details[0].message });
 
+
       const {
         participants,
         document_locations,
@@ -153,7 +154,6 @@ const orderController = {
         court_city,
         court_state,
         court_zip,
-        // court_type,
         court_branchid,
         court_courtTypeId,
         ...orderData
@@ -165,7 +165,8 @@ const orderController = {
       const orderCode = `ORD-${timestamp}-${randomString}`;
 
       const result = await sequelize.transaction(async (t) => {
-        // ✅ Step 1: Find or Create Location for Court
+        // ✅ Step 1: Find or Create Court Location
+
         let [courtLocation] = await Location.findOrCreate({
           where: {
             locat_name: court_name,
@@ -174,9 +175,7 @@ const orderController = {
             locat_state: court_state,
             locat_zip: court_zip
           },
-          defaults: {
-            locat_contact: "CUSTODIAN OF RECORDS" // Default value
-          },
+          defaults: { locat_contact: "CUSTODIAN OF RECORDS" },
           transaction: t
         });
 
@@ -192,7 +191,52 @@ const orderController = {
           transaction: t
         });
 
-        // ✅ Step 3: Create Order & Embed Court Details (Instead of court_id)
+        // ✅ Step 3: Find or Create Locations for Participants (but do NOT modify Participant creation)
+        if (participants && participants.length > 0) {
+          await Promise.all(
+            participants.map(async (participant) => {
+              console.log(participant);
+
+              await Location.findOrCreate({
+                where: {
+                  locat_address: participant.address,
+                  locat_city: participant.city,
+                  locat_state: participant.state,
+                  locat_zip: participant.zip,
+                  locat_phone: participant.phone
+                },
+                defaults: {
+                  locat_name: participant.address,
+                  locat_contact: "CUSTODIAN OF RECORDS"
+                },
+                transaction: t
+              });
+            })
+          );
+        }
+
+        // ✅ Step 4: Find or Create Locations for Document Locations (but do NOT modify DocumentLocation creation)
+        if (document_locations && document_locations.length > 0) {
+          await Promise.all(
+            document_locations.map(async (docLocation) => {
+              await Location.findOrCreate({
+                where: {
+                  locat_address: docLocation.address,
+                  locat_city: docLocation.city,
+                  locat_state: docLocation.state,
+                  locat_zip: docLocation.zip
+                },
+                defaults: {
+                  locat_name: docLocation.name,
+                  locat_contact: docLocation.contact || "Unknown"
+                },
+                transaction: t
+              });
+            })
+          );
+        }
+
+        // ✅ Step 5: Create Order after everything is processed
         const order = await Order.create({
           ...orderData,
           order_code: orderCode,
@@ -200,18 +244,17 @@ const orderController = {
           updated_by: req.user.id,
           status: "Active",
 
-          // Embed full court details
+          // Embed court details
           court_name: court_name,
           court_address: court_address,
           court_city: court_city,
           court_state: court_state,
           court_zip: court_zip,
-          court_type: court_type || "General",
           court_branchid: court_branchid || null,
           court_courtTypeId: court_courtTypeId || null
         }, { transaction: t });
 
-        // ✅ Step 4: Create Participants if provided
+        // ✅ Step 6: Create Participants
         if (participants && participants.length > 0) {
           await Promise.all(
             participants.map(participant =>
@@ -220,7 +263,7 @@ const orderController = {
           );
         }
 
-        // ✅ Step 5: Create Document Locations if provided
+        // ✅ Step 7: Create Document Locations
         if (document_locations && document_locations.length > 0) {
           await Promise.all(
             document_locations.map(docLocation =>
@@ -232,7 +275,7 @@ const orderController = {
         return order;
       });
 
-      // Fetch the complete order with associations
+      // Fetch complete order details
       const completeOrder = await Order.findByPk(result.id, {
         include: [
           { model: Participant },

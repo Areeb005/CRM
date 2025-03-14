@@ -109,23 +109,23 @@ const Order = sequelize.define(
     // Court Details
     court_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     court_address: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     court_city: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     court_state: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     court_zip: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
 
     // Record Details
