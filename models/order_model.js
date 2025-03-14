@@ -227,9 +227,6 @@ const Order = sequelize.define(
     paranoid: true,
     indexes: [
       {
-        fields: ["case_number"],
-      },
-      {
         fields: ["file_number"],
       },
       {
