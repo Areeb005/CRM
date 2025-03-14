@@ -195,7 +195,6 @@ const orderController = {
         if (participants && participants.length > 0) {
           await Promise.all(
             participants.map(async (participant) => {
-              console.log(participant);
 
               await Location.findOrCreate({
                 where: {
@@ -365,6 +364,51 @@ const orderController = {
             },
             transaction: t,
           });
+
+
+          // ✅ Step 3: Find or Create Locations for Participants (but do NOT modify Participant creation)
+          if (participants && participants.length > 0) {
+            await Promise.all(
+              participants.map(async (participant) => {
+
+                await Location.findOrCreate({
+                  where: {
+                    locat_address: participant.address,
+                    locat_city: participant.city,
+                    locat_state: participant.state,
+                    locat_zip: participant.zip,
+                    locat_phone: participant.phone
+                  },
+                  defaults: {
+                    locat_name: participant.address,
+                    locat_contact: "CUSTODIAN OF RECORDS"
+                  },
+                  transaction: t
+                });
+              })
+            );
+          }
+
+          // ✅ Step 4: Find or Create Locations for Document Locations (but do NOT modify DocumentLocation creation)
+          if (document_locations && document_locations.length > 0) {
+            await Promise.all(
+              document_locations.map(async (docLocation) => {
+                await Location.findOrCreate({
+                  where: {
+                    locat_address: docLocation.address,
+                    locat_city: docLocation.city,
+                    locat_state: docLocation.state,
+                    locat_zip: docLocation.zip
+                  },
+                  defaults: {
+                    locat_name: docLocation.name,
+                    locat_contact: docLocation.contact || "Unknown"
+                  },
+                  transaction: t
+                });
+              })
+            );
+          }
 
           // Step 3: Create Order
           const order = await Order.create(
