@@ -304,12 +304,10 @@ const orderController = {
 
   create_bulk_orders: async (req, res) => {
     try {
-      // Validate input: Ensure `orders` is an array
       if (!Array.isArray(req.body.orders) || req.body.orders.length === 0) {
         return res.status(400).json({ error: "Invalid request. 'orders' must be a non-empty array." });
       }
 
-      // Start a transaction for bulk order creation
       const results = await sequelize.transaction(async (t) => {
         const createdOrders = [];
 
@@ -317,7 +315,20 @@ const orderController = {
           const { error, value } = bulkOrderSchema.validate(orderData);
           if (error) throw new Error(error.details[0].message);
 
-          const { participants, document_locations, order_by, ...orderDetails } = value;
+          const {
+            participants,
+            document_locations,
+            court_name,
+            court_address,
+            court_city,
+            court_state,
+            court_zip,
+            court_branchid,
+            court_courtTypeId,
+            order_by,
+            ...orderDetails
+          } = value;
+
 
           // Find user by username (order_by)
           const orderByUser = await User.findOne({ where: { username: order_by } });
@@ -330,17 +341,52 @@ const orderController = {
           const randomString = crypto.randomBytes(3).toString("hex");
           const orderCode = `ORD-${timestamp}-${randomString}`;
 
-          // Create the order
-          const order = await Order.create({
-            ...orderDetails,
-            order_by: orderByUser.id,
-            order_code: orderCode,
-            created_by: req.user.id,
-            updated_by: req.user.id,
-            status: "Active",
-          }, { transaction: t });
+          // Step 1: Find or Create Court Location
+          let [courtLocation] = await Location.findOrCreate({
+            where: {
+              locat_name: court_name,
+              locat_address: court_address,
+              locat_city: court_city,
+              locat_state: court_state,
+              locat_zip: court_zip,
+            },
+            defaults: { locat_contact: "CUSTODIAN OF RECORDS" },
+            transaction: t,
+          });
 
-          // Create participants if provided
+          // Step 2: Find or Create Court
+          let [court] = await Court.findOrCreate({
+            where: { locatid: courtLocation.locatid },
+            defaults: {
+              locatid: courtLocation.locatid,
+              court_type: null,
+              branchid: court_branchid || null,
+              CourtTypeId: court_courtTypeId || null,
+            },
+            transaction: t,
+          });
+
+          // Step 3: Create Order
+          const order = await Order.create(
+            {
+              ...orderDetails,
+              order_by: orderByUser.id,
+              order_code: orderCode,
+              created_by: req.user.id,
+              updated_by: req.user.id,
+              status: "Active",
+              court_name,
+              court_address,
+              court_city,
+              court_state,
+              court_zip,
+              court_branchid: court_branchid || null,
+              court_courtTypeId: court_courtTypeId || null,
+            },
+            { transaction: t }
+          );
+
+          // Step 4: Create Participants
           if (participants && participants.length > 0) {
             await Promise.all(
               participants.map(participant =>
@@ -349,7 +395,7 @@ const orderController = {
             );
           }
 
-          // Create document locations if provided
+          // Step 5: Create Document Locations
           if (document_locations && document_locations.length > 0) {
             await Promise.all(
               document_locations.map(docLocation =>
@@ -357,8 +403,6 @@ const orderController = {
               )
             );
           }
-
-
 
           createdOrders.push(order);
         }
@@ -379,12 +423,11 @@ const orderController = {
       });
 
       for (const order of results) {
-        // Log activity
         await ActivityLog.create({
           order_id: order.id,
           action_type: "order_created",
           description: req.user.role === "admin"
-            ? `Order {${order.order_code}} created by user {${req.user.username}} on behalf of another user.`
+            ? `Order {${order.order_code}} created by user {${req.user.username}}.`
             : `Order {${order.order_code}} created by user {${req.user.username}}.`,
         });
       }
