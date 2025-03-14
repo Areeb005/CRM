@@ -205,7 +205,7 @@ const orderController = {
                   locat_phone: participant.phone
                 },
                 defaults: {
-                  locat_name: participant.address,
+                  locat_name: participant.participant,
                   locat_contact: "CUSTODIAN OF RECORDS"
                 },
                 transaction: t
@@ -380,7 +380,7 @@ const orderController = {
                     locat_phone: participant.phone
                   },
                   defaults: {
-                    locat_name: participant.address,
+                    locat_name: participant.participant,
                     locat_contact: "CUSTODIAN OF RECORDS"
                   },
                   transaction: t
