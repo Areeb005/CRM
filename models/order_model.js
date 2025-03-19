@@ -101,6 +101,10 @@ const Order = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    claim_number: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     case_number: {
       type: DataTypes.STRING,
       allowNull: false,

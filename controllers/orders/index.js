@@ -84,6 +84,7 @@ const orderSchema = Joi.object({
   case_name: Joi.string().required(),
   file_number: Joi.string().required(),
   case_number: Joi.string().required(),
+  claim_number: Joi.string().optional(),
   status: Joi.string().valid(
     "Active",
     "Completed",
@@ -116,6 +117,7 @@ const bulkOrderSchema = Joi.object({
   case_name: Joi.string().required(),
   file_number: Joi.string().required(),
   case_number: Joi.string().required(),
+  claim_number: Joi.string().optional(),
   status: Joi.string().valid(
     "Active",
     "Completed",
@@ -583,55 +585,89 @@ const orderController = {
       const { error, value } = orderSchema.validate(req.body);
       if (error) return res.status(400).json({ error: error.details[0].message });
 
-      const { participants, document_locations, ...orderData } = value;
+      const {
+        participants,
+        document_locations,
+        court_name,
+        court_address,
+        court_city,
+        court_state,
+        court_zip,
+        court_branchid,
+        court_courtTypeId,
+        ...orderData
+      } = value;
 
       const result = await sequelize.transaction(async (t) => {
-        // Update order
-        const [updated] = await Order.update(orderData, {
-          where: { id: req.params.id },
-          transaction: t
+        // Find existing order
+        const order = await Order.findByPk(req.params.id, { transaction: t });
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+
+        // Update court location
+        let [courtLocation] = await Location.findOrCreate({
+          where: {
+            locat_name: court_name,
+            locat_address: court_address,
+            locat_city: court_city,
+            locat_state: court_state,
+            locat_zip: court_zip,
+          },
+          defaults: { locat_contact: "CUSTODIAN OF RECORDS" },
+          transaction: t,
         });
+
+        // Update court
+        let [court] = await Court.findOrCreate({
+          where: { locatid: courtLocation.locatid },
+          defaults: {
+            locatid: courtLocation.locatid,
+            court_type: null,
+            branchid: court_branchid || null,
+            CourtTypeId: court_courtTypeId || null,
+          },
+          transaction: t,
+        });
+
+        // Update order
+        const [updated] = await Order.update(
+          {
+            ...orderData,
+            updated_by: req.user.id,
+            court_name,
+            court_address,
+            court_city,
+            court_state,
+            court_zip,
+            court_branchid: court_branchid || null,
+            court_courtTypeId: court_courtTypeId || null,
+          },
+          { where: { id: req.params.id }, transaction: t }
+        );
 
         if (!updated) return res.status(404).json({ error: 'Order not found' });
 
         // Update participants
         if (participants) {
-          await Participant.destroy({
-            where: { order_id: req.params.id },
-            transaction: t
-          });
-
+          await Participant.destroy({ where: { order_id: req.params.id }, transaction: t });
           await Promise.all(
             participants.map(participant =>
-              Participant.create({
-                ...participant,
-                order_id: req.params.id
-              }, { transaction: t })
+              Participant.create({ ...participant, order_id: req.params.id }, { transaction: t })
             )
           );
         }
 
         // Update document locations
         if (document_locations) {
-          await DocumentLocation.destroy({
-            where: { order_id: req.params.id },
-            transaction: t
-          });
-
+          await DocumentLocation.destroy({ where: { order_id: req.params.id }, transaction: t });
           await Promise.all(
             document_locations.map(docLocation =>
-              DocumentLocation.create({
-                ...docLocation,
-                order_id: req.params.id
-              }, { transaction: t })
+              DocumentLocation.create({ ...docLocation, order_id: req.params.id, status: "Updated" }, { transaction: t })
             )
           );
         }
 
         return true;
       });
-
-
 
       const updatedOrder = await Order.findByPk(req.params.id, {
         include: [
@@ -640,9 +676,8 @@ const orderController = {
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
           { model: User, as: "updatedByUser", attributes: userAttributes },
-        ]
+        ],
       });
-
 
       if (value.status === 'Cancelled') {
         await ActivityLog.create({
@@ -650,15 +685,13 @@ const orderController = {
           action_type: 'order_cancelled',
           description: `Order {${updatedOrder.order_code}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
         });
-      }
-      else if (value.status === 'In Progress') {
+      } else if (value.status === 'In Progress') {
         await ActivityLog.create({
           order_id: updatedOrder.id,
           action_type: 'order_started',
           description: `Order {${updatedOrder.order_code}} has been started by user {${updatedOrder?.updatedByUser?.username}}.`,
         });
-      }
-      else if (value.status === 'Completed') {
+      } else if (value.status === 'Completed') {
         await ActivityLog.create({
           order_id: updatedOrder.id,
           action_type: 'order_completed',
