@@ -1,0 +1,53 @@
+//
+// Custom
+//
+
+@use 'sass:map';
+
+.scroll-margin {
+	scroll-margin-top: map.get($header, height) + map.get($subheader, height) +
+		map.get($page, padding-y);
+}
+
+.sticky-top-size {
+	top: map.get($header, height) + map.get($subheader, height) + map.get($page, padding-y);
+}
+
+.border-transparent {
+	--#{$prefix}border-opacity: 0;
+}
+.button-gradient{
+	background: linear-gradient(90deg, #1946B9 0%, #012FA4 100%);
+	color: white;
+}
+.button-gradient:hover{
+	color: white;
+}
+.background-gradient{
+	background: linear-gradient(185.67deg, #1D9ADD 2.44%, #1946B9 97.56%);
+}
+.sidebar-gradient{
+	background: linear-gradient(185.67deg, #1D9ADD 2.44%, #1946B9 97.56%);
+}
+.aside .navigation-link.active{
+	box-shadow: 0px 2px 4px 0px #00000040;
+   background-color: #FFFFFF;
+   color: #1946B9;
+   border-radius: 5px;
+   outline: none;
+}
+.aside .navigation-link:hover{
+	background-color: #FFFFFF;
+	color: #1946B9;
+   border-radius: 5px;
+   outline: none;
+}
+.user:hover{
+	background: unset;
+}
+.header{
+	display: none;
+}
+.header + .content .subheader {
+top: 1rem;
+}
