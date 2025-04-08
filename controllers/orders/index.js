@@ -1,145 +1,128 @@
 const Joi = require('joi');
-const { Order, Participant, DocumentLocation, User, ActivityLog, Court, Location } = require('../../models');
+const { User, ActivityLog, Court, Location, TblOrder, tblOrderCaseParties, TblOrderDocLocation } = require('../../models');
 const sequelize = require('../../config/dbConfig');
 const crypto = require('crypto');
+const { DateTime } = require('luxon');
+const { Sequelize } = require('sequelize');
 
 let userAttributes = [
-  "id",
-  "username",
-  "full_name",
-  "profile_picture",
-  "email",
-  "firm_name",
-  "phone",
-  "address",
-  "state",
-  "zip",
-  "app_acc_no",
-  "city"
-]
+  "UserID",
+  "UserName",
+  "FullName",
+  "Email",
+  "FirmName",
+  "Phone",
+  "Address",
+  "City",
+  "State",
+  "Zip",
+  "AppAcctNo"
+];
 
 
 
 
 // Validation schemas
 const participantSchema = Joi.object({
-  type: Joi.string().optional(),
-  participant: Joi.string().optional(),
-  represents: Joi.string().allow('').optional(),
-  phone: Joi.string().allow('').optional(),
-  address: Joi.string().allow('').optional(),
-  city: Joi.string().allow('').optional(),
-  state: Joi.string().allow('').optional(),
-  zip: Joi.string().allow('').optional(),
-  claim: Joi.string().allow('').optional(),
-  adjuster: Joi.string().allow('').optional(),
-  attorney: Joi.string().allow('').optional(),
-  note: Joi.string().allow('').optional()
+  PartyType: Joi.string().optional(),
+  PartyName: Joi.string().optional(),
+  RepresentID: Joi.number().integer().allow(null).optional(),
+  PartyPhone: Joi.string().allow('').optional(),
+  PartyAddress: Joi.string().allow('').optional(),
+  PartyCity: Joi.string().allow('').optional(),
+  PartyState: Joi.string().allow('').optional(),
+  PartyZip: Joi.string().allow('').optional(),
+  InsuranceClaim: Joi.string().allow('').optional(),
+  InsuranceAdjuster: Joi.string().allow('').optional(),
+  OpposingAttorney: Joi.string().allow('').optional(),
+  Note: Joi.string().allow('').optional()
 });
 
 const documentLocationSchema = Joi.object({
-  name: Joi.string().required(),
-  address: Joi.string().required(),
-  city: Joi.string().required(),
-  state: Joi.string().required(),
-  zip: Joi.string().required(),
-  process_type: Joi.string().required(),
-  record_type: Joi.string().required(),
-  action: Joi.string().required(),
-  review_request: Joi.boolean().default(false),
-  files: Joi.array().items(Joi.string()).default([]),
-  note: Joi.string().allow('').optional()
+  LocationName: Joi.string().required(),
+  LocationAddress: Joi.string().required(),
+  LocationCity: Joi.string().required(),
+  LocationState: Joi.string().required(),
+  LocationZip: Joi.string().required(),
+  ProcessType: Joi.number().integer().required(),
+  RecordType: Joi.number().integer().required(),
+  Action: Joi.number().integer().required(),
+  CopyForReview: Joi.boolean().default(false),
+  DocFilePath: Joi.string().allow('').optional(),
+  Note: Joi.string().allow('').optional()
 });
 
-// Record Details Schema
 const recordDetailsSchema = Joi.object({
-  record_type: Joi.string().valid("Person", "Entity").required(),
-  first_name: Joi.string().allow("").optional(),
-  last_name: Joi.string().allow("").optional(),
-  name: Joi.string().allow("").optional(),
-  aka: Joi.string().allow("").optional(),
-  ssn: Joi.string().allow("").optional(),
+  RecordType: Joi.string().valid("Person", "Entity").required(),
+  PFirstName: Joi.string().allow('').optional(),
+  PLastName: Joi.string().allow('').optional(),
+  EName: Joi.string().allow('').optional(),
+  PAKA: Joi.string().allow('').optional(),
+  PSSN: Joi.string().allow('').optional(),
 
-  // Date of Injury Range
   date_of_injury: Joi.object({
     from: Joi.date().allow(null).optional(),
-    to: Joi.date().greater(Joi.ref("from")).allow(null).optional(),
+    to: Joi.date().greater(Joi.ref("from")).allow(null).optional()
   }).optional(),
+
   continuous_trauma: Joi.boolean().default(false),
 
-  record_address: Joi.string().allow("").optional(),
-  record_city: Joi.string().allow("").optional(),
-  record_state: Joi.string().allow("").optional(),
-  record_zip: Joi.string().allow("").optional(),
+  PAddress: Joi.string().allow('').optional(),
+  PCity: Joi.string().allow('').optional(),
+  PState: Joi.string().allow('').optional(),
+  PZip: Joi.string().allow('').optional()
 });
 
-
-
 const orderSchema = Joi.object({
-  // Order details
-  order_by: Joi.number().integer().required(),
-  urgent: Joi.boolean().default(false),
-  needed_by: Joi.date().allow(null).optional(),
-  case_type: Joi.string().required(),
-  case_name: Joi.string().required(),
-  file_number: Joi.string().required(),
-  case_number: Joi.string().required(),
-  claim_number: Joi.string().optional(),
-  status: Joi.string().valid(
-    "Active",
-    "Completed",
-    "Cancelled",
-  ).default('Active'),
+  UserID: Joi.number().integer().required(),
+  IsRush: Joi.boolean().default(false),
+  NeededBy: Joi.date().allow(null).optional(),
+  CaseTypeID: Joi.number().integer().required(),
+  CaseName: Joi.string().required(),
+  FileNumber: Joi.string().required(),
+  CaseNumber: Joi.string().required(),
+  BillTo: Joi.string().required(),
+  RequestStatus: Joi.string().valid("Active", "Completed", "Cancelled").default("Active"),
 
-  // Court details
-  court_name: Joi.string().optional(),
-  court_address: Joi.string().optional(),
-  court_city: Joi.string().optional(),
-  court_state: Joi.string().optional(),
-  court_zip: Joi.string().optional(),
+  CourtName: Joi.string().optional(),
+  CourtAddress: Joi.string().optional(),
+  CourtCity: Joi.string().optional(),
+  CourtState: Joi.string().optional(),
+  CourtZip: Joi.string().optional(),
+  CourtTypeId: Joi.number().integer().allow(null).optional(),
+  BranchID: Joi.number().integer().allow(null).optional(),
 
-  // Record details
   record_details: recordDetailsSchema.required(),
-
-  // Billing and metadata
-  bill_to: Joi.string().required(),
-  // Related records
   participants: Joi.array().items(participantSchema),
   document_locations: Joi.array().items(documentLocationSchema)
 });
 
 const bulkOrderSchema = Joi.object({
-  // Order details
-  order_by: Joi.string().required(),
-  urgent: Joi.boolean().default(false),
-  needed_by: Joi.date().allow(null).optional(),
-  case_type: Joi.string().required(),
-  case_name: Joi.string().required(),
-  file_number: Joi.string().required(),
-  case_number: Joi.string().required(),
-  claim_number: Joi.string().optional(),
-  status: Joi.string().valid(
-    "Active",
-    "Completed",
-    "Cancelled",
-  ).default('Active'),
+  UserID: Joi.number().integer().required(),
+  IsRush: Joi.boolean().default(false),
+  NeededBy: Joi.date().allow(null).optional(),
+  CaseTypeID: Joi.number().integer().required(),
+  CaseName: Joi.string().required(),
+  FileNumber: Joi.string().required(),
+  CaseNumber: Joi.string().required(),
+  BillTo: Joi.string().required(),
+  RequestStatus: Joi.string().valid("Active", "Completed", "Cancelled").default("Active"),
 
-  // Court details
-  court_name: Joi.string().optional(),
-  court_address: Joi.string().optional(),
-  court_city: Joi.string().optional(),
-  court_state: Joi.string().optional(),
-  court_zip: Joi.string().optional(),
+  CourtName: Joi.string().optional(),
+  CourtAddress: Joi.string().optional(),
+  CourtCity: Joi.string().optional(),
+  CourtState: Joi.string().optional(),
+  CourtZip: Joi.string().optional(),
+  CourtTypeId: Joi.number().integer().allow(null).optional(),
+  BranchID: Joi.number().integer().allow(null).optional(),
 
-  // Record details
   record_details: recordDetailsSchema.required(),
-
-  // Billing and metadata
-  bill_to: Joi.string().required(),
-  // Related records
   participants: Joi.array().items(participantSchema),
   document_locations: Joi.array().items(documentLocationSchema)
 });
+
+
+// CONTROLLER
 
 const orderController = {
   create: async (req, res) => {
@@ -147,159 +130,291 @@ const orderController = {
       const { error, value } = orderSchema.validate(req.body);
       if (error) return res.status(400).json({ error: error.details[0].message });
 
-
       const {
         participants,
         document_locations,
-        court_name,
-        court_address,
-        court_city,
-        court_state,
-        court_zip,
-        court_branchid,
-        court_courtTypeId,
+        CourtName,
+        CourtAddress,
+        CourtCity,
+        CourtState,
+        CourtZip,
+        branchid,
+        CourtTypeId,
+        record_details,
         ...orderData
       } = value;
 
-      // Generate unique order code
       const timestamp = Date.now();
       const randomString = crypto.randomBytes(3).toString("hex");
-      const orderCode = `ORD-${timestamp}-${randomString}`;
+      const OrderCode = `ORD-${timestamp}-${randomString}`;
+
+      const [existingCourtLoc] = await sequelize.query(
+        `SELECT TOP 1 * FROM dbo.location WHERE locat_name = :locat_name AND locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
+        {
+          replacements: {
+            locat_name: CourtName,
+            locat_address: CourtAddress,
+            locat_city: CourtCity,
+            locat_state: CourtState,
+            locat_zip: CourtZip
+          },
+          type: sequelize.QueryTypes.SELECT
+        }
+      );
+
+      if (!existingCourtLoc) {
+        await sequelize.query(
+          `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip)`,
+          {
+            replacements: {
+              locat_name: CourtName,
+              locat_contact: "CUSTODIAN OF RECORDS",
+              locat_address: CourtAddress,
+              locat_city: CourtCity,
+              locat_state: CourtState,
+              locat_zip: CourtZip
+            },
+            type: sequelize.QueryTypes.INSERT
+          }
+        );
+      }
+
+      const [courtLocation] = await sequelize.query(
+        `SELECT TOP 1 * FROM dbo.location WHERE locat_name = :locat_name AND locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
+        {
+          replacements: {
+            locat_name: CourtName,
+            locat_address: CourtAddress,
+            locat_city: CourtCity,
+            locat_state: CourtState,
+            locat_zip: CourtZip
+          },
+          type: sequelize.QueryTypes.SELECT
+        }
+      );
+
+      const [court] = await Court.findOrCreate({
+        where: { locatid: courtLocation?.locatid },
+        defaults: {
+          locatid: courtLocation?.locatid,
+          court_type: null,
+          branchid: branchid || null,
+          CourtTypeId: CourtTypeId || null
+        }
+      });
+
+      if (participants?.length) {
+        await Promise.all(
+          participants.map(async (p) => {
+            const [existingLoc] = await sequelize.query(
+              `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip AND locat_phone = :locat_phone`,
+              {
+                replacements: {
+                  locat_address: p.PartyAddress,
+                  locat_city: p.PartyCity,
+                  locat_state: p.PartyState,
+                  locat_zip: p.PartyZip,
+                  locat_phone: p.PartyPhone
+                },
+                type: sequelize.QueryTypes.SELECT
+              }
+            );
+
+            if (!existingLoc) {
+              await sequelize.query(
+                `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip, locat_phone) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip, :locat_phone)`,
+                {
+                  replacements: {
+                    locat_name: p.PartyName,
+                    locat_contact: "CUSTODIAN OF RECORDS",
+                    locat_address: p.PartyAddress,
+                    locat_city: p.PartyCity,
+                    locat_state: p.PartyState,
+                    locat_zip: p.PartyZip,
+                    locat_phone: p.PartyPhone
+                  },
+                  type: sequelize.QueryTypes.INSERT
+                }
+              );
+            }
+          })
+        );
+      }
+
+      const documentLocationData = [];
+
+      if (document_locations?.length) {
+        await Promise.all(
+          document_locations.map(async (d) => {
+            let locationId;
+            const [existingDocLoc] = await sequelize.query(
+              `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
+              {
+                replacements: {
+                  locat_address: d.LocationAddress,
+                  locat_city: d.LocationCity,
+                  locat_state: d.LocationState,
+                  locat_zip: d.LocationZip
+                },
+                type: sequelize.QueryTypes.SELECT
+              }
+            );
+
+            if (!existingDocLoc) {
+              const [inserted] = await sequelize.query(
+                `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip) OUTPUT inserted.locatid VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip)`,
+                {
+                  replacements: {
+                    locat_name: d.LocationName,
+                    locat_contact: d.contact || "Unknown",
+                    locat_address: d.LocationAddress,
+                    locat_city: d.LocationCity,
+                    locat_state: d.LocationState,
+                    locat_zip: d.LocationZip
+                  },
+                  type: sequelize.QueryTypes.INSERT
+                }
+              );
+              locationId = inserted.locatid;
+            } else {
+              locationId = existingDocLoc.locatid;
+            }
+
+            documentLocationData.push({
+              ...d,
+              LocationID: locationId,
+              Uploaded: false,
+              Downloaded: false
+            });
+          })
+        );
+      }
 
       const result = await sequelize.transaction(async (t) => {
-        // ✅ Step 1: Find or Create Court Location
+        let parsed;
+        const dateInput = record_details?.date_of_injury?.from;
 
-        let [courtLocation] = await Location.findOrCreate({
-          where: {
-            locat_name: court_name,
-            locat_address: court_address,
-            locat_city: court_city,
-            locat_state: court_state,
-            locat_zip: court_zip
-          },
-          defaults: { locat_contact: "CUSTODIAN OF RECORDS" },
-          transaction: t
-        });
-
-        // ✅ Step 2: Find or Create Court using found/created Location
-        let [court] = await Court.findOrCreate({
-          where: { locatid: courtLocation.locatid },
-          defaults: {
-            locatid: courtLocation.locatid,
-            court_type: null,
-            branchid: court_branchid || null,
-            CourtTypeId: court_courtTypeId || null
-          },
-          transaction: t
-        });
-
-        // ✅ Step 3: Find or Create Locations for Participants (but do NOT modify Participant creation)
-        if (participants && participants.length > 0) {
-          await Promise.all(
-            participants.map(async (participant) => {
-
-              await Location.findOrCreate({
-                where: {
-                  locat_address: participant.address,
-                  locat_city: participant.city,
-                  locat_state: participant.state,
-                  locat_zip: participant.zip,
-                  locat_phone: participant.phone
-                },
-                defaults: {
-                  locat_name: participant.participant,
-                  locat_contact: "CUSTODIAN OF RECORDS"
-                },
-                transaction: t
-              });
-            })
-          );
+        if (dateInput) {
+          parsed = new Date(dateInput);
+          if (isNaN(parsed)) parsed = new Date();
+        } else {
+          parsed = new Date();
         }
 
-        // ✅ Step 4: Find or Create Locations for Document Locations (but do NOT modify DocumentLocation creation)
-        if (document_locations && document_locations.length > 0) {
-          await Promise.all(
-            document_locations.map(async (docLocation) => {
-              await Location.findOrCreate({
-                where: {
-                  locat_address: docLocation.address,
-                  locat_city: docLocation.city,
-                  locat_state: docLocation.state,
-                  locat_zip: docLocation.zip
-                },
-                defaults: {
-                  locat_name: docLocation.name,
-                  locat_contact: docLocation.contact || "Unknown"
-                },
-                transaction: t
-              });
-            })
-          );
+        const formattedDate = parsed.toISOString().slice(0, 19).replace('T', ' ');
+
+        const order = await TblOrder.create(
+          {
+            ...orderData,
+            OrderCode,
+            CreatedUserID: req.user.id,
+            RequestStatus: "Active",
+            CourtName,
+            CourtAddress,
+            CourtCity,
+            CourtState,
+            CourtZip,
+            DateOfIncident: Sequelize.literal(`'${formattedDate}'`),
+            CourtID: court?.court_id
+          },
+          {
+            fields: [...Object.keys(orderData).filter(k => k !== 'record_details'),
+              'OrderCode', 'CourtName', 'CourtAddress', 'CourtCity', 'CourtState', 'CourtZip', 'CourtID', 'DateOfIncident', 'CreatedUserID', 'RequestStatus'
+            ],
+            transaction: t
+          }
+        );
+
+        if (record_details) {
+          await order.update({ record_details }, { transaction: t });
         }
 
-        // ✅ Step 5: Create Order after everything is processed
-        const order = await Order.create({
-          ...orderData,
-          order_code: orderCode,
-          created_by: req.user.id,
-          updated_by: req.user.id,
-          status: "Active",
-
-          // Embed court details
-          court_name: court_name,
-          court_address: court_address,
-          court_city: court_city,
-          court_state: court_state,
-          court_zip: court_zip,
-          court_branchid: court_branchid || null,
-          court_courtTypeId: court_courtTypeId || null
-        }, { transaction: t });
-
-        // ✅ Step 6: Create Participants
-        if (participants && participants.length > 0) {
+        if (participants?.length) {
           await Promise.all(
-            participants.map(participant =>
-              Participant.create({ ...participant, order_id: order.id }, { transaction: t })
+            participants.map((p) =>
+              tblOrderCaseParties.create(
+                { ...p, OrderID: order.OrderID },
+                { transaction: t }
+              )
             )
           );
         }
 
-        // ✅ Step 7: Create Document Locations
-        if (document_locations && document_locations.length > 0) {
+        if (documentLocationData?.length) {
           await Promise.all(
-            document_locations.map(docLocation =>
-              DocumentLocation.create({ ...docLocation, order_id: order.id, status: "New" }, { transaction: t })
-            )
+            document_locations.map(async (d) => {
+              // Get LocationID properly
+              const [locationRow] = await sequelize.query(
+                `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
+                {
+                  replacements: {
+                    locat_address: d.LocationAddress,
+                    locat_city: d.LocationCity,
+                    locat_state: d.LocationState,
+                    locat_zip: d.LocationZip
+                  },
+                  type: sequelize.QueryTypes.SELECT,
+                  transaction: t
+                }
+              );
+
+              if (!locationRow?.locatid) {
+                throw new Error("❌ Document Location not found or created — locatid is null.");
+              }
+
+              await TblOrderDocLocation.create(
+                {
+                  OrderID: order.OrderID,
+                  LocationID: locationRow.locatid,
+                  LocationName: d.LocationName,
+                  LocationAddress: d.LocationAddress,
+                  LocationCity: d.LocationCity,
+                  LocationState: d.LocationState,
+                  LocationZip: d.LocationZip,
+                  ProcessType: d.ProcessType || null,
+                  RecordType: d.RecordType || null,
+                  Action: d.Action || null,
+                  CopyForReview: d.CopyForReview || false,
+                  Note: d.Note || null,
+                  DocFilePath: d.DocFilePath || null,
+                  Uploaded: false,
+                  Downloaded: false,
+                  DocRequestStatus: "New"
+                },
+                { transaction: t }
+              );
+            })
           );
+
         }
 
         return order;
       });
 
-      // Fetch complete order details
-      const completeOrder = await Order.findByPk(result.id, {
+
+      const completeOrder = await TblOrder.findByPk(result.OrderID, {
         include: [
-          { model: Participant },
-          { model: DocumentLocation },
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
 
-      // Log activity
+
       await ActivityLog.create({
-        order_id: completeOrder?.id,
-        action_type: 'order_created',
-        description: req.user.role === "admin" ?
-          `Order {${completeOrder?.order_code}} created by user {${completeOrder?.createdByUser?.username}} on behalf of {${completeOrder?.orderByUser?.username}}.` :
-          `Order {${completeOrder?.order_code}} created by user {${completeOrder?.createdByUser?.username}}.`,
+        order_id: completeOrder?.OrderID,
+        action_type: "order_created",
+        description:
+          req.user.role === "admin"
+            ? `Order {${completeOrder?.OrderCode}} created by user {${completeOrder?.createdByUser?.UserName}} on behalf of {${completeOrder?.orderByUser?.UserName}}.`
+            : `Order {${completeOrder?.OrderCode}} created by user {${completeOrder?.createdByUser?.UserName}}.`
       });
 
       res.status(201).json(completeOrder);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Server error' });
+      res.status(500).json({ error: "Server error" });
     }
   },
 
@@ -309,9 +424,116 @@ const orderController = {
         return res.status(400).json({ error: "Invalid request. 'orders' must be a non-empty array." });
       }
 
-      const results = await sequelize.transaction(async (t) => {
-        const createdOrders = [];
+      const createdOrders = [];
 
+      // 🟢 STEP 1: Pre-create all required locations outside transaction
+      for (const order of req.body.orders) {
+        const { CourtName, CourtAddress, CourtCity, CourtState, CourtZip, BranchID, CourtTypeId, participants, document_locations } = order;
+
+        const [existingCourtLoc] = await sequelize.query(
+          `SELECT TOP 1 * FROM dbo.location WHERE locat_name = :locat_name AND locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
+          {
+            replacements: {
+              locat_name: CourtName,
+              locat_address: CourtAddress,
+              locat_city: CourtCity,
+              locat_state: CourtState,
+              locat_zip: CourtZip
+            },
+            type: sequelize.QueryTypes.SELECT
+          }
+        );
+
+        if (!existingCourtLoc) {
+          await sequelize.query(
+            `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip)`,
+            {
+              replacements: {
+                locat_name: CourtName,
+                locat_contact: "CUSTODIAN OF RECORDS",
+                locat_address: CourtAddress,
+                locat_city: CourtCity,
+                locat_state: CourtState,
+                locat_zip: CourtZip
+              },
+              type: sequelize.QueryTypes.INSERT
+            }
+          );
+        }
+
+        if (participants?.length) {
+          for (const p of participants) {
+            const [existingLoc] = await sequelize.query(
+              `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip AND locat_phone = :locat_phone`,
+              {
+                replacements: {
+                  locat_address: p.PartyAddress,
+                  locat_city: p.PartyCity,
+                  locat_state: p.PartyState,
+                  locat_zip: p.PartyZip,
+                  locat_phone: p.PartyPhone
+                },
+                type: sequelize.QueryTypes.SELECT
+              }
+            );
+
+            if (!existingLoc) {
+              await sequelize.query(
+                `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip, locat_phone) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip, :locat_phone)`,
+                {
+                  replacements: {
+                    locat_name: p.PartyName,
+                    locat_contact: "CUSTODIAN OF RECORDS",
+                    locat_address: p.PartyAddress,
+                    locat_city: p.PartyCity,
+                    locat_state: p.PartyState,
+                    locat_zip: p.PartyZip,
+                    locat_phone: p.PartyPhone
+                  },
+                  type: sequelize.QueryTypes.INSERT
+                }
+              );
+            }
+          }
+        }
+
+        if (document_locations?.length) {
+          for (const d of document_locations) {
+            const [existingDocLoc] = await sequelize.query(
+              `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
+              {
+                replacements: {
+                  locat_address: d.LocationAddress,
+                  locat_city: d.LocationCity,
+                  locat_state: d.LocationState,
+                  locat_zip: d.LocationZip
+                },
+                type: sequelize.QueryTypes.SELECT
+              }
+            );
+
+            if (!existingDocLoc) {
+              await sequelize.query(
+                `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip)`,
+                {
+                  replacements: {
+                    locat_name: d.LocationName,
+                    locat_contact: d.contact || "Unknown",
+                    locat_address: d.LocationAddress,
+                    locat_city: d.LocationCity,
+                    locat_state: d.LocationState,
+                    locat_zip: d.LocationZip
+                  },
+                  type: sequelize.QueryTypes.INSERT
+                }
+              );
+            }
+          }
+        }
+      }
+
+      // 🟠 STEP 2: Create orders with transaction
+      const results = await sequelize.transaction(async (t) => {
         for (const orderData of req.body.orders) {
           const { error, value } = bulkOrderSchema.validate(orderData);
           if (error) throw new Error(error.details[0].message);
@@ -319,135 +541,107 @@ const orderController = {
           const {
             participants,
             document_locations,
-            court_name,
-            court_address,
-            court_city,
-            court_state,
-            court_zip,
-            court_branchid,
-            court_courtTypeId,
+            CourtName,
+            CourtAddress,
+            CourtCity,
+            CourtState,
+            CourtZip,
+            BranchID,
+            CourtTypeId,
+            record_details,
             order_by,
             ...orderDetails
           } = value;
 
+          const orderByUser = await User.findOne({ where: { UserName: order_by } });
+          if (!orderByUser) throw new Error(`User '${order_by}' not found.`);
 
-          // Find user by username (order_by)
-          const orderByUser = await User.findOne({ where: { username: order_by } });
-          if (!orderByUser) {
-            throw new Error(`User with username '${order_by}' not found.`);
-          }
-
-          // Generate unique order code
           const timestamp = Date.now();
           const randomString = crypto.randomBytes(3).toString("hex");
-          const orderCode = `ORD-${timestamp}-${randomString}`;
+          const OrderCode = `ORD-${timestamp}-${randomString}`;
 
-          // Step 1: Find or Create Court Location
-          let [courtLocation] = await Location.findOrCreate({
+          const courtLocation = await Location.findOne({
             where: {
-              locat_name: court_name,
-              locat_address: court_address,
-              locat_city: court_city,
-              locat_state: court_state,
-              locat_zip: court_zip,
-            },
-            defaults: { locat_contact: "CUSTODIAN OF RECORDS" },
-            transaction: t,
+              locat_name: CourtName,
+              locat_address: CourtAddress,
+              locat_city: CourtCity,
+              locat_state: CourtState,
+              locat_zip: CourtZip
+            }
           });
 
-          // Step 2: Find or Create Court
-          let [court] = await Court.findOrCreate({
+          const [court] = await Court.findOrCreate({
             where: { locatid: courtLocation.locatid },
             defaults: {
               locatid: courtLocation.locatid,
               court_type: null,
-              branchid: court_branchid || null,
-              CourtTypeId: court_courtTypeId || null,
+              branchid: BranchID || null,
+              CourtTypeId: CourtTypeId || null
             },
-            transaction: t,
+            transaction: t
           });
 
+          let parsed = record_details?.date_of_injury?.from ? new Date(record_details.date_of_injury.from) : new Date();
+          if (isNaN(parsed)) parsed = new Date();
+          const formattedDate = parsed.toISOString().slice(0, 19).replace("T", " ");
 
-          // ✅ Step 3: Find or Create Locations for Participants (but do NOT modify Participant creation)
+          const order = await TblOrder.create({
+            ...orderDetails,
+            OrderCode,
+            UserID: orderByUser.UserID,
+            CreatedUserID: req.user.UserID,
+            RequestStatus: "Active",
+            CourtName,
+            CourtAddress,
+            CourtCity,
+            CourtState,
+            CourtZip,
+            DateOfIncident: Sequelize.literal(`'${formattedDate}'`),
+            CourtID: court.court_id
+          }, { transaction: t });
+
+          if (record_details) {
+            await order.update({ record_details }, { transaction: t });
+          }
+
           if (participants && participants.length > 0) {
-            await Promise.all(
-              participants.map(async (participant) => {
-
-                await Location.findOrCreate({
-                  where: {
-                    locat_address: participant.address,
-                    locat_city: participant.city,
-                    locat_state: participant.state,
-                    locat_zip: participant.zip,
-                    locat_phone: participant.phone
-                  },
-                  defaults: {
-                    locat_name: participant.participant,
-                    locat_contact: "CUSTODIAN OF RECORDS"
-                  },
-                  transaction: t
-                });
-              })
-            );
+            await Promise.all(participants.map(p =>
+              tblOrderCaseParties.create({ ...p, OrderID: order.OrderID }, { transaction: t })
+            ));
           }
 
-          // ✅ Step 4: Find or Create Locations for Document Locations (but do NOT modify DocumentLocation creation)
           if (document_locations && document_locations.length > 0) {
-            await Promise.all(
-              document_locations.map(async (docLocation) => {
-                await Location.findOrCreate({
-                  where: {
-                    locat_address: docLocation.address,
-                    locat_city: docLocation.city,
-                    locat_state: docLocation.state,
-                    locat_zip: docLocation.zip
-                  },
-                  defaults: {
-                    locat_name: docLocation.name,
-                    locat_contact: docLocation.contact || "Unknown"
-                  },
-                  transaction: t
-                });
-              })
-            );
-          }
+            await Promise.all(document_locations.map(async d => {
+              const location = await Location.findOne({
+                where: {
+                  locat_address: d.LocationAddress,
+                  locat_city: d.LocationCity,
+                  locat_state: d.LocationState,
+                  locat_zip: d.LocationZip
+                }
+              });
 
-          // Step 3: Create Order
-          const order = await Order.create(
-            {
-              ...orderDetails,
-              order_by: orderByUser.id,
-              order_code: orderCode,
-              created_by: req.user.id,
-              updated_by: req.user.id,
-              status: "Active",
-              court_name,
-              court_address,
-              court_city,
-              court_state,
-              court_zip,
-              court_branchid: court_branchid || null,
-              court_courtTypeId: court_courtTypeId || null,
-            },
-            { transaction: t }
-          );
+              if (!location) throw new Error("❌ Document Location not found");
 
-          // Step 4: Create Participants
-          if (participants && participants.length > 0) {
-            await Promise.all(
-              participants.map(participant =>
-                Participant.create({ ...participant, order_id: order.id }, { transaction: t })
-              )
-            );
-          }
-
-          // Step 5: Create Document Locations
-          if (document_locations && document_locations.length > 0) {
-            await Promise.all(
-              document_locations.map(docLocation =>
-                DocumentLocation.create({ ...docLocation, order_id: order.id, status: "New" }, { transaction: t })
-              )
-            );
+              await TblOrderDocLocation.create({
+                OrderID: order.OrderID,
+                LocationID: location.locatid,
+                LocationName: d.LocationName,
+                LocationAddress: d.LocationAddress,
+                LocationCity: d.LocationCity,
+                LocationState: d.LocationState,
+                LocationZip: d.LocationZip,
+                ProcessType: d.ProcessType || null,
+                RecordType: d.RecordType || null,
+                Action: d.Action || null,
+                CopyForReview: d.CopyForReview || false,
+                Note: d.Note || null,
+                DocFilePath: d.DocFilePath || null,
+                Uploaded: false,
+                Downloaded: false,
+                DocRequestStatus: "New"
+              }, { transaction: t });
+            }));
           }
 
           createdOrders.push(order);
@@ -456,25 +650,23 @@ const orderController = {
         return createdOrders;
       });
 
-      // Fetch full order details
-      const completeOrders = await Order.findAll({
-        where: { id: results.map(order => order.id) },
+      const completeOrders = await TblOrder.findAll({
+        where: { OrderID: results.map(o => o.OrderID) },
         include: [
-          { model: Participant },
-          { model: DocumentLocation },
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
           { model: User, as: "orderByUser", attributes: userAttributes },
-          { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
-        ],
+          { model: User, as: "createdByUser", attributes: userAttributes }
+        ]
       });
 
-      for (const order of results) {
+      for (const order of completeOrders) {
         await ActivityLog.create({
-          order_id: order.id,
+          order_id: order.OrderID,
           action_type: "order_created",
           description: req.user.role === "admin"
-            ? `Order {${order.order_code}} created by user {${req.user.username}}.`
-            : `Order {${order.order_code}} created by user {${req.user.username}}.`,
+            ? `Order {${order.OrderCode}} created by admin {${req.user.username}}.`
+            : `Order {${order.OrderCode}} created by user {${req.user.username}}.`
         });
       }
 
@@ -493,90 +685,95 @@ const orderController = {
 
       const { status, case_type, order_code, needed_by, created_by, order_by } = req.query;
 
-      let whereClause = { deletedAt: null };
+      let whereClause = {}
 
-      // Apply filters dynamically
+      // Restrict to logged-in attorney’s orders
       if (req.user.role === "attorney") {
-        whereClause.order_by = req.user.id;
+        whereClause.UserID = req.user.UserID;
       }
 
-      if (status) whereClause.status = status;
-      if (case_type) whereClause.case_type = case_type;
-      if (order_code) whereClause.order_code = order_code;
-      if (needed_by) whereClause.needed_by = needed_by;
-      if (created_by) whereClause.created_by = created_by;
-      if (order_by) whereClause.order_by = order_by;
+      // Dynamic filters
+      if (status) whereClause.RequestStatus = status;
+      if (case_type) whereClause.CaseTypeID = case_type;
+      if (order_code) whereClause.OrderCode = order_code;
+      if (needed_by) whereClause.NeededBy = needed_by;
+      if (created_by) whereClause.CreatedUserID = created_by;
+      if (order_by) whereClause.UserID = order_by;
 
-      const { count, rows: orders } = await Order.findAndCountAll({
+      const { count, rows } = await TblOrder.findAndCountAll({
         where: whereClause,
         include: [
-          { model: Participant },
-          { model: DocumentLocation },
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
         ],
         limit,
         offset,
-        order: [['createdAt', 'DESC']],
-        distinct: true,
-        paranoid: true,
+        order: [['OrderID', 'DESC']],
+        distinct: true
       });
 
-      // ✅ Parse files field in DocumentLocations
-      const formattedOrders = orders.map(order => ({
-        ...order.toJSON(),
-        DocumentLocations: order.DocumentLocations.map(doc => ({
-          ...doc,
-          files: doc.files ? JSON.parse(doc.files) : [],
-        })),
-      }));
+      const formattedOrders = rows.map(order => {
+        const json = order.toJSON();
+        return {
+          ...json,
+          TblOrderDocLocations: (json.TblOrderDocLocations || []).map(doc => ({
+            ...doc,
+            files: doc.files ? JSON.parse(doc.files) : []
+          }))
+        };
+      });
 
-      res.json({
+      return res.status(200).json({
         totalOrders: count,
         currentPage: page,
         totalPages: Math.ceil(count / limit),
-        orders: formattedOrders,
+        orders: formattedOrders
       });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+      console.error("❌ get_all error:", error);
+      res.status(500).json({ error: "Server error" });
     }
   },
 
-
   get_one: async (req, res) => {
     try {
-
-      const order = await Order.findOne({
-        where: {
-          id: req.params.id,
-          ...(req.user.role === "attorney" ? { order_by: req.user.id } : {}),
-        },
-        include: [
-          { model: Participant },
-          { model: DocumentLocation },
-          { model: User, as: "orderByUser", attributes: userAttributes },
-          { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
-        ]
-      });
-      if (!order) return res.status(404).json({ error: 'Order not found' });
-
-
-      // ✅ Parse files field in DocumentLocations
-      const formattedOrders = {
-        ...order.toJSON(),
-        DocumentLocations: order.toJSON().DocumentLocations.map(doc => ({
-          ...doc,
-          files: doc.files ? JSON.parse(doc.files) : [], // Parse files field
-        })),
+      const whereClause = {
+        OrderID: req.params.id,
       };
 
-      res.json(formattedOrders);
+      // 🔒 Restrict for attorneys to only their own orders
+      if (req.user.role === "attorney") {
+        whereClause.UserID = req.user.UserID;
+      }
+
+      const order = await TblOrder.findOne({
+        where: whereClause,
+        include: [
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
+          { model: User, as: "orderByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes },
+        ]
+      });
+
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      const formatted = {
+        ...order.toJSON(),
+        TblOrderDocLocations: (order.TblOrderDocLocations || []).map(doc => ({
+          ...doc,
+          files: doc.files ? JSON.parse(doc.files) : []
+        }))
+      };
+
+      return res.status(200).json(formatted);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+      console.error("❌ get_one error:", error);
+      return res.status(500).json({ error: "Server error" });
     }
   },
 
@@ -588,234 +785,267 @@ const orderController = {
       const {
         participants,
         document_locations,
-        court_name,
-        court_address,
-        court_city,
-        court_state,
-        court_zip,
-        court_branchid,
-        court_courtTypeId,
+        CourtName,
+        CourtAddress,
+        CourtCity,
+        CourtState,
+        CourtZip,
+        BranchID,
+        CourtTypeId,
         ...orderData
       } = value;
 
       const result = await sequelize.transaction(async (t) => {
-        // Find existing order
-        const order = await Order.findByPk(req.params.id, { transaction: t });
+        // Step 1: Find existing order
+        const order = await TblOrder.findByPk(req.params.id, { transaction: t });
         if (!order) return res.status(404).json({ error: 'Order not found' });
 
-        // Update court location
-        let [courtLocation] = await Location.findOrCreate({
+        // Step 2: Find or Create court location
+        const [courtLocation] = await Location.findOrCreate({
           where: {
-            locat_name: court_name,
-            locat_address: court_address,
-            locat_city: court_city,
-            locat_state: court_state,
-            locat_zip: court_zip,
+            locat_name: CourtName,
+            locat_address: CourtAddress,
+            locat_city: CourtCity,
+            locat_state: CourtState,
+            locat_zip: CourtZip,
           },
           defaults: { locat_contact: "CUSTODIAN OF RECORDS" },
-          transaction: t,
+          transaction: t
         });
 
-        // Update court
-        let [court] = await Court.findOrCreate({
+        // Step 3: Find or Create Court
+        const [court] = await Court.findOrCreate({
           where: { locatid: courtLocation.locatid },
           defaults: {
             locatid: courtLocation.locatid,
             court_type: null,
-            branchid: court_branchid || null,
-            CourtTypeId: court_courtTypeId || null,
+            branchid: BranchID || null,
+            CourtTypeId: CourtTypeId || null,
           },
-          transaction: t,
+          transaction: t
         });
 
-        // Update order
-        const [updated] = await Order.update(
-          {
-            ...orderData,
-            updated_by: req.user.id,
-            court_name,
-            court_address,
-            court_city,
-            court_state,
-            court_zip,
-            court_branchid: court_branchid || null,
-            court_courtTypeId: court_courtTypeId || null,
-          },
-          { where: { id: req.params.id }, transaction: t }
-        );
+        // Step 4: Update TblOrder
+        await order.update({
+          ...orderData,
+          UpdatedBy: req.user.UserID,
+          CourtName,
+          CourtAddress,
+          CourtCity,
+          CourtState,
+          CourtZip,
+          BranchID: BranchID || null,
+          CourtTypeId: CourtTypeId || null,
+          CourtID: court?.court_id
+        }, { transaction: t });
 
-        if (!updated) return res.status(404).json({ error: 'Order not found' });
-
-        // Update participants
+        // Step 5: Update Participants
         if (participants) {
-          await Participant.destroy({ where: { order_id: req.params.id }, transaction: t });
+          await tblOrderCaseParties.destroy({ where: { OrderID: req.params.id }, transaction: t });
           await Promise.all(
-            participants.map(participant =>
-              Participant.create({ ...participant, order_id: req.params.id }, { transaction: t })
+            participants.map(p =>
+              tblOrderCaseParties.create({ ...p, OrderID: req.params.id }, { transaction: t })
             )
           );
         }
 
-        // Update document locations
-        if (document_locations) {
-          await DocumentLocation.destroy({ where: { order_id: req.params.id }, transaction: t });
+        // Step 6: Update Document Locations
+        if (document_locations && document_locations.length) {
+          await TblOrderDocLocation.destroy({ where: { OrderID: req.params.id }, transaction: t });
+
           await Promise.all(
-            document_locations.map(docLocation =>
-              DocumentLocation.create({ ...docLocation, order_id: req.params.id, status: "Updated" }, { transaction: t })
-            )
+            document_locations.map(async (d) => {
+              const [location] = await Location.findOrCreate({
+                where: {
+                  locat_address: d.LocationAddress,
+                  locat_city: d.LocationCity,
+                  locat_state: d.LocationState,
+                  locat_zip: d.LocationZip,
+                },
+                defaults: {
+                  locat_name: d.LocationName,
+                  locat_contact: d.contact || "Unknown",
+                },
+                transaction: t
+              });
+
+              await TblOrderDocLocation.create({
+                OrderID: req.params.id,
+                LocationID: location.locatid,
+                LocationName: d.LocationName,
+                LocationAddress: d.LocationAddress,
+                LocationCity: d.LocationCity,
+                LocationState: d.LocationState,
+                LocationZip: d.LocationZip,
+                ProcessType: d.ProcessType || null,
+                RecordType: d.RecordType || null,
+                Action: d.Action || null,
+                CopyForReview: d.CopyForReview || false,
+                Note: d.Note || null,
+                DocFilePath: d.DocFilePath || null,
+                Uploaded: false,
+                Downloaded: false,
+                DocRequestStatus: "Updated"
+              }, { transaction: t });
+            })
           );
         }
 
-        return true;
+        return order;
       });
 
-      const updatedOrder = await Order.findByPk(req.params.id, {
+      // Step 7: Fetch updated order with associations
+      const updatedOrder = await TblOrder.findByPk(req.params.id, {
         include: [
-          { model: Participant },
-          { model: DocumentLocation },
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
-        ],
+        ]
       });
 
-      if (value.status === 'Cancelled') {
+      // Step 8: Log activity
+      if (value.RequestStatus === 'Cancelled') {
         await ActivityLog.create({
-          order_id: updatedOrder.id,
+          order_id: updatedOrder.OrderID,
           action_type: 'order_cancelled',
-          description: `Order {${updatedOrder.order_code}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
+          description: `Order {${updatedOrder.OrderCode}} has been cancelled by user {${updatedOrder?.updatedByUser?.UserName}}.`,
         });
-      } else if (value.status === 'In Progress') {
+      } else if (value.RequestStatus === 'In Progress') {
         await ActivityLog.create({
-          order_id: updatedOrder.id,
+          order_id: updatedOrder.OrderID,
           action_type: 'order_started',
-          description: `Order {${updatedOrder.order_code}} has been started by user {${updatedOrder?.updatedByUser?.username}}.`,
+          description: `Order {${updatedOrder.OrderCode}} has been started by user {${updatedOrder?.updatedByUser?.UserName}}.`,
         });
-      } else if (value.status === 'Completed') {
+      } else if (value.RequestStatus === 'Completed') {
         await ActivityLog.create({
-          order_id: updatedOrder.id,
+          order_id: updatedOrder.OrderID,
           action_type: 'order_completed',
-          description: `Order {${updatedOrder.order_code}} has been completed by user {${updatedOrder?.updatedByUser?.username}}.`,
+          description: `Order {${updatedOrder.OrderCode}} has been completed by user {${updatedOrder?.updatedByUser?.UserName}}.`,
         });
       }
 
       res.json(updatedOrder);
     } catch (error) {
-      console.error(error);
+      console.error("❌ update error:", error);
       res.status(500).json({ error: 'Server error' });
     }
   },
 
+
   delete: async (req, res) => {
     try {
+      const order = await TblOrder.findByPk(req.params.id); // Make sure you're using `TblOrder` here
+      const user = await User.findByPk(req.user.UserID);
 
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
 
-      const order = await Order.findByPk(req.params.id);
-      const user = await User.findByPk(req.user.id);
+      // // ✅ Log delete action
+      // await ActivityLog.create({
+      //   order_id: order.OrderID,
+      //   action_type: "order_cancelled",
+      //   description: `Order {${order.OrderCode}} has been deleted by user {${user?.UserName}}.`,
+      // });
 
-      if (!order) return res.status(404).json({ error: 'Order not found' });
-
-      await ActivityLog.create({
-        order_id: order.id,
-        action_type: 'order_cancelled',
-        description: `Order {${order.order_code}} has been deleted by user {${user?.username}}.`,
+      // ✅ Perform soft delete if paranoid enabled; else hard delete
+      await TblOrder.destroy({
+        where: { OrderID: req.params.id }
       });
 
-      const deleted = await Order.destroy({
-        where: { id: req.params.id }
-      });
-
-
-
-      res.status(200).json({ message: "Order Deleted Successfully" });
+      res.status(200).json({ message: "Order deleted successfully." });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+      console.error("❌ Delete error:", error);
+      res.status(500).json({ error: "Server error" });
     }
   },
 
   cancel: async (req, res) => {
     try {
-
-      const order = await Order.findByPk(req.params.id);
+      const order = await TblOrder.findByPk(req.params.id);
 
       if (!order) return res.status(404).json({ error: 'Order not found' });
 
-      if (order.status === 'Completed') return res.status(400).json({ error: 'Order already Completed' });
-      if (order.status === 'Cancelled') return res.status(400).json({ error: 'Order already Cancelled' });
+      if (order.RequestStatus === 'Completed') {
+        return res.status(400).json({ error: 'Order already completed' });
+      }
 
-      const cancelled = await Order.update(
-        {
-          status: 'Cancelled'
-        },
-        {
-          where: { id: req.params.id }
-        }
+      if (order.RequestStatus === 'Cancelled') {
+        return res.status(400).json({ error: 'Order already cancelled' });
+      }
+
+      // ✅ Update status
+      await TblOrder.update(
+        { RequestStatus: 'Cancelled' },
+        { where: { OrderID: req.params.id } }
       );
 
-      const updatedOrder = await Order.findByPk(req.params.id, {
+      // ✅ Fetch updated order
+      const updatedOrder = await TblOrder.findByPk(req.params.id, {
         include: [
-          { model: Participant },
-          { model: DocumentLocation },
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
 
-
+      // ✅ Log activity
       await ActivityLog.create({
-        order_id: updatedOrder.id,
+        order_id: updatedOrder.OrderID,
         action_type: 'order_cancelled',
-        description: `Order {${updatedOrder.order_code}} has been cancelled by user {${updatedOrder?.updatedByUser?.username}}.`,
+        description: `Order {${updatedOrder.OrderCode}} has been cancelled by user {${req.user.username}}.`,
       });
 
-      res.status(200).send({ message: 'Order cancelled successfully' });
+      return res.status(200).json({ message: 'Order cancelled successfully', data: updatedOrder });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+      console.error("❌ Cancel error:", error);
+      return res.status(500).json({ error: 'Server error' });
     }
   },
+
   complete: async (req, res) => {
     try {
+      const order = await TblOrder.findByPk(req.params.id);
 
-      const order = await Order.findByPk(req.params.id);
+      if (!order) {
+        return res.status(404).json({ error: 'Order not found' });
+      }
 
-      if (!order) return res.status(404).json({ error: 'Order not found' });
+      if (order.RequestStatus === 'Completed') {
+        return res.status(400).json({ error: 'Order already completed' });
+      }
 
-      if (order.status === 'Completed') return res.status(400).json({ error: 'Order already Completed' });
-      if (order.status === 'Cancelled') return res.status(400).json({ error: 'Order already Cancelled' });
+      if (order.RequestStatus === 'Cancelled') {
+        return res.status(400).json({ error: 'Order already cancelled' });
+      }
 
-
-      const Completed = await Order.update(
-        {
-          status: 'Completed'
-        },
-        {
-          where: { id: req.params.id }
-        }
+      // ✅ Mark as Completed
+      await TblOrder.update(
+        { RequestStatus: 'Completed' },
+        { where: { OrderID: req.params.id } }
       );
 
-      const updatedOrder = await Order.findByPk(req.params.id, {
+      const updatedOrder = await TblOrder.findByPk(req.params.id, {
         include: [
-          { model: Participant },
-          { model: DocumentLocation },
+          { model: tblOrderCaseParties, required: false },
+          { model: TblOrderDocLocation, required: false },
           { model: User, as: "orderByUser", attributes: userAttributes },
           { model: User, as: "createdByUser", attributes: userAttributes },
-          { model: User, as: "updatedByUser", attributes: userAttributes },
         ]
       });
 
-
+      // ✅ Log Activity
       await ActivityLog.create({
-        order_id: updatedOrder.id,
+        order_id: updatedOrder.OrderID,
         action_type: 'order_completed',
-        description: `Order {${updatedOrder.order_code}} has been completed by user {${updatedOrder?.updatedByUser?.username}}.`,
+        description: `Order {${updatedOrder.OrderCode}} has been completed by user {${req.user.username}}.`,
       });
 
-      res.status(200).send({ message: 'Order completed successfully' });
+      return res.status(200).json({ message: 'Order marked as completed', data: updatedOrder });
     } catch (error) {
-      console.error(error);
+      console.error("❌ Complete error:", error);
       res.status(500).json({ error: 'Server error' });
     }
   },
@@ -823,11 +1053,11 @@ const orderController = {
   updateDocumentLocationStatus: async (req, res) => {
     try {
       const { id } = req.params;
-      const { status } = req.body; // Assuming is sent from frontend
+      const { status } = req.body;
 
-      const updatedByUser = await User.findByPk(req.user.id);
+      const updatedByUser = await User.findByPk(req.user.UserID);
 
-      // Validate input
+      // 🔒 Validate input
       if (!id) {
         return res.status(400).json({ error: "DocumentLocation ID is required." });
       }
@@ -836,41 +1066,42 @@ const orderController = {
         return res.status(400).json({ error: "Invalid status value." });
       }
 
-      // Find the DocumentLocation by ID
-      const documentLocation = await DocumentLocation.findByPk(id);
+      // 🔍 Find document location
+      const documentLocation = await TblOrderDocLocation.findByPk(id);
 
       if (!documentLocation) {
         return res.status(404).json({ error: "DocumentLocation not found." });
       }
 
-      // Update the status
-      await documentLocation.update({ status });
+      // ✅ Update status
+      await documentLocation.update({ DocRequestStatus: status });
 
-      // Create activity log
+      // 📝 Create activity log
       let actionType, description;
+
       if (status === "Cancelled") {
         actionType = "document_location_cancelled";
-        description = `DocumentLocation {${documentLocation.name}} has been cancelled by user {${updatedByUser?.username || "Unknown"}}.`;
+        description = `Document location {${documentLocation.LocationName}} has been cancelled by user {${updatedByUser?.UserName || "Unknown"}}.`;
       } else if (status === "Completed") {
         actionType = "document_location_completed";
-        description = `DocumentLocation {${documentLocation.name}} has been completed by user {${updatedByUser?.username || "Unknown"}}.`;
+        description = `Document location {${documentLocation.LocationName}} has been completed by user {${updatedByUser?.UserName || "Unknown"}}.`;
       }
 
-      if (actionType && description) {
-        await ActivityLog.create({
-          order_id: documentLocation.order_id, // Assuming it's related to an order_id, adjust if necessary
-          action_type: actionType,
-          description: description,
-        });
-      }
+      // if (actionType && description) {
+      //   await ActivityLog.create({
+      //     order_id: documentLocation.OrderID,
+      //     action_type: actionType,
+      //     description,
+      //   });
+      // }
 
-      res.json({ message: "Status updated successfully." });
-
+      return res.json({ message: "Document location status updated successfully." });
     } catch (error) {
-      console.error("Error updating document location status:", error);
+      console.error("❌ Error updating document location status:", error);
       res.status(500).json({ error: "Internal server error." });
     }
   }
+
 };
 
 module.exports = orderController;

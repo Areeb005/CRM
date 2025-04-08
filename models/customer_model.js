@@ -1,79 +1,144 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, UUIDV4 } = require('sequelize');
 const sequelize = require('../config/dbConfig');
-const Location = require('./location_model');
 
 const Customer = sequelize.define('Customer', {
   acctno: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   },
   locatid: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: Location,
-      key: 'locatid'
-    }
+    allowNull: false
   },
   custcode: {
     type: DataTypes.STRING(15),
     allowNull: true,
-    unique: true,
+    unique: true
   },
-  sched_id: DataTypes.INTEGER,
-  customers_phone: DataTypes.STRING(14),
-  customers_ext: DataTypes.STRING(5),
-  customers_fax: DataTypes.STRING(14),
-  customers_contact: DataTypes.STRING(30),
-  payterms: DataTypes.INTEGER,
-  creditline: DataTypes.DECIMAL(19, 4),
-  cust_type: DataTypes.INTEGER,
-  sales_tax: DataTypes.DECIMAL(4, 2),
-  assignto: DataTypes.INTEGER,
-  county: DataTypes.INTEGER,
-  salespersid: DataTypes.INTEGER,
+  sched_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  customers_phone: {
+    type: DataTypes.CHAR(14),
+    allowNull: true
+  },
+  customers_ext: {
+    type: DataTypes.CHAR(5),
+    allowNull: true
+  },
+  customers_fax: {
+    type: DataTypes.CHAR(14),
+    allowNull: true
+  },
+  customers_contact: {
+    type: DataTypes.STRING(30),
+    allowNull: true
+  },
+  payterms: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  creditline: {
+    type: DataTypes.DECIMAL(19, 4), // SQL "money"
+    allowNull: true
+  },
+  cust_type: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  sales_tax: {
+    type: DataTypes.DECIMAL(4, 2),
+    allowNull: true
+  },
+  assignto: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  county: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  salespersid: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   active: {
-    type: DataTypes.TINYINT,
+    type: DataTypes.BOOLEAN,
     allowNull: true,
-    defaultValue: 1,
+    defaultValue: true
   },
-  website: DataTypes.STRING(50),
-  mailingid: DataTypes.INTEGER,
-  acctghold: DataTypes.TINYINT,
+  website: {
+    type: DataTypes.STRING(50),
+    allowNull: true
+  },
+  mailingid: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  acctghold: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true
+  },
   querytype: {
-    type: DataTypes.TINYINT.UNSIGNED,
+    type: DataTypes.TINYINT,
     allowNull: true,
     comment: '1-customer, 2-customer & lawyer, 3-lawyer only'
   },
-  colnotes: DataTypes.TEXT,
-  note: DataTypes.TEXT,
-  timestamp_column: DataTypes.BLOB,
-  acctingemail: DataTypes.STRING(100),
-  regemail: DataTypes.STRING(100),
-  acctingcontact: DataTypes.STRING(100),
+  colnotes: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  note: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  timestamp_column: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: DataTypes.NOW
+  },
+  acctingemail: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  regemail: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
+  acctingcontact: {
+    type: DataTypes.STRING(100),
+    allowNull: true
+  },
   idsource: {
     type: DataTypes.STRING(50),
     allowNull: false,
-    defaultValue: sequelize.fn('uuid')
+    defaultValue: UUIDV4() // ✅ will generate UUID once when model is loaded
+
   },
-  colassignedto: DataTypes.INTEGER,
+  colassignedto: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
   addPI: {
-    type: DataTypes.TINYINT,
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: false
   },
   addPenalty: {
-    type: DataTypes.TINYINT,
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: false
   },
-  WebUploadAcct: DataTypes.STRING(50)
+  WebUploadAcct: {
+    type: DataTypes.STRING(50),
+    allowNull: true
+  }
 }, {
   tableName: 'customer',
+  schema: "dbo",         // ✅ specify schema separately
   timestamps: false
 });
-
-
 
 module.exports = Customer;

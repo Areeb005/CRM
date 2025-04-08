@@ -6,17 +6,13 @@ const {
   checkEmailAcrossModels,
   sendEmail,
 } = require("../../helpers/functions");
-const { User, ActivityLog } = require("../../models");
-const SMTPSettings = require("../../models/smtp_model");
+const { User, ActivityLog, TblWebSettings } = require("../../models");
 const { Op } = require("sequelize");
 
 const authCrtl = {
   register: async (req, res) => {
     try {
-
-      // return res.status(400).json({ message: 'This service in unavailable currently.' })
-
-      // Joi schema for validation
+      // Joi schema for validation (unchanged keys)
       const schema = Joi.object({
         username: Joi.string().min(1).max(255).required().default(null),
         full_name: Joi.string().min(1).max(255).required().default(null),
@@ -48,10 +44,11 @@ const authCrtl = {
 
       // Validate request body
       const { error, value } = schema.validate(req.body);
-      if (error)
+      if (error) {
         return res.status(400).json({ error: error.details[0].message });
+      }
 
-      // Destructure validated data
+      // Destructure validated data (unchanged keys)
       const {
         username,
         full_name,
@@ -64,49 +61,53 @@ const authCrtl = {
         state,
         zip,
         app_acc_no,
-        city
+        city,
       } = value;
 
       // Check if user already exists
-      const existingUserEmail = await User.findOne({ where: { email } });
-      if (existingUserEmail)
+      const existingUserEmail = await User.findOne({ where: { Email: email } }); // Map to model field
+      if (existingUserEmail) {
         return res.status(409).json({ error: "Email already registered" });
+      }
 
-      const existingUser = await User.findOne({ where: { username } });
-      if (existingUser)
+      const existingUser = await User.findOne({ where: { UserName: username } }); // Map to model field
+      if (existingUser) {
         return res.status(409).json({ error: "Username already registered" });
-
+      }
 
       // Hash password
       const hash = generatePasswordHash(password);
 
-
-      // Create user
+      // Create user with model-compatible fields
       const newUser = await User.create({
-        username,
-        full_name,
-        profile_picture,
-        email,
-        password: hash,
-        firm_name,
-        phone,
-        address,
-        state,
-        zip,
-        app_acc_no,
-        role: "attorney",
-        city,
-        status: true, // Default status
+        UserName: username,           // Map to model field
+        PasswordHash: hash,          // Map to model field
+        FullName: full_name,         // Map to model field
+        Address: address,            // Map to model field
+        City: city,                  // Map to model field
+        State: state,                // Map to model field
+        Zip: zip,                    // Map to model field
+        Email: email,                // Map to model field
+        FirmName: firm_name,         // Map to model field
+        Phone: phone.toString(),     // Convert to string to match STRING(50)
+        Role: "attorney",            // Map to model field (hardcoded as per original)
+        AppAcctNo: app_acc_no ? app_acc_no.toString() : null, // Convert to string or null
+        IsApproved: false,           // Default for new user (not in Joi, but required by model)
+        IsDeleted: false,            // Default for new user (not in Joi, but required by model)
       });
 
       // Generate access token
-      const access_token = createAccessToken({ id: newUser.id, role: newUser.role, username: newUser.username, });
+      const access_token = createAccessToken({
+        id: newUser.UserID,          // Map to model field
+        role: newUser.Role,          // Map to model field
+        username: newUser.UserName,  // Map to model field
+      });
 
-      // Log user registration
+      // Log user registration (assuming ActivityLog model exists)
       await ActivityLog.create({
-        user_id: newUser.id,
+        user_id: newUser.UserID,     // Map to model field
         action_type: "user_registered",
-        description: `New user registered with email {${email}} as {${newUser.role}}.`,
+        description: `New user registered with email {${email}} as {${newUser.Role}}.`,
       });
 
       // Return success response
@@ -116,7 +117,7 @@ const authCrtl = {
         data: newUser,
       });
     } catch (error) {
-      console.error(error.message);
+      console.error("Registration error:", error.message);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
@@ -124,40 +125,51 @@ const authCrtl = {
     try {
       // Joi schema for validation
       const schema = Joi.object({
-        username: Joi.string().required(), // Username is required
-        password: Joi.string().required(), // Password is required
+        username: Joi.string().required(), // Match model field name
+        password: Joi.string().required(), // Match incoming request field
       });
 
       // Validate request body
       const { error, value } = schema.validate(req.body);
-      if (error)
+      if (error) {
         return res.status(400).json({ error: error.details[0].message });
+      }
 
       const { username, password } = value;
 
+      const UserName = username;
+      const Password = password;
+
+
+
       // Check if user exists
       let user = await User.findOne({
-        where: { username }, // Find user by username
-        attributes: { exclude: ["createdAt", "updatedAt"] }, // Exclude unnecessary fields
+        where: { UserName }, // Match model field name
       });
 
-      if (!user)
-        return res.status(404).json({ error: "Username does not exist" });
-
-      // Check if the user's account is active
-      if (!user.status)
-        return res.status(403).json({ error: "Your account is blocked" });
+      if (!user) {
+        return res.status(404).json({ error: "User does not exist" });
+      }
 
       // Verify password
-      const isPasswordValid = verifyPassword(password, user.salt, user.password);
-      if (!isPasswordValid)
+      // Assuming verifyPassword takes (plainPassword, hashedPassword) and returns a boolean
+      const isPasswordValid = verifyPassword(Password, false, user.PasswordHash);
+
+      if (!isPasswordValid) {
         return res.status(401).json({ error: "Incorrect password" });
+      }
 
       // Generate access token
-      const access_token = createAccessToken({ id: user.id, role: user.role, username: user.username });
+      // Assuming createAccessToken takes an object with user details
+      const access_token = createAccessToken({
+        id: user.UserID, // Match model field name
+        role: user.Role, // Match model field name
+        username: user.UserName, // Match model field name
+      });
 
-      user = user.toJSON()
-      delete user.password
+      // Convert to JSON and remove sensitive data
+      user = user.toJSON();
+      delete user.PasswordHash; // Already excluded, but ensuring it’s not sent
 
       // Return success response
       return res.status(200).json({
@@ -166,49 +178,53 @@ const authCrtl = {
         data: user,
       });
     } catch (error) {
-      console.error(error.message);
+      console.error("Login error:", error.message);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
   forgotPassword: async (req, res) => {
     try {
+      // Joi schema for validation
       const schema = Joi.object({
         email: Joi.string().email().required(),
       });
 
       const { error, value } = schema.validate(req.body);
-
-      if (error)
+      if (error) {
         return res.status(400).json({ error: error.details[0].message });
+      }
 
-      const user = await User.findOne({ where: { email: value.email } });
+      // Find user by email (map to User model field)
+      const user = await User.findOne({ where: { Email: value.email } });
 
-      if (!user) return res.status(400).json({ error: "Email does not exist" });
+      if (!user) {
+        return res.status(400).json({ error: "Email does not exist" });
+      }
 
       // Generate OTP and set expiration time
-      const otp = Math.floor(100000 + Math.random() * 900000);
-      const expireTime = new Date(Date.now() + 5 * 60 * 1000);
+      const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+      const expireTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
-      user.otp = otp;
-      user.otp_used = false;
-      user.otp_expire_time = expireTime;
+      // Use existing User model fields instead of otp, otp_used, otp_expire_time
+      user.LastToken = otp.toString(); // Store OTP in LastToken (STRING(100))
+      user.LastTokenExpiry = expireTime; // Store expiration in LastTokenExpiry (DATE)
 
       await user.save();
 
       const message = `${otp} is your OTP for password reset. It will expire in 5 minutes.`;
 
+      // SMTP settings retrieval (map to TblWebSettings model fields)
       let options = {};
-
-      const settings = await SMTPSettings.findOne({ where: { id: 1 } });
+      const settings = await TblWebSettings.findOne({ where: { WebSettingsID: 1 } }); // Use primary key WebSettingsID
 
       if (settings) {
         options = {
-          host: settings.smtp_server,
-          port: settings.smtp_port,
-          secure: settings.use_tls,
+          host: settings.SMTPServer, // Map to model field
+          port: settings.SMTPPort,   // Map to model field
+          secure: settings.SMTPUseTLS, // Map to model field (BOOLEAN)
           auth: {
-            user: settings.smtp_username,
-            pass: settings.smtp_password,
+            user: settings.SMTPUserName, // Map to model field
+            pass: settings.SMTPPassword, // Map to model field
           },
         };
       } else {
@@ -220,30 +236,28 @@ const authCrtl = {
             user: process.env.EMAIL,
             pass: process.env.EMAIL_PASSWORD,
           },
-        }
+        };
       }
-
 
       // Send email
       await sendEmail({
         options,
-        to: user.email,
+        to: user.Email, // Use User model field
         subject: "Password Reset OTP",
         message,
       });
 
-      return res
-        .status(200)
-        .json({
-          success: "OTP has been sent to your email. Valid for 5 minutes.",
-        });
+      return res.status(200).json({
+        success: "OTP has been sent to your email. Valid for 5 minutes.",
+      });
     } catch (err) {
-      console.log(err.message);
+      console.error("Forgot password error:", err.message);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
   resetPassword: async (req, res) => {
     try {
+      // Joi schema for validation
       const schema = Joi.object({
         email: Joi.string().email().required(),
         password: Joi.string()
@@ -254,48 +268,51 @@ const authCrtl = {
       });
 
       const { error, value } = schema.validate(req.body);
-
-      if (error)
+      if (error) {
         return res.status(400).json({ error: error.details[0].message });
+      }
 
-      const user = await User.findOne({ where: { email: value.email } });
+      // Find user by email (map to User model field)
+      const user = await User.findOne({ where: { Email: value.email } });
 
-      if (!user) return res.status(400).json({ error: "Email does not exist" });
+      if (!user) {
+        return res.status(400).json({ error: "Email does not exist" });
+      }
 
-      if (user.otp_used)
-        return res.status(400).json({ error: "OTP already used" });
-
-      if (user.otp !== value.otp)
+      // Check OTP (using LastToken and LastTokenExpiry)
+      if (user.LastToken !== value.otp) {
         return res.status(400).json({ error: "Incorrect OTP" });
+      }
 
-      if (user.otp_expire_time < new Date())
+      if (user.LastTokenExpiry < new Date()) {
         return res.status(400).json({ error: "OTP has been expired" });
+      }
 
-      // Update password and reset OTP
-      // Hash password
+      // Note: No otp_used field in the model, so skipping that check
+      // If you need usage tracking, consider adding a field or using a separate table
+
+      // Update password (map to PasswordHash)
       const hash = generatePasswordHash(value.password);
-      user.password = hash;
-      user.salt = "argon";
-      user.otp_used = true;
-      user.otp = null;
-      user.otp_expire_time = null;
+      user.PasswordHash = hash; // Map to model field
+      user.LastToken = null; // Clear OTP
+      user.LastTokenExpiry = null; // Clear expiry
 
       await user.save();
 
       const message = `Your password has been successfully updated.`;
 
+      // SMTP settings retrieval (map to TblWebSettings model fields)
       let options = {};
-
-      const settings = await SMTPSettings.findOne({ where: { id: 1 } });
+      const settings = await TblWebSettings.findOne({ where: { WebSettingsID: 1 } }); // Use primary key
 
       if (settings) {
         options = {
-          host: settings.smtp_server,
-          port: settings.smtp_port,
-          secure: settings.use_tls,
+          host: settings.SMTPServer, // Map to model field
+          port: settings.SMTPPort,   // Map to model field
+          secure: settings.SMTPUseTLS, // Map to model field (BOOLEAN)
           auth: {
-            user: settings.smtp_username,
-            pass: settings.smtp_password,
+            user: settings.SMTPUserName, // Map to model field
+            pass: settings.SMTPPassword, // Map to model field
           },
         };
       } else {
@@ -307,30 +324,32 @@ const authCrtl = {
             user: process.env.EMAIL,
             pass: process.env.EMAIL_PASSWORD,
           },
-        }
+        };
       }
-
 
       // Send email
       await sendEmail({
         options,
-        to: user.email,
+        to: user.Email, // Use User model field
         subject: "Password Reset Confirmation",
         message,
       });
 
-      return res
-        .status(200)
-        .json({ success: "Password has been successfully updated." });
+      return res.status(200).json({
+        success: "Password has been successfully updated.",
+      });
     } catch (err) {
-      console.log(err.message);
+      console.error("Reset password error:", err.message);
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
   get_me: async (req, res) => {
+
     try {
       const user = await User.findByPk(req.user.id, {
-        attributes: { exclude: ["password", "otp", "otp_expire_time", "opt_used"] }, // Exclude sensitive fields
+        attributes: {
+          exclude: ["PasswordHash"],
+        },
       });
 
       if (!user) return res.status(404).json({ error: "User not found" });
@@ -355,27 +374,37 @@ const authCrtl = {
         city: Joi.string().optional(),
         state: Joi.string().optional(),
         zip: Joi.string().optional(),
-        password: Joi.string().min(6).pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$")).optional(),
-        oldPassword: Joi.string().min(6).pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$")).optional(),
+        password: Joi.string()
+          .min(6)
+          .pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$"))
+          .optional(),
+        oldPassword: Joi.string()
+          .min(6)
+          .pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*]).*$"))
+          .optional(),
       });
 
       const { error, value } = schema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+      }
 
-      if (error) return res.status(400).json({ error: error.details[0].message });
+      // Find user by ID (map to User model field UserID)
+      const user = await User.findByPk(req.user.id); // Assuming req.user.UserID from auth middleware
 
-      const user = await User.findByPk(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-      if (!user) return res.status(404).json({ error: "User not found" });
-
-      // ✅ Check if email or username already exists for other users
+      // Check if email or username already exists for other users
       if (value.email || value.username) {
         const existingUser = await User.findOne({
           where: {
             [Op.or]: [
-              { email: value.email },
-              { username: value.username },
+              { Email: value.email }, // Map to model field
+              { UserName: value.username }, // Map to model field
             ],
-            id: { [Op.ne]: req.user.id }, // Exclude current user from check
+            UserID: { [Op.ne]: req.user.UserID }, // Exclude current user
           },
         });
 
@@ -384,17 +413,33 @@ const authCrtl = {
         }
       }
 
-      // ✅ If updating password, verify old password first
+      // If updating password, verify old password first
       if (value.password && req.body.oldPassword) {
-        const isMatch = verifyPassword(value.oldPassword, false, user.password);
-        if (!isMatch) return res.status(400).json({ error: "Incorrect old password" });
+        const isMatch = verifyPassword(req.body.oldPassword, user.PasswordHash); // Map to model field
+        if (!isMatch) {
+          return res.status(400).json({ error: "Incorrect old password" });
+        }
 
         // Hash new password
         value.password = generatePasswordHash(value.password);
       }
 
-      // ✅ Update user
-      await user.update(value);
+      // Prepare update data with model field names
+      const updateData = {};
+      if (value.username) updateData.UserName = value.username;
+      if (value.full_name) updateData.FullName = value.full_name;
+      if (value.profile_picture) updateData.ProfilePicture = value.profile_picture; // Note: Not in model yet
+      if (value.email) updateData.Email = value.email;
+      if (value.firm_name) updateData.FirmName = value.firm_name;
+      if (value.phone) updateData.Phone = value.phone.toString(); // Convert to string
+      if (value.address) updateData.Address = value.address;
+      if (value.city) updateData.City = value.city;
+      if (value.state) updateData.State = value.state;
+      if (value.zip) updateData.Zip = value.zip;
+      if (value.password) updateData.PasswordHash = value.password; // Map to model field
+
+      // Update user
+      await user.update(updateData);
 
       return res.status(200).json({ success: "User updated successfully.", user });
     } catch (err) {

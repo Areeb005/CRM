@@ -1,4 +1,4 @@
-const { ProcType } = require("../../models");
+const { Proctype } = require("../../models");
 
 const ProcTypeCtrl = {
     // 🔹 Get ProcTypes by CaseType ID
@@ -11,7 +11,7 @@ const ProcTypeCtrl = {
                 return res.status(400).json({ success: false, message: "CaseType ID is required" });
             }
 
-            const procTypes = await ProcType.findAll({ where: { casetypeid } });
+            const procTypes = await Proctype.findAll({ where: { casetypeid } });
 
             if (!procTypes || procTypes.length === 0) {
                 return res.status(404).json({ success: false, message: "No ProcTypes found for this CaseType ID" });

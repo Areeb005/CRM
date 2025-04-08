@@ -4,9 +4,9 @@ const sequelize = require("../config/dbConfig");
 const Location = sequelize.define("Location", {
     locatid: {
         type: DataTypes.INTEGER,
-        autoIncrement: true,
+        allowNull: false,
         primaryKey: true,
-        allowNull: false
+        autoIncrement: true
     },
     locat_name: {
         type: DataTypes.STRING(60),
@@ -36,7 +36,6 @@ const Location = sequelize.define("Location", {
     zip4: {
         type: DataTypes.STRING(4),
         allowNull: true,
-        defaultValue: "    " // 4 spaces (adjust if needed)
     },
     locat_phone: {
         type: DataTypes.STRING(14),
@@ -45,7 +44,6 @@ const Location = sequelize.define("Location", {
     locat_ext: {
         type: DataTypes.STRING(6),
         allowNull: true,
-        defaultValue: "     " // 5 spaces (adjust if needed)
     },
     locat_fax: {
         type: DataTypes.STRING(14),
@@ -54,18 +52,18 @@ const Location = sequelize.define("Location", {
     locat_fee: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
-        defaultValue: 15.00
+        defaultValue: 0.00
     },
     locat_notes: {
-        type: DataTypes.TEXT("long"),
+        type: DataTypes.TEXT,
         allowNull: true
     },
     locat_shours: {
-        type: DataTypes.TEXT("long"),
+        type: DataTypes.TEXT,
         allowNull: true
     },
     locat_chours: {
-        type: DataTypes.TEXT("long"),
+        type: DataTypes.TEXT,
         allowNull: true
     },
     officeid: {
@@ -73,9 +71,9 @@ const Location = sequelize.define("Location", {
         allowNull: true
     },
     acceptfax: {
-        type: DataTypes.TINYINT,
+        type: DataTypes.BOOLEAN,
         allowNull: true,
-        defaultValue: 0
+        defaultValue: false
     },
     countyid: {
         type: DataTypes.INTEGER,
@@ -94,18 +92,18 @@ const Location = sequelize.define("Location", {
         allowNull: true
     },
     badlocation: {
-        type: DataTypes.TINYINT,
+        type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: false
     },
     locat_code: {
         type: DataTypes.STRING(15),
         allowNull: true
     }
 }, {
-    tableName: "location", // Ensure this matches your DB table name
-    timestamps: false // Disable createdAt/updatedAt if not needed
+    tableName: "location", // Matches SQL Server's table name exactly
+    schema: "dbo",         // ✅ specify schema separately
+    timestamps: false
 });
-
 
 module.exports = Location;

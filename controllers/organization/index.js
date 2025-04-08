@@ -1,10 +1,10 @@
-const Organization = require("../../models/organization_model");
+const { TblWebSettings } = require("../../models");
 
 const OrganizationController = {
     // Fetch Organization Settings
     get_settings: async (req, res) => {
         try {
-            const settings = await Organization.findOne({ where: { id: 1 } });
+            const settings = await TblWebSettings.findOne({ where: { id: 1 } });
             if (!settings) {
                 return res.status(404).json({ message: "Organization settings not found" });
             }
@@ -19,10 +19,10 @@ const OrganizationController = {
         try {
             const { organization_name, organization_contact, organization_website, notification_email, favicon } = req.body;
 
-            let settings = await Organization.findOne({ where: { id: 1 } });
+            let settings = await TblWebSettings.findOne({ where: { id: 1 } });
 
             if (!settings) {
-                settings = await Organization.create({
+                settings = await TblWebSettings.create({
                     organization_name,
                     organization_contact,
                     organization_website,

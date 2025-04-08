@@ -5,40 +5,41 @@ const CaseType = sequelize.define("CaseType", {
   casetypeid: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    allowNull: false,
+    primaryKey: true
   },
   casename: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: DataTypes.STRING(20),
+    allowNull: false
   },
   arbitration: {
-    type: DataTypes.TINYINT(1),
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 0,
+    defaultValue: false
   },
   lallowfilling: {
-    type: DataTypes.TINYINT(1),
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 0,
+    defaultValue: false
   },
   defdays: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
+    allowNull: true
   },
   Penalty: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 0,
+    defaultValue: false
   },
   interest: {
-    type: DataTypes.TINYINT(1),
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 0,
-  },
+    defaultValue: false
+  }
 }, {
   tableName: "casetype",
-  timestamps: false, // No createdAt/updatedAt columns
+  schema: "dbo",         // ✅ specify schema separately
+  timestamps: false
 });
 
 module.exports = CaseType;

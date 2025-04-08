@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/dbConfig");
-const User = require("./users_model");
-const Order = require("./order_model");
+const User = require("./tblUsers_model");
+const TblOrder = require("./tblOrder_model");
 
 const ActivityLog = sequelize.define(
     "ActivityLog",
@@ -30,26 +30,26 @@ const ActivityLog = sequelize.define(
             allowNull: false,
         },
         user_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.BIGINT,
             references: {
-                model: "users",
-                key: "id",
+                model: User,
+                key: "UserID",
             },
             allowNull: true,
         },
         related_user_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.BIGINT,
             references: {
-                model: "users",
-                key: "id",
+                model: User,
+                key: "UserID",
             },
             allowNull: true,
         },
         order_id: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.BIGINT,
             references: {
-                model: "orders",
-                key: "id",
+                model: TblOrder,
+                key: "OrderID",
             },
             allowNull: true,
         },
@@ -60,6 +60,7 @@ const ActivityLog = sequelize.define(
     },
     {
         tableName: "activity_logs",
+        schema: "dbo",         // ✅ specify schema separately
         timestamps: true,
     }
 );

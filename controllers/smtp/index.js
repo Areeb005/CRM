@@ -1,54 +1,136 @@
+const Joi = require("joi");
 const { generatePasswordHash } = require("../../helpers/functions");
-const SMTPSettings = require("../../models/smtp_model");
+const { TblWebSettings } = require("../../models");
+
+// Validation Schemas
+const createSchema = Joi.object({
+    SMTPServer: Joi.string().max(200).required(),
+    SMTPPort: Joi.number().required(),
+    SMTPUserName: Joi.string().max(100).required(),
+    SMTPPassword: Joi.string().min(6).required(),
+    SMTPUseTLS: Joi.boolean().required(),
+    OrganizationName: Joi.string().max(100).allow(null, ''),
+    OrganizationContact: Joi.string().max(100).allow(null, ''),
+    OrganizationWebsite: Joi.string().uri().max(100).allow(null, ''),
+    NotificationMail: Joi.string().email().max(100).allow(null, '')
+});
+
+const updateSchema = Joi.object({
+    WebSettingsID: Joi.number().required(),
+    SMTPServer: Joi.string().max(200).optional(),
+    SMTPPort: Joi.number().optional(),
+    SMTPUserName: Joi.string().max(100).optional(),
+    SMTPPassword: Joi.string().min(6).optional(),
+    SMTPUseTLS: Joi.boolean().optional(),
+    OrganizationName: Joi.string().max(100).allow(null, ''),
+    OrganizationContact: Joi.string().max(100).allow(null, ''),
+    OrganizationWebsite: Joi.string().uri().max(100).allow(null, ''),
+    NotificationMail: Joi.string().email().max(100).allow(null, '')
+});
 
 const SMTPController = {
     get_settings: async (req, res) => {
         try {
-            const settings = await SMTPSettings.findOne({ order: [["id", "DESC"]] });
-            if (!settings) return res.status(404).json({ message: "No SMTP settings found" });
+            const settings = await TblWebSettings.findOne({
+                order: [["WebSettingsID", "DESC"]],
+            });
+
+            if (!settings) {
+                return res.status(404).json({ message: "No SMTP settings found" });
+            }
 
             res.json(settings);
         } catch (error) {
+            console.error("Error fetching SMTP settings:", error);
             res.status(500).json({ message: "Error fetching SMTP settings", error });
         }
     },
 
     save_settings: async (req, res) => {
         try {
-            const { smtp_server, smtp_port, smtp_username, smtp_password, use_tls } = req.body;
+            const { error, value } = createSchema.validate(req.body);
+            if (error) return res.status(400).json({ message: error.details[0].message });
 
-            // Encrypt password before storing
-            const hashedPassword = generatePasswordHash(smtp_password, 10);
+            const {
+                SMTPServer,
+                SMTPPort,
+                SMTPUserName,
+                SMTPPassword,
+                SMTPUseTLS,
+                OrganizationName,
+                OrganizationContact,
+                OrganizationWebsite,
+                NotificationMail,
+            } = value;
 
-            const settings = await SMTPSettings.create({
-                smtp_server,
-                smtp_port,
-                smtp_username,
-                smtp_password: hashedPassword,
-                use_tls,
+            const hashedPassword = generatePasswordHash(SMTPPassword, 10);
+
+            const settings = await TblWebSettings.create({
+                SMTPServer,
+                SMTPPort,
+                SMTPUserName,
+                SMTPPassword: hashedPassword,
+                SMTPUseTLS,
+                OrganizationName,
+                OrganizationContact,
+                OrganizationWebsite,
+                NotificationMail,
             });
 
-            res.status(201).json({ message: "SMTP settings saved successfully", settings });
+            res.status(201).json({
+                message: "SMTP settings saved successfully",
+                settings,
+            });
         } catch (error) {
+            console.error("Error saving SMTP settings:", error);
             res.status(500).json({ message: "Error saving SMTP settings", error });
         }
     },
 
     update_settings: async (req, res) => {
         try {
-            const { smtp_server, smtp_port, smtp_username, smtp_password, use_tls } = req.body;
+            const { error, value } = updateSchema.validate(req.body);
+            if (error) return res.status(400).json({ message: error.details[0].message });
 
-            let updateData = { smtp_server, smtp_port, smtp_username, use_tls };
-            if (smtp_password) {
-                updateData.smtp_password = generatePasswordHash(smtp_password, 10);
+            const {
+                WebSettingsID,
+                SMTPServer,
+                SMTPPort,
+                SMTPUserName,
+                SMTPPassword,
+                SMTPUseTLS,
+                OrganizationName,
+                OrganizationContact,
+                OrganizationWebsite,
+                NotificationMail,
+            } = value;
+
+            const updateData = {
+                SMTPServer,
+                SMTPPort,
+                SMTPUserName,
+                SMTPUseTLS,
+                OrganizationName,
+                OrganizationContact,
+                OrganizationWebsite,
+                NotificationMail,
+            };
+
+            if (SMTPPassword) {
+                updateData.SMTPPassword = generatePasswordHash(SMTPPassword, 10);
             }
 
-            const [updated] = await SMTPSettings.update(updateData, { where: { id: 1 } });
+            const [updated] = await TblWebSettings.update(updateData, {
+                where: { WebSettingsID },
+            });
 
-            if (!updated) return res.status(404).json({ message: "SMTP settings not found" });
+            if (!updated) {
+                return res.status(404).json({ message: "SMTP settings not found" });
+            }
 
             res.json({ message: "SMTP settings updated successfully" });
         } catch (error) {
+            console.error("Error updating SMTP settings:", error);
             res.status(500).json({ message: "Error updating SMTP settings", error });
         }
     },

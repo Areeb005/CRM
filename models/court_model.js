@@ -1,10 +1,11 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/dbConfig"); // Adjust based on your project setup
-const Location = require("./location_model"); // Import the Location model
+const sequelize = require("../config/dbConfig");
+const Location = require("./location_model"); // FK: locatid
 
 const Court = sequelize.define("Court", {
     court_id: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         autoIncrement: true,
         primaryKey: true
     },
@@ -16,8 +17,8 @@ const Court = sequelize.define("Court", {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: Location,
-          key: 'locatid'
+            model: Location,
+            key: "locatid"
         }
     },
     CourtTypeId: {
@@ -29,10 +30,9 @@ const Court = sequelize.define("Court", {
         allowNull: true
     }
 }, {
-    tableName: "courts", // Ensure it matches your database table name
-    timestamps: false // Disable timestamps if your table doesn't have createdAt/updatedAt
+    tableName: "courts",
+    schema: "dbo",         // ✅ specify schema separately
+    timestamps: false
 });
 
-
-// Export the model
 module.exports = Court;

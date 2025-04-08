@@ -13,8 +13,7 @@ const generatePasswordHash = (password) => {
 };
 
 const verifyPassword = (password, salt = false, hash) => {
-    // const derivedHash = crypto.pbkdf2Sync(password, salt, 1000, 64, "sha512").toString("hex");
-    // return derivedHash === hash;
+
     return md5(password) === hash;
 };
 

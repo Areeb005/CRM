@@ -1,146 +1,125 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/dbConfig");
-const CaseType = require("./casetype_model"); // Import CaseType model
 
 const Proctype = sequelize.define("Proctype", {
   processid: {
     type: DataTypes.INTEGER,
-    autoIncrement: true,
+    allowNull: false,
     primaryKey: true,
+    autoIncrement: true
   },
   procname: {
     type: DataTypes.STRING(50),
-    allowNull: false,
+    allowNull: false
   },
   casetypeid: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: CaseType, // Reference to CaseType model
-      key: "casetypeid",
-    },
+    allowNull: false
   },
   rectype: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   sdtdate: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   wcabcaseno: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   recboxes: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   page3status: {
-    type: DataTypes.TINYINT(3).UNSIGNED,
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.TINYINT,
+    allowNull: false
   },
   asvboxes: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   wcabrequest: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   lallowsdt1: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   lallowsdt2: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   lallowrte: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   lallowattach: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   lallowdecl: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   lallowcopy: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   incopcounsel: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   distribute: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   page3title: {
     type: DataTypes.STRING(30),
-    allowNull: true,
+    allowNull: true
   },
   userprocname: {
     type: DataTypes.STRING(50),
-    allowNull: true,
+    allowNull: true
   },
   PlaceType: {
     type: DataTypes.INTEGER,
-    allowNull: true,
-    comment: "1 - compname, 2 - depos place, 3 - court",
+    allowNull: true
   },
   proofofservdoc: {
-    type: DataTypes.TEXT("long"),
-    allowNull: true,
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   lallowsdt4: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   NeedCourt: {
-    type: DataTypes.TINYINT(4),
-    allowNull: false,
-    defaultValue: 0,
+    type: DataTypes.BOOLEAN,
+    allowNull: false
   },
   Sdt1Label: {
     type: DataTypes.STRING(50),
-    allowNull: true,
+    allowNull: true
   },
   Sdt2Label: {
     type: DataTypes.STRING(50),
-    allowNull: true,
+    allowNull: true
   },
   Sdt4Label: {
     type: DataTypes.STRING(50),
-    allowNull: true,
+    allowNull: true
   },
   SdtDateLabel: {
     type: DataTypes.STRING(20),
-    allowNull: true,
-  },
+    allowNull: true
+  }
 }, {
   tableName: "proctype",
-  timestamps: false, // No createdAt/updatedAt columns
+  schema: "dbo",         // ✅ specify schema separately
+  timestamps: false
 });
 
 module.exports = Proctype;

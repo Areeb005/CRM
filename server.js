@@ -29,3 +29,4 @@ sequelize.sync().then(() => {
         console.log(`Server running on port ${process.env.PORT}`);
     });
 }).catch(err => console.error('Database connection failed:', err));
+    
