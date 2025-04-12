@@ -52,6 +52,9 @@ const Auth = (req, res, next) => {
 const allowedUsers = (allowedRoles) => {
     return (req, res, next) => {
         const userRole = req.user.role; // Assuming `role` is set in `req.user` after authentication
+
+        console.log(userRole, allowedRoles)
+        
         if (allowedRoles.includes(userRole)) {
             return next();
         }
