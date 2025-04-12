@@ -269,7 +269,7 @@ const usersCrtl = {
         ...(value.zip && { Zip: value.zip }),
         ...(value.city && { City: value.city }),
         ...(value.app_acc_no && { AppAcctNo: value.app_acc_no.toString() }),
-        ...(value.role && { Role: value.role === "admin" ? "Administrator" : "attorney" }),
+        ...(value.role && { Role: value.role }),
         ...(value.status !== undefined && { IsApproved: value.status }),
         CreatedUserID: updater_id,
       };
