@@ -269,19 +269,51 @@ const dashboardCtrl = {
     // Cron Job for Missed Deadlines
     checkMissedDeadlines: async () => {
         try {
-            const overdueOrders = await Order.findAll({ where: { needed_by: { [Op.lt]: new Date() }, status: { [Op.ne]: 'Completed' } } });
-            for (const order of overdueOrders) {
-                await ActivityLog.create({ order_id: order.id, action_type: 'order_deadline_missed', description: `Order {${order.id}} missed its deadline.` });
+            const now = new Date();
+
+            const overdueOrders = await TblOrder.findAll({
+                where: {
+                    NeededBy: { [Op.lt]: now },
+                    RequestStatus: { [Op.ne]: 'Completed' }
+                }
+            });
+
+            if (!overdueOrders.length) {
+                console.log("✅ No missed deadlines found at", now.toISOString());
+                return;
             }
-            console.log('Checked missed deadlines');
+
+            let newLogs = 0;
+
+            for (const order of overdueOrders) {
+                const alreadyLogged = await ActivityLog.findOne({
+                    where: {
+                        order_id: order.OrderID,
+                        action_type: "order_deadline_missed"
+                    }
+                });
+
+                if (!alreadyLogged) {
+                    await ActivityLog.create({
+                        order_id: order.OrderID,
+                        action_type: "order_deadline_missed",
+                        description: `🚨 Order {${order.OrderID}} missed its deadline (${order.NeededBy}).`
+                    });
+
+                    newLogs++;
+                }
+            }
+
+            console.log(`🔔 ${newLogs} new missed deadlines logged at ${now.toISOString()}`);
         } catch (error) {
-            console.error('Error checking missed deadlines', error);
+            console.error("❌ Error checking missed deadlines:", error);
         }
     }
 
 
 }
 
+dashboardCtrl.checkMissedDeadlines()
 // Run every hour
 setInterval(dashboardCtrl.checkMissedDeadlines, 60 * 60 * 1000);
 
