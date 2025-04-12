@@ -704,8 +704,11 @@ const orderController = {
 
       // Restrict to logged-in attorney’s orders
       if (req.user.role === "attorney") {
-        whereClause.UserID = req.user.UserID;
+        whereClause.UserID = req.user.id;
       }
+
+      console.log("whereClause", whereClause);
+
 
       // Dynamic filters
       if (status) whereClause.RequestStatus = status;
@@ -760,7 +763,7 @@ const orderController = {
 
       // 🔒 Restrict for attorneys to only their own orders
       if (req.user.role === "attorney") {
-        whereClause.UserID = req.user.UserID;
+        whereClause.UserID = req.user.id;
       }
 
       const order = await TblOrder.findOne({
