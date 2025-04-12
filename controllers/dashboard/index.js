@@ -312,8 +312,6 @@ const dashboardCtrl = {
 
 
 }
-
-dashboardCtrl.checkMissedDeadlines()
 // Run every hour
 setInterval(dashboardCtrl.checkMissedDeadlines, 60 * 60 * 1000);
 

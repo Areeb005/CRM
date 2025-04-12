@@ -32,7 +32,7 @@ const usersCrtl = {
         zip: Joi.string().required().default(null),
         app_acc_no: Joi.number().integer().required(),
         role: Joi.string()
-          .valid("admin", "attorney")
+          .valid("Administrator", "attorney")
           .required(),
         status: Joi.boolean().default(true).optional(),
         otp: Joi.string().optional().default(null),
@@ -91,7 +91,7 @@ const usersCrtl = {
         City: city,                  // Map to model field
         Zip: zip,                    // Map to model field
         AppAcctNo: app_acc_no.toString(), // Convert to string for STRING(50)
-        Role: role,                  // Map to model field
+        Role: role == "Attorney" ? role.toLowerCase() : role,                  // Map to model field
         IsApproved: false,           // Default; not in Joi but required
         IsDeleted: false,            // Default; not in Joi but required
         CreatedUserID: req.user.UserID, // Map to model field; assumes req.user.UserID from auth
@@ -223,7 +223,7 @@ const usersCrtl = {
         zip: Joi.string().optional(),
         city: Joi.string().optional(),
         app_acc_no: Joi.number().integer().optional(),
-        role: Joi.string().valid("admin", "attorney").optional(),
+        role: Joi.string().valid("Administrator", "attorney").optional(),
         status: Joi.boolean().optional(), // maps to IsApproved maybe?
         otp: Joi.string().optional(), // not in model
         opt_used: Joi.boolean().optional(), // not in model
@@ -269,7 +269,7 @@ const usersCrtl = {
         ...(value.zip && { Zip: value.zip }),
         ...(value.city && { City: value.city }),
         ...(value.app_acc_no && { AppAcctNo: value.app_acc_no.toString() }),
-        ...(value.role && { Role: value.role === "admin" ? "Administrator" : "Attorney" }),
+        ...(value.role && { Role: value.role === "admin" ? "Administrator" : "attorney" }),
         ...(value.status !== undefined && { IsApproved: value.status }),
         CreatedUserID: updater_id,
       };

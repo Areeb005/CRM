@@ -23,19 +23,19 @@ router.get('/me', Auth, authCrtl.get_me);
 router.patch('/me', Auth, authCrtl.update_me);
 
 router.post('/user', Auth, allowedUsers(["Administrator"]), usersCrtl.create);
-router.get('/users', Auth, allowedUsers(["Administrator", "attorney"]), usersCrtl.get_all);
-router.get('/user/:id', Auth, allowedUsers(["Administrator", "attorney"]), usersCrtl.get_one);
+router.get('/users', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), usersCrtl.get_all);
+router.get('/user/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), usersCrtl.get_one);
 router.patch('/user/:id', Auth, allowedUsers(["Administrator"]), usersCrtl.update_one);
 
-router.post('/order', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.create);
-router.post('/bulk-orders', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.create_bulk_orders);
-router.get('/orders', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.get_all);
-router.get('/order/:id', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.get_one);
-router.patch('/order/:id', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.update);
-router.patch('/cancel/:id', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.cancel);
-router.patch('/complete/:id', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.complete);
-router.delete('/delete/:id', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.delete);
-router.patch('/document-location/:id', Auth, allowedUsers(["Administrator", "attorney"]), orderCtrcl.updateDocumentLocationStatus);
+router.post('/order', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.create);
+router.post('/bulk-orders', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.create_bulk_orders);
+router.get('/orders', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.get_all);
+router.get('/order/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.get_one);
+router.patch('/order/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.update);
+router.patch('/cancel/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.cancel);
+router.patch('/complete/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.complete);
+router.delete('/delete/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.delete);
+router.patch('/document-location/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), orderCtrcl.updateDocumentLocationStatus);
 
 router.get('/overview', Auth, allowedUsers(["Administrator"]), dashboardCtrl.dashboardOverview);
 // router.get('/near-deadline', Auth, allowedUsers(["Administrator"]), dashboardCtrl.nearDeadline);
@@ -57,7 +57,7 @@ router.get("/casetypes", Auth, CaseTypeCtrl.get_all_casetypes);
 router.get("/proctypes/:casetypeid", Auth, ProcTypeCtrl.get_proctypes_by_casetype);
 
 
-router.post('/upload', Auth, allowedUsers(["Administrator", "attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);
+router.post('/upload', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);
 
 
 
