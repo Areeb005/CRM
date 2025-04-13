@@ -40,6 +40,10 @@ const TblWebSettings = sequelize.define("TblWebSettings", {
     type: DataTypes.STRING(100),
     allowNull: true
   },
+  OrganizationLogo: {
+    type: DataTypes.STRING(4000),
+    allowNull: true
+  },
   NotificationMail: {
     type: DataTypes.STRING(100),
     allowNull: true

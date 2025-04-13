@@ -12,7 +12,8 @@ const createSchema = Joi.object({
     OrganizationName: Joi.string().max(100).allow(null, ''),
     OrganizationContact: Joi.string().max(100).allow(null, ''),
     OrganizationWebsite: Joi.string().uri().max(100).allow(null, ''),
-    NotificationMail: Joi.string().email().max(100).allow(null, '')
+    NotificationMail: Joi.string().email().max(100).allow(null, ''),
+    OrganizationLogo: Joi.string().allow('').optional(),
 });
 
 const updateSchema = Joi.object({
@@ -25,8 +26,10 @@ const updateSchema = Joi.object({
     OrganizationName: Joi.string().max(100).allow(null, ''),
     OrganizationContact: Joi.string().max(100).allow(null, ''),
     OrganizationWebsite: Joi.string().uri().max(100).allow(null, ''),
-    NotificationMail: Joi.string().email().max(100).allow(null, '')
+    NotificationMail: Joi.string().email().max(100).allow(null, ''),
+    OrganizationLogo: Joi.string().allow('').optional(),
 });
+
 
 const SMTPController = {
     get_settings: async (req, res) => {
@@ -61,6 +64,7 @@ const SMTPController = {
                 OrganizationContact,
                 OrganizationWebsite,
                 NotificationMail,
+                OrganizationLogo
             } = value;
 
             const hashedPassword = generatePasswordHash(SMTPPassword, 10);
@@ -75,6 +79,7 @@ const SMTPController = {
                 OrganizationContact,
                 OrganizationWebsite,
                 NotificationMail,
+                OrganizationLogo
             });
 
             res.status(201).json({
@@ -103,6 +108,7 @@ const SMTPController = {
                 OrganizationContact,
                 OrganizationWebsite,
                 NotificationMail,
+                OrganizationLogo
             } = value;
 
             const updateData = {
@@ -114,6 +120,7 @@ const SMTPController = {
                 OrganizationContact,
                 OrganizationWebsite,
                 NotificationMail,
+                OrganizationLogo
             };
 
             if (SMTPPassword) {
