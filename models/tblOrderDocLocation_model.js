@@ -12,6 +12,10 @@ const TblOrderDocLocation = sequelize.define("TblOrderDocLocation", {
     type: DataTypes.BIGINT,
     allowNull: false
   },
+  RecordID: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
   LocationID: {
     type: DataTypes.INTEGER,
     allowNull: false

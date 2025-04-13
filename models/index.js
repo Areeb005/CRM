@@ -103,6 +103,19 @@ TblOrder.belongsTo(User, { foreignKey: "UserID", as: "orderByUser" });
 TblOrder.belongsTo(User, { foreignKey: "CreatedUserID", as: "createdByUser" });
 
 
+// Statlog_model.js
+Statlog.belongsTo(TStatus, { foreignKey: 'Status_ID' });
+TStatus.hasMany(Statlog, { foreignKey: 'Status_ID' });
+
+// Connect Statlog with TblOrderDocLocation
+Statlog.belongsTo(TblOrderDocLocation, { foreignKey: 'Record_ID', targetKey: 'RecordID' });
+TblOrderDocLocation.hasMany(Statlog, {
+    foreignKey: 'Record_ID',
+    sourceKey: 'RecordID',
+    as: 'statusLogs'
+});
+
+
 module.exports = {
     User,
     tblOrderCaseParties,

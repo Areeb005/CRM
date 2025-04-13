@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { User, ActivityLog, Court, Location, TblOrder, tblOrderCaseParties, TblOrderDocLocation } = require('../../models');
+const { User, ActivityLog, Court, Location, TblOrder, tblOrderCaseParties, TblOrderDocLocation, Statlog, TStatus } = require('../../models');
 const sequelize = require('../../config/dbConfig');
 const crypto = require('crypto');
 const { DateTime } = require('luxon');
@@ -700,17 +700,13 @@ const orderController = {
 
       const { status, case_type, order_code, needed_by, created_by, order_by } = req.query;
 
-      let whereClause = {}
+      let whereClause = {};
 
-      // Restrict to logged-in attorney’s orders
       if (req.user.role === "attorney") {
         whereClause.UserID = req.user.id;
       }
 
-      console.log("whereClause", whereClause);
-
-
-      // Dynamic filters
+      // Apply filters
       if (status) whereClause.RequestStatus = status;
       if (case_type) whereClause.CaseTypeID = case_type;
       if (order_code) whereClause.OrderCode = order_code;
@@ -722,38 +718,67 @@ const orderController = {
         where: whereClause,
         include: [
           { model: tblOrderCaseParties, required: false },
-          { model: TblOrderDocLocation, required: false },
+          {
+            model: TblOrderDocLocation,
+            required: false,
+            include: [
+              {
+                model: Statlog,
+                as: 'statusLogs',
+                required: false,
+                include: [
+                  {
+                    model: TStatus,
+                    attributes: ['Status_ID', 'Name'],
+                    where: { ShowToClient: true },
+                    required: true
+                  }
+                ]
+              }
+            ]
+          },
           { model: User, as: "orderByUser", attributes: userAttributes },
-          { model: User, as: "createdByUser", attributes: userAttributes },
+          { model: User, as: "createdByUser", attributes: userAttributes }
         ],
         limit,
         offset,
-        order: [['OrderID', 'DESC']],
+        order: [["OrderID", "DESC"]],
         distinct: true
       });
 
+
+
       const formattedOrders = rows.map(order => {
         const json = order.toJSON();
+
+
         return {
           ...json,
           TblOrderDocLocations: (json.TblOrderDocLocations || []).map(doc => ({
             ...doc,
-            files: doc.files ? JSON.parse(doc.files) : []
+            files: doc.files ? JSON.parse(doc.files) : [],
+            statusLogs: (doc.statusLogs || []).map(log => ({
+              Record_ID: log.Record_ID,
+              StatDate: log.statdate,
+              AStatus: log.ClientStatus || (log.TStatus?.Name ?? null)
+            }))
           }))
         };
       });
 
-      return res.status(200).json({
+      res.status(200).json({
         totalOrders: count,
         currentPage: page,
         totalPages: Math.ceil(count / limit),
         orders: formattedOrders
       });
+
     } catch (error) {
       console.error("❌ get_all error:", error);
       res.status(500).json({ error: "Server error" });
     }
   },
+
 
   get_one: async (req, res) => {
     try {
