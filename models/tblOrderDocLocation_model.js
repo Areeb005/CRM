@@ -14,7 +14,7 @@ const TblOrderDocLocation = sequelize.define("TblOrderDocLocation", {
   },
   RecordID: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: true
   },
   LocationID: {
     type: DataTypes.INTEGER,
@@ -118,7 +118,11 @@ const TblOrderDocLocation = sequelize.define("TblOrderDocLocation", {
   CancelDocRejectUserID: {
     type: DataTypes.BIGINT,
     allowNull: true
-  }
+  },
+  CopyServiceFiles: {
+    type: DataTypes.STRING(4000), // Sequelize maps NVARCHAR to STRING
+    allowNull: true
+}
 }, {
   tableName: "tblOrderDocLocation",
   schema: "dbo",         // ✅ specify schema separately
