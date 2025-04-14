@@ -133,7 +133,7 @@ const UsersPage = () => {
 	  const handleStatusChange = async (item: any) => {
 		Swal.fire({
 			title: 'Are you sure?',
-			text: `Do you want to change the status to ${item.status ? 'Inactive' : 'Active'}?`,
+			text: `Do you want to change the status to ${item.IsApproved ? 'Inactive' : 'Active'}?`,
 			icon: 'warning',
 			showCancelButton: true,
 			confirmButtonColor: "#d33",
@@ -143,7 +143,7 @@ const UsersPage = () => {
 		}).then((result) => {
 			if (result.isConfirmed) {
 				// Trigger mutation to update status
-				deleteUser({ id: item.id, body: { status: !item.status } })
+				deleteUser({ id: item.UserID, body: { status: !item.IsApproved } })
 					.unwrap()
 					.then(() => {
 						Swal.fire('Updated!', 'Site status has been updated.', 'success');
@@ -270,13 +270,13 @@ const UsersPage = () => {
 							<tbody>
                             {items.map((user: any, index: number) => (
                             <tr key={index}>
-                                <td>{user.id}</td>
-                                <td>{user.username}</td>
-                                <td>{user.firm_name}</td>
-                                <td>{user.email}</td>
-                                <td>{user.phone}</td>
-                                <td>{user.address}</td>
-                                <td>{user.city}</td>
+                                <td>{user.UserID}</td>
+                                <td>{user.UserName}</td>
+                                <td>{user.FirmName}</td>
+                                <td>{user.Email}</td>
+                                <td>{user.Phone}</td>
+                                <td>{user.Address}</td>
+                                <td>{user.City}</td>
                                 <td>
                                     <span
                                         // className={`badge ${
@@ -287,7 +287,7 @@ const UsersPage = () => {
                                         //         : 'bg-secondary'
                                         // }`}
                                     >
-                                        {user.role}
+                                        {user.Role}
                                     </span>
                                 </td>
 								<td>
@@ -295,20 +295,20 @@ const UsersPage = () => {
 													{/* {item?.status ? 'Active' : 'Inactive'} */}
 													<Checks
 														type='switch'
-														label={user?.status ? 'Active' : 'Inactive'}
-														checked={user?.status}
+														label={user?.IsApproved ? 'Active' : 'Inactive'}
+														checked={user?.IsApproved}
 														onChange={() => handleStatusChange(user)}
 													/>
 												</td>
 								</td>
                                 <td>
-                                   {user?.status && 
+                                   {/* {user?.IsApproved &&  */}
 								   <>
                                   {/* <Icon icon='Delete' size={"2x"} color='danger' className='cursor-pointer' onClick={()=>handleDelete(user?.id)} /> */}
 								  <Icon
 								  className='mx-2'
 														onClick={() =>
-															navigate(`/user/${user?.id}`, {
+															navigate(`/user/${user?.UserID}`, {
 																state: user,
 															})
 														}
@@ -318,7 +318,7 @@ const UsersPage = () => {
 														color='dark'
 													/>
 													</>
-													}
+													{/* } */}
                                 </td>
                             </tr>
                         ))}

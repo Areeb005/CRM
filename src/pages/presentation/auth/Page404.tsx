@@ -41,7 +41,7 @@ const Page404 = () => {
 							isLight
 							icon='HolidayVillage'
 							tag='a'
-							href={user?.role === "admin" ? "/dashboard" : "/order"}
+							href={user?.Role === "Administrator" ? "/dashboard" : "/order"}
 							>
 							Homepage
 						</Button>

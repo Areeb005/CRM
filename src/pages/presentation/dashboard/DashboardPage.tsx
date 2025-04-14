@@ -144,8 +144,8 @@ const DashboardPage = () => {
 
 
 // Define chart options dynamically
-const filteredStatusData = dashboardData?.orderStatuses?.filter((item: any) => item.status === "Active" || item.status === "Completed");
-const chartLabelsStatus = filteredStatusData?.map((item: any) => item.status);
+const filteredStatusData = dashboardData?.orderStatuses?.filter((item: any) => item.RequestStatus === "Active" || item.RequestStatus === "Completed");
+const chartLabelsStatus = filteredStatusData?.map((item: any) => item.RequestStatus);
 const chartSeriesStatus = filteredStatusData?.map((item: any) => item.count);
 // Extract labels and series data
 
@@ -161,13 +161,13 @@ const chartOptionsStatus: ApexOptions = {
     },
 };
 
-const filteredCompletionData = dashboardData?.orderStatuses?.filter(item => 
-    item.status === "Active" || item.status === "Cancelled"
+const filteredCompletionData = dashboardData?.orderStatuses?.filter((item: any) => 
+    item.RequestStatus === "Active" || item.RequestStatus === "Cancelled"
 );
 
 // Extract labels and series data dynamically
-const chartLabelsCompletion = filteredCompletionData?.map(item => item.status);
-const chartSeriesCompletion = filteredCompletionData?.map(item => item.count);
+const chartLabelsCompletion = filteredCompletionData?.map((item: any) => item.RequestStatus);
+const chartSeriesCompletion = filteredCompletionData?.map((item: any) => item.count);
 
 const chartOptionsCompletion: ApexOptions = {
     chart: {
@@ -189,13 +189,13 @@ const chartOptionsCompletion: ApexOptions = {
         },
     },
 };
-  const urgentOrders = dashboardData?.recentOrders?.filter((order) => order.urgent)?.slice(0, 10)?.map((order) => ({
-    orderCode: order.order_code, // Using `id` as the order code
+  const urgentOrders = dashboardData?.recentOrders?.slice(0, 10)?.map((order: any) => ({
+    orderCode: order.OrderCode, // Using `id` as the order code
     clientName: order.orderByUser?.username || "N/A", // Extract client name
-    caseName: order.case_name,
-    caseNumber: order.case_number,
-    deadline: order.needed_by
-      ? dayjs(order.needed_by).format("MMM DD, YYYY") // Format deadline date
+    caseName: order.CaseName,
+    caseNumber: order.CaseNumber,
+    deadline: order.NeededBy
+      ? dayjs(order.NeededBy).format("MMM DD, YYYY") // Format deadline date
       : "No Deadline",
   }));
 
@@ -344,10 +344,10 @@ const chartOptionsCompletion: ApexOptions = {
 								 
 								
 							</th>
-							<th >
+							{/* <th >
 							Client Name
 								
-							</th>
+							</th> */}
 							<th >
 							Case Name			
 							</th>
@@ -363,7 +363,7 @@ const chartOptionsCompletion: ApexOptions = {
             {urgentOrders?.map((order, index) => (
               <tr key={index}>
                 <td>{order.orderCode}</td>
-                <td>{order.clientName}</td>
+                {/* <td>{order.clientName}</td> */}
                 <td>{order.caseName}</td>
                 <td>{order.caseNumber}</td>
                 <td>{order.deadline}</td>

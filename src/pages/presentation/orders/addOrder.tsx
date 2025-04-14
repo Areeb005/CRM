@@ -81,78 +81,80 @@ import CreatableSelect from "react-select/creatable";
 //     { label: "Subpoena To Appear With Records At A Deposition", value: "Subpoena To Appear With Records At A Deposition" },
 // ];
 
-const actionOptions: OptionType[] = [
-    { label: "Prepare Subpoena - Serve - Copy", value: "Prepare Subpoena - Serve - Copy" },
-    { label: "Prepare Subpoena - Serve", value: "Prepare Subpoena - Serve" },
-    { label: "Prepare Subpoena - Copy", value: "Prepare Subpoena - Copy" },
-    { label: "Subpoena Attached - Serve - Copy", value: "Subpoena Attached - Serve - Copy" },
-    { label: "Subpoena Attached - Serve", value: "Subpoena Attached - Serve" },
-    { label: "Subpoena Attached - Copy", value: "Subpoena Attached - Copy" },
-    { label: "Copy", value: "Copy" }
+const actionOptions= [
+    { label: "Prepare Subpoena - Serve - Copy", value: 2001 },
+    { label: "Prepare Subpoena - Serve", value: 2002 },
+    { label: "Prepare Subpoena - Copy", value: 2003 },
+    { label: "Subpoena Attached - Serve - Copy", value: 2004 },
+    { label: "Subpoena Attached - Serve", value: 2005 },
+    { label: "Subpoena Attached - Copy", value: 2006 },
+    { label: "Copy", value: 2007 }
 ];
+
 
 
 const recordTypeOption: any[] = [
-    { label: "ADDENDUM", value: "ADDENDUM" },
-    { label: "DENTAL", value: "DENTAL" },
-    { label: "EMPLOYMENT/ CIVIL", value: "EMPLOYMENT/ CIVIL" },
-    { label: "HEALTH CLUB", value: "HEALTH CLUB" },
-    { label: "INSURANCE/ CIVIL", value: "INSURANCE/ CIVIL" },
-    { label: "ATTORNEY", value: "ATTORNEY" },
-    { label: "MEDICAL/ CIVIL", value: "MEDICAL/ CIVIL" },
-    { label: "PHARMACY", value: "PHARMACY" },
-    { label: "PSYCHIATRIC", value: "PSYCHIATRIC" },
-    { label: "SCHOLASTIC", value: "SCHOLASTIC" },
-    { label: "X-RAY", value: "X-RAY" },
-    { label: "BILLING", value: "BILLING" },
-    { label: "MEDICAL/ W.C.", value: "MEDICAL/ W.C." },
-    { label: "PARAMEDIC", value: "PARAMEDIC" },
-    { label: "EMPLOYMENT/ W.C.", value: "EMPLOYMENT/ W.C." },
-    { label: "INSURANCE/ W.C.", value: "INSURANCE/ W.C." },
-    { label: "ATTACHMENT 3", value: "ATTACHMENT 3" },
-    { label: "SCR-SANTA ANA-2", value: "SCR-SANTA ANA-2" },
-    { label: "EMPLOYMENT RECORDS #1", value: "EMPLOYMENT RECORDS #1" },
-    { label: "SCR MED/INVESTIGATION", value: "SCR MED/INVESTIGATION" },
-    { label: "MEDICAL RECORDS #4", value: "MEDICAL RECORDS #4" },
-    { label: "EMPLOYMENT RECORDS #3", value: "EMPLOYMENT RECORDS #3" },
-    { label: "INSURANCE RECORDS #1", value: "INSURANCE RECORDS #1" },
-    { label: "INSURANCE RECORDS AUTO", value: "INSURANCE RECORDS AUTO" },
-    { label: "MEDICAL RECORDS #5", value: "MEDICAL RECORDS #5" },
-    { label: "MEDICAL RECORDS #2", value: "MEDICAL RECORDS #2" },
-    { label: "INSURANCE RECORDS #3", value: "INSURANCE RECORDS #3" },
-    { label: "MEDICAL RECORDS #7", value: "MEDICAL RECORDS #7" },
-    { label: "MEDICAL RECORDS #1", value: "MEDICAL RECORDS #1" },
-    { label: "DENTAL RECORDS #1", value: "DENTAL RECORDS #1" },
-    { label: "MEDICAL/INSURANCE RECORDS", value: "MEDICAL/INSURANCE RECORDS" },
-    { label: "EMPLOYMENT RECORDS #2", value: "EMPLOYMENT RECORDS #2" },
-    { label: "MEDICAL RECORDS-BILL-XRAYS", value: "MEDICAL RECORDS-BILL-XRAYS" },
-    { label: "MEDICAL RECORDS #6", value: "MEDICAL RECORDS #6" },
-    { label: "INSURANCE RECORDS #2", value: "INSURANCE RECORDS #2" },
-    { label: "PHYSICAL THERAPY RECORDS", value: "PHYSICAL THERAPY RECORDS" },
-    { label: "BUSINESS RECORDS", value: "BUSINESS RECORDS" },
-    { label: "BILLING RECORDS #2", value: "BILLING RECORDS #2" },
-    { label: "SCHOOL RECORDS", value: "SCHOOL RECORDS" },
-    { label: "SHERIFF RECORDS", value: "SHERIFF RECORDS" },
-    { label: "SCR-SANTA ANA-1", value: "SCR-SANTA ANA-1" },
-    { label: "MEDICAL RECORDS #3", value: "MEDICAL RECORDS #3" },
-    { label: "ADDITIONAL INFO NEEDED", value: "ADDITIONAL INFO NEEDED" },
-    { label: "INSURANCE RECORDS - BENEFITS P", value: "INSURANCE RECORDS - BENEFITS P" },
-    { label: "CORONER", value: "CORONER" },
-    { label: "CAL OSHA", value: "CAL OSHA" },
-    { label: "EDD", value: "EDD" },
-    { label: "SECURITY / SURVEILLANCE", value: "SECURITY / SURVEILLANCE" },
-    { label: "WCAB FILE", value: "WCAB FILE" },
-    { label: "MATERIAL SAFETY DATA SHEETS", value: "MATERIAL SAFETY DATA SHEETS" },
-    { label: "RATINGS BUREAU W/C", value: "RATINGS BUREAU W/C" },
-    { label: "WCIRB REQUEST", value: "WCIRB REQUEST" },
-    { label: "PAYROLL", value: "PAYROLL" },
-    { label: "ORTHOPEDIC", value: "ORTHOPEDIC" },
-    { label: "AUTOMOBILE INSURANCE", value: "AUTOMOBILE INSURANCE" },
-    { label: "HEALTH PLAN PROVIDER", value: "HEALTH PLAN PROVIDER" },
-    { label: "SPECIAL NOTICE OF LAWSUIT", value: "SPECIAL NOTICE OF LAWSUIT" },
-    { label: "SKIP TRACE SEARCH", value: "SKIP TRACE SEARCH" },
-    { label: "SOCIAL SECURITY RECORDS", value: "SOCIAL SECURITY RECORDS" },
+    { label: "ADDENDUM", value: 1001 },
+    { label: "DENTAL", value: 1002 },
+    { label: "EMPLOYMENT/ CIVIL", value: 1003 },
+    { label: "HEALTH CLUB", value: 1004 },
+    { label: "INSURANCE/ CIVIL", value: 1005 },
+    { label: "ATTORNEY", value: 1006 },
+    { label: "MEDICAL/ CIVIL", value: 1007 },
+    { label: "PHARMACY", value: 1008 },
+    { label: "PSYCHIATRIC", value: 1009 },
+    { label: "SCHOLASTIC", value: 1010 },
+    { label: "X-RAY", value: 1011 },
+    { label: "BILLING", value: 1012 },
+    { label: "MEDICAL/ W.C.", value: 1013 },
+    { label: "PARAMEDIC", value: 1014 },
+    { label: "EMPLOYMENT/ W.C.", value: 1015 },
+    { label: "INSURANCE/ W.C.", value: 1016 },
+    { label: "ATTACHMENT 3", value: 1017 },
+    { label: "SCR-SANTA ANA-2", value: 1018 },
+    { label: "EMPLOYMENT RECORDS #1", value: 1019 },
+    { label: "SCR MED/INVESTIGATION", value: 1020 },
+    { label: "MEDICAL RECORDS #4", value: 1021 },
+    { label: "EMPLOYMENT RECORDS #3", value: 1022 },
+    { label: "INSURANCE RECORDS #1", value: 1023 },
+    { label: "INSURANCE RECORDS AUTO", value: 1024 },
+    { label: "MEDICAL RECORDS #5", value: 1025 },
+    { label: "MEDICAL RECORDS #2", value: 1026 },
+    { label: "INSURANCE RECORDS #3", value: 1027 },
+    { label: "MEDICAL RECORDS #7", value: 1028 },
+    { label: "MEDICAL RECORDS #1", value: 1029 },
+    { label: "DENTAL RECORDS #1", value: 1030 },
+    { label: "MEDICAL/INSURANCE RECORDS", value: 1031 },
+    { label: "EMPLOYMENT RECORDS #2", value: 1032 },
+    { label: "MEDICAL RECORDS-BILL-XRAYS", value: 1033 },
+    { label: "MEDICAL RECORDS #6", value: 1034 },
+    { label: "INSURANCE RECORDS #2", value: 1035 },
+    { label: "PHYSICAL THERAPY RECORDS", value: 1036 },
+    { label: "BUSINESS RECORDS", value: 1037 },
+    { label: "BILLING RECORDS #2", value: 1038 },
+    { label: "SCHOOL RECORDS", value: 1039 },
+    { label: "SHERIFF RECORDS", value: 1040 },
+    { label: "SCR-SANTA ANA-1", value: 1041 },
+    { label: "MEDICAL RECORDS #3", value: 1042 },
+    { label: "ADDITIONAL INFO NEEDED", value: 1043 },
+    { label: "INSURANCE RECORDS - BENEFITS P", value: 1044 },
+    { label: "CORONER", value: 1045 },
+    { label: "CAL OSHA", value: 1046 },
+    { label: "EDD", value: 1047 },
+    { label: "SECURITY / SURVEILLANCE", value: 1048 },
+    { label: "WCAB FILE", value: 1049 },
+    { label: "MATERIAL SAFETY DATA SHEETS", value: 1050 },
+    { label: "RATINGS BUREAU W/C", value: 1051 },
+    { label: "WCIRB REQUEST", value: 1052 },
+    { label: "PAYROLL", value: 1053 },
+    { label: "ORTHOPEDIC", value: 1054 },
+    { label: "AUTOMOBILE INSURANCE", value: 1055 },
+    { label: "HEALTH PLAN PROVIDER", value: 1056 },
+    { label: "SPECIAL NOTICE OF LAWSUIT", value: 1057 },
+    { label: "SKIP TRACE SEARCH", value: 1058 },
+    { label: "SOCIAL SECURITY RECORDS", value: 1059 }
 ];
+
 
 
 const customStyles = {
@@ -291,6 +293,7 @@ const validate = (values : any) => {
 const AddOrder = () => {
 	const location = useLocation();
   const itemId = location.state?.itemId; // Get itemId from state
+ 
 	const navigate = useNavigate();
     const TABS = {
 		ACCOUNT_DETAIL: 'Account Details',
@@ -298,7 +301,7 @@ const AddOrder = () => {
 		MY_WALLET: 'My Wallet',
 	};
 	const userDataStore = useSelector((state: RootState) => state.auth.user);
-	
+	console.log("itemId" ,userDataStore)
 	const [activeTab, setActiveTab] = useState(TABS.ACCOUNT_DETAIL);
     const [addparticipants, setAddParticipants] = useState<boolean>(false);
    
@@ -307,7 +310,7 @@ const AddOrder = () => {
 	const [createOrder, {isLoading: OrderLoading}] = useCreateOrderMutation()
 	const [updateOrder, {isLoading: UpdateLoading}] = useDeleteOrderMutation()
 	const id = useSelector((state: any)=> state.auth.user.id)
-	const [selectedId , setSelectedId] = useState(id)
+	const [selectedId , setSelectedId] = useState(id || userDataStore?.UserID)
 	const [caseTypeId , setCaseTypeId] = useState(null)
 	const { data: userData, isLoading:userLoading  } = useGetSingleQuery(
 		{ type: "user", id: selectedId },
@@ -317,23 +320,24 @@ const AddOrder = () => {
 		{ type: "proctypes", id: caseTypeId },
 		{ skip: !caseTypeId } // Prevents API call if selectedId is falsy
 	  );
-	  const shouldSkip = !userDataStore || userDataStore.role === "attorney";
+	  const shouldSkip = !userDataStore || userDataStore.Role === "attorney";
 	const {data:users}= useGetUsersQuery(undefined,{
 		skip: shouldSkip
 	})
 	const {data:caseTypes}= useGetCaseTypeQuery({})
 	const { data: order , isLoading, refetch: orderRefetch} = useGetSingleQuery({ type: 'order', id: itemId }, { skip: !itemId });
-	const [caseParticipants , setCasePArticipants] = useState<any[]> (order?.Participants || [])
-    const [documentLocationData , setdocumentLocationData] = useState <any[]>(order?.DocumentLocations || [])
+	const [caseParticipants , setCasePArticipants] = useState<any[]> (order?.tblOrderCaseParties || [])
+    const [documentLocationData , setdocumentLocationData] = useState <any[]>(order?.TblOrderDocLocations || [])
 	console.log(userData, "userData")
 
 
 	useEffect(()=>{
-		setCasePArticipants(order?.Participants)
-		setdocumentLocationData(order?.DocumentLocations)
+		setCasePArticipants(order?.tblOrderCaseParties)
+		setdocumentLocationData(order?.TblOrderDocLocations)
 	},[order])
 
-	const recordDetails = order?.record_details ? JSON.parse(order.record_details) : {};
+	const recordDetails = 
+	order?.record_details 
 
 	
 	
@@ -526,46 +530,46 @@ const AddOrder = () => {
 	console.log(recordDetails , "recordDetails")
 	const formik = useFormik({
 		initialValues: {
-			orderBy: order?.orderByUser?.id || null,
+			orderBy: order?.orderByUser?.UserID || userData?.data?.UserID || null,
 			attonyName:   order?.orderByUser
-			? { value: order.orderByUser?.username, label: order.orderByUser?.username }: userData?.data?.username
-			? { value: userData.data.username, label: userData.data.username } :  "",
-			firmName: order?.orderByUser?.firm_name || userData?.data?.firm_name   || '',
-			emailAddress: userData?.data?.email || order?.orderByUser?.email || '',
-			phoneNumber: userData?.data?.phone || order?.orderByUser?.phone || '',
-			addressLine: userData?.data?.address || order?.orderByUser?.address || '',
+			? { value: order.orderByUser?.UserName, label: order.orderByUser?.UserName }: userData?.data?.UserName
+			? { value: userData.data.UserName, label: userData.data.UserName } :  "",
+			firmName: order?.orderByUser?.FirmName || userData?.data?.FirmName   || '',
+			emailAddress: userData?.data?.Email || order?.orderByUser?.Email || '',
+			phoneNumber: userData?.data?.Phone || order?.orderByUser?.Phone || '',
+			addressLine: userData?.data?.Address || order?.orderByUser?.Address || '',
 			addressLine2: order?.orderByUser?.addressLine2 || '',
-			city: userData?.data?.city || order?.orderByUser?.city || '',
-			state: userData?.data?.state || order?.orderByUser?.state || '',
-			zip: userData?.data?.zip || order?.orderByUser?.zip || '',
-			urgent: order?.urgent || false,
-			neededBy: order?.needed_by ? dayjs(order?.needed_by).format("YYYY-MM-DD") :  null,
-			caseType: order?.case_type || '',
-			billTo: order?.bill_to ? { value: order.bill_to, label: order.bill_to }
+			city: userData?.data?.City || order?.orderByUser?.city || '',
+			state: userData?.data?.State || order?.orderByUser?.State || '',
+			zip: userData?.data?.Zip || order?.orderByUser?.Zip || '',
+			urgent: order?.IsRush || false,
+			neededBy: order?.NeededBy ? dayjs(order?.NeededBy).format("YYYY-MM-DD") :  null,
+			caseType: order?.CaseTypeID || '',
+			billTo: order?.BillTo ? { value: order.BillTo, label: order.BillTo }
         : "",
-			caseName: order?.case_name || '',
-			fileNumber: order?.file_number || '',
-			caseNumber: order?.case_number || '',
-			courtName: order?.court_name 
-        ? { value: order.court_name, label: order.court_name } 
+			caseName: order?.CaseName || '',
+			fileNumber: order?.FileNumber || '',
+			caseNumber: order?.CaseNumber || '',
+			courtName: order?.CourtName 
+        ? { value: order.CourtName, label: order.CourtName } 
         : "",  
-			CourtAddress: order?.court_address || '',
-			CourtCity: order?.court_city || "",
-			CourtState: order?.court_state || "",
-			CourtZip: order?.court_zip || "",
-			person: order?.record_details?.record_type === "Person" || recordDetails.record_type == "Person",
-			entity: order?.record_details?.record_type === "Entity" || recordDetails.record_type == "Entity",
+			CourtAddress: order?.CourtAddress || '',
+			CourtCity: order?.CourtCity || "",
+			CourtState: order?.CourtState || "",
+			CourtZip: order?.CourtZip || "",
+			person: order?.record_details?.RecordType === "Person" || "",
+			entity: order?.record_details?.RecordType === "Entity" || "",
 			recordTypePerson: {
-				firstName: order?.record_details?.first_name ||  recordDetails?.first_name ||  "",
-				lastName: order?.record_details?.last_name || recordDetails?.last_name || "",
-				address: order?.record_details?.record_address ||  recordDetails?.record_address ||"",
-				city: order?.record_details?.record_city || recordDetails?.record_city || "",
-				state: order?.record_details?.record_state || recordDetails?.record_state || "",
+				firstName: order?.record_details?.PFirstName ||  recordDetails?.PFirstName ||  "",
+				lastName: order?.record_details?.PLastName || recordDetails?.PLastName || "",
+				address: order?.record_details?.PAddress ||  recordDetails?.PAddress ||"",
+				city: order?.record_details?.PCity || recordDetails?.PCity || "",
+				state: order?.record_details?.PState || recordDetails?.PState || "",
 				zip: order?.record_details?.record_zip || recordDetails?.record_zip ||  "",
-				SSN: order?.record_details?.ssn || recordDetails?.ssn || "",
-				AKA: order?.record_details?.aka || recordDetails?.aka || "",
-				dateOfInjuryFrom: order?.record_details?.date_of_injury?.from || dayjs(recordDetails?.date_of_injury?.from).format("YYYY-MM-DD")   ||  "",
-				dateOfInjuryTo: order?.record_details?.date_of_injury?.to || dayjs(recordDetails?.date_of_injury?.to).format("YYYY-MM-DD") || "",
+				SSN: order?.record_details?.PSSN || recordDetails?.PSSN || "",
+				AKA: order?.record_details?.PAKA || recordDetails?.PAKA || "",
+				dateOfInjuryFrom: order?.record_details?.date_of_injury?.from ||  dayjs(recordDetails?.date_of_injury?.from).format("YYYY-MM-DD")   ||  "",
+				dateOfInjuryTo: order?.record_details?.date_of_injury?.to ||  dayjs(recordDetails?.date_of_injury?.to).format("YYYY-MM-DD") || "",
 			},
 			recordTypeEntity: {
 				name: order?.record_details?.name || "",
@@ -577,70 +581,72 @@ const AddOrder = () => {
 				dateOfInjuryTo: order?.record_details?.date_of_injury?.to || "",
 				continuous_trauma : recordDetails?.continuous_trauma || false
 			},
-			participants: order?.Participants?.length > 0 
-			? order?.Participants?.map((p) => ({
-				participant: { value: p.participant, label: p.participant } || "",
-				type: p.type || "",
-				represents: p.represents || "",
-				phone: p.phone || "",
-				address: p.address || "",
-				city: p.city || "",
-				state: p.state || "",
-				zip: p.zip || "",
-				attorney: p.attorney || "",
-				claim: p.claim || "",
-				adjuster: p.adjuster || "",
-				note: p.note || "",
+			participants: order?.tblOrderCaseParties?.length > 0 
+			? order?.tblOrderCaseParties?.map((p: any) => ({
+				PartyName: { value: p.PartyName, label: p.PartyName } || "",
+				PartyType: p?.PartyType || "",
+				RepresentID: p?.RepresentID || "",
+				PartyPhone: p?.PartyPhone || "",
+				PartyAddress: p?.PartyAddress || "",
+				PartyCity: p?.PartyCity || "",
+				PartyState: p?.PartyState || "",
+				PartyZip: p?.PartyZip || "",
+				OpposingAttorney: p?.OpposingAttorney || "",
+				InsuranceClaim: p?.InsuranceClaim || "",
+				InsuranceAdjuster: p?.InsuranceAdjuster || "",
+				Note: p?.Note || "",
 			}))
 			: [
 				{
-					participant: "",
-					type: "",
-					represents: "",
-					phone: "",
-					address: "",
-					city: "",
-					state: "",
-					zip: "",
-					attorney: "",
-					claim: "",
-					adjuster: "",
-					note: "",
+					PartyName: "",
+					PartyType: "",
+					RepresentID: "",
+					PartyPhone: "",
+					PartyAddress: "",
+					PartyCity: "",
+					PartyState: "",
+					PartyZip: "",
+					OpposingAttorney: "",
+					InsuranceClaim: "",
+					InsuranceAdjuster: "",
+					Note: "",
 				},
 			],
-			documentLocation: order?.DocumentLocations?.length > 0
-  ? order?.DocumentLocations?.map((d) => ({
-      name:{ value: d.name, label: d.name } || "",
-      address: d.address || "",
-      city: d.city || "",
-      state: d.state || "",
-      zip: d.zip || "",
-      process_type: d.process_type || "",
-      record_type: d.record_type || "",
-      action: d.action || "",
-      note: d.note || "",
-      review_request: d.review_request ?? false, // Ensuring boolean value
-      files: Array.isArray(d.files) ? d.files : [], // Ensuring an array
+			documentLocation: order?.TblOrderDocLocations?.length > 0
+  ? order?.TblOrderDocLocations?.map((d:any) => ({
+	LocationName:{ value: d?.LocationName, label: d?.LocationName } || "",
+	LocationAddress: d?.LocationAddress || "",
+	LocationCity: d?.LocationCity || "",
+	LocationState: d?.LocationState || "",
+	LocationZip: d?.LocationZip || "",
+	ProcessType: d?.ProcessType || "",
+	RecordType: d?.RecordType || "",
+	Action: d?.Action || "",
+	Note: d?.Note || "",
+	CopyForReview: d?.CopyForReview ?? false, // Ensuring boolean value
+	// DocFilePath: Array.isArray(d.files) ? d.files : [], // Ensuring an array
+	DocFilePath: d?.DocFilePath, // Ensuring an array
     }))
   : [
       {
-        name: "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        process_type: "",
-        record_type: "",
-        action: "",
-        note: "",
-        review_request: false,
-        files: [],
+        LocationName: "",
+        LocationAddress: "",
+        LocationCity: "",
+        LocationState: "",
+        LocationZip: "",
+        ProcessType: "",
+        RecordType: "",
+        Action: "",
+        Note: "",
+        CopyForReview: false,
+        DocFilePath: "",
       },
     ],
 
 		},
 		enableReinitialize: true,
 		onSubmit: async (values) => {
+			console.log(values.participants, "values.participants")
 			// try {
 			// 	const formattedParticipants = values.participants.map(p => ({
 			// 		...p,
@@ -732,44 +738,45 @@ const AddOrder = () => {
 			try {
 				const formattedParticipants = values.participants.map(p => ({
 					...p,
-					participant: p.participant?.value || "", // Ensure it's a string
+					PartyName: p.PartyName?.value || "", // Ensure it's a string
 				}));
 			
 				const formattedDocumentLocation = values.documentLocation.map(p => ({
 					...p,
-					name: p.name?.value || "", // Ensure it's a string
+					LocationName: p.LocationName?.value || "", // Ensure it's a string
 				}));
 			
 				const postData = {
-					order_by: selectedId,
-					urgent: values.urgent,
-					needed_by: values.neededBy,
-					case_type: values.caseType,
-					case_name: values.caseName,
-					file_number: values.fileNumber,
-					case_number: values.caseNumber,
-					court_name: values.courtName?.value || "",
-					court_address: values.CourtAddress || "",
-					court_city: values.CourtCity || "",
-					court_state: values.CourtState || "",
-					court_zip: values.CourtZip || "",
+					UserID: values.orderBy,
+					IsRush: values.urgent,
+					NeededBy: values.neededBy,
+					CaseTypeID: values.caseType,
+					CaseName: values.caseName,
+					FileNumber: values.fileNumber,
+					CaseNumber: values.caseNumber,
+					CourtName: values.courtName?.value || "",
+					CourtAddress: values.CourtAddress || "",
+					CourtCity: values.CourtCity || "",
+					CourtState: values.CourtState || "",
+					CourtZip: values.CourtZip || "",
+					BranchID: 5,
 					record_details: {
-						record_type: values.person ? "Person" : values.entity ? "Entity" : "Person",
-						first_name: values.recordTypePerson?.firstName || "",
-						last_name: values.recordTypePerson?.lastName || "",
-						aka: values.recordTypePerson?.AKA || "",
-						ssn: values.recordTypePerson?.SSN || "",
+						RecordType: values.person ? "Person" : values.entity ? "Entity" : "Person",
+						PFirstName: values.recordTypePerson?.firstName || "",
+						PLastName: values.recordTypePerson?.lastName || "",
+						PAKA: values.recordTypePerson?.AKA || "",
+						PSSN: values.recordTypePerson?.SSN || "",
 						date_of_injury: {
 							from: values.recordTypePerson?.dateOfInjuryFrom || "",
 							to: values.recordTypePerson?.dateOfInjuryTo || "",
 						},
-						record_address: values.recordTypePerson?.address || "",
-						record_city: values.recordTypePerson?.city || "",
-						record_state: values.recordTypePerson?.state || "",
-						record_zip: values.recordTypePerson?.zip || "",
+						PAddress: values.recordTypePerson?.address || "",
+						PCity: values.recordTypePerson?.city || "",
+						PState: values.recordTypePerson?.state || "",
+						PZip: values.recordTypePerson?.zip || "",
 						continuous_trauma : values?.continuous_trauma
 					},
-					bill_to: values.billTo?.value || "",
+					BillTo: values.billTo?.value || "",
 					participants: formattedParticipants,
 					document_locations: formattedDocumentLocation,
 				};
@@ -791,7 +798,7 @@ const AddOrder = () => {
 							"Order has been updated successfully",
 							'success'
 						);
-					} catch (err) {
+					} catch (err: any) {
 						console.error("Update Order Error:", err);
 						showNotification(
 							<span className='d-flex align-items-center'>
@@ -851,18 +858,18 @@ const AddOrder = () => {
         formik.setFieldValue("participants", [
             ...formik.values.participants,
             {
-                participant: "",
-                type: "",
-                represents: "",
-                phone: "",
-                address: "",
-                city: "",
-                state: "",
-                zip: "",
-                attorney: "",
-                claim: "",
-                adjuster: "",
-                note: "",
+                PartyName: "",
+                PartyType: "",
+                RepresentID: "",
+                PartyPhone: "",
+                PartyAddress: "",
+                PartyCity: "",
+                PartyState: "",
+                PartyZip: "",
+                OpposingAttorney: "",
+                InsuranceClaim: "",
+                InsuranceAdjuster: "",
+                Note: "",
             },
         ]);
     };
@@ -870,17 +877,17 @@ const AddOrder = () => {
         formik.setFieldValue("documentLocation", [
             ...formik.values.documentLocation,
             {
-                name:"",
-                address:"",
-                city:"",
-                state:"",
-                zip:"",
-                process_type:"",
-                record_type:"",
-                action:"",
-                note:"",
-                review_request:false,
-                files: null
+                LocationName:"",
+                LocationAddress:"",
+                LocationCity:"",
+                LocationState:"",
+                LocationZip:"",
+                ProcessType:"",
+                RecordType:"",
+                Action:"",
+                Note:"",
+                CopyForReview:false,
+                DocFilePath: ""
             }
         ]);
     };
@@ -956,75 +963,123 @@ const AddOrder = () => {
 	// 		}
 	// 	}
 	// };
+	// const handleFileChange = async (
+	// 	event: React.ChangeEvent<HTMLInputElement>,
+	// 	index: number
+	//   ) => {
+	// 	if (event.target.files) {
+	// 	  const filesArray = Array.from(event.target.files);
+	// 	  if (filesArray.length === 0) return;
+	  
+	// 	  setLoading((prev) => ({ ...prev, [index]: true }));
+	  
+	// 	  const formData = new FormData();
+	// 	  filesArray.forEach((file) => {
+	// 		formData.append("files", file);
+	// 	  });
+	  
+	// 	  console.log("📂 Files selected:", filesArray);
+	// 	  console.log("📤 FormData before upload:", formData);
+	  
+	// 	  try {
+	// 		const response = await axios.post(
+	// 		  "http://localhost:3000/api/upload",
+	// 		  formData,
+	// 		  {
+	// 			headers: {
+	// 			  "Content-Type": "multipart/form-data",
+	// 			  Authorization: `Bearer ${getAuthTokenFromLocalStorage()}`,
+	// 			},
+	// 		  }
+	// 		);
+	  
+	// 		console.log("✅ Upload response:", response.data);
+	  
+	// 		if (response.data?.files && Array.isArray(response.data.files)) {
+	// 		  const uploadedFiles = response.data.files.map(
+	// 			(file: { path: string }) =>
+	// 			  `http://localhost:3000/api/${file.path}`
+	// 		  );
+	  
+	// 		  console.log("🖼️ Processed uploaded files:", uploadedFiles);
+	  
+	// 		  // Ensure we maintain existing files in the array
+	// 		  formik.setFieldValue(`documentLocation[${index}].DocFilePath`,
+	// 			uploadedFiles,
+	// 		  );
+	  
+	// 		  // Reset file input
+	// 		  event.target.value = "";
+	// 		}
+	// 	  } catch (error) {
+	// 		console.error("❌ File upload failed:", error);
+	// 	  } finally {
+	// 		setLoading((prev) => ({ ...prev, [index]: false })); 
+	// 	  }
+	// 	}
+	//   };
 	const handleFileChange = async (
 		event: React.ChangeEvent<HTMLInputElement>,
 		index: number
 	  ) => {
-		if (event.target.files) {
-		  const filesArray = Array.from(event.target.files);
-		  if (filesArray.length === 0) return;
+		const file = event.target.files?.[0];
+		if (!file) return;
 	  
-		  setLoading((prev) => ({ ...prev, [index]: true }));
+		setLoading((prev) => ({ ...prev, [index]: true }));
 	  
-		  const formData = new FormData();
-		  filesArray.forEach((file) => {
-			formData.append("files", file);
-		  });
+		const formData = new FormData();
+		formData.append("files", file); // single file key
 	  
-		  console.log("📂 Files selected:", filesArray);
-		  console.log("📤 FormData before upload:", formData);
+		console.log("📂 File selected:", file);
+		console.log("📤 FormData before upload:", formData);
 	  
-		  try {
-			const response = await axios.post(
-			  "https://casemanagement.medbillcollections.net/api/upload",
-			  formData,
-			  {
-				headers: {
-				  "Content-Type": "multipart/form-data",
-				  Authorization: `Bearer ${getAuthTokenFromLocalStorage()}`,
-				},
-			  }
-			);
-	  
-			console.log("✅ Upload response:", response.data);
-	  
-			if (response.data?.files && Array.isArray(response.data.files)) {
-			  const uploadedFiles = response.data.files.map(
-				(file: { path: string }) =>
-				  `https://casemanagement.medbillcollections.net/api/${file.path}`
-			  );
-	  
-			  console.log("🖼️ Processed uploaded files:", uploadedFiles);
-	  
-			  // Ensure we maintain existing files in the array
-			  formik.setFieldValue(`documentLocation[${index}].files`, [
-				...(formik.values.documentLocation[index].files || []),
-				...uploadedFiles,
-			  ]);
-	  
-			  // Reset file input
-			  event.target.value = "";
+		try {
+		  const response = await axios.post(
+			"http://localhost:3000/api/upload",
+			formData,
+			{
+			  headers: {
+				"Content-Type": "multipart/form-data",
+				Authorization: `Bearer ${getAuthTokenFromLocalStorage()}`,
+			  },
 			}
-		  } catch (error) {
-			console.error("❌ File upload failed:", error);
-		  } finally {
-			setLoading((prev) => ({ ...prev, [index]: false })); 
-		  }
+		  );
+	  
+		  console.log("✅ Upload response:", response.data);
+	  
+		//   if (response.data?.files[0].path) {
+			const uploadedFileUrl = `http://localhost:3000/api/${response.data?.files[0].path}`;
+			console.log("🖼️ Processed uploaded file:", uploadedFileUrl);
+	  
+			formik.setFieldValue(
+			  `documentLocation[${index}].DocFilePath`,
+			  uploadedFileUrl
+			);
+			console.log(formik.values, "formik")
+	  
+			// Reset file input
+			event.target.value = "";
+		//   }
+		} catch (error) {
+		  console.error("❌ File upload failed:", error);
+		} finally {
+		  setLoading((prev) => ({ ...prev, [index]: false }));
 		}
 	  };
+	  
 	  const stateOptions = states?.map(({ value, text }) => ({
 		value,
 		label: text,
 	  }));
 
 	  const userOptions =
-  userDataStore.role === "attorney"
+  userDataStore.Role === "attorney"
     ? userData?.data
       ? [{ value: userData.data.username, label: userData.data.username }]
       : []
     : users?.data?.map((user: any) => ({
-        value: user.id,
-        label: user.username,
+        value: user.UserID,
+        label: user.UserName,
       })) || [];
 
 
@@ -1056,13 +1111,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     // Transform API data into Select options
     const courtOptions = Array.isArray(courtData?.data)
     ? courtData?.data?.map((court: any) => ({
-          value: court.location.locat_name,
-          label: `${court.location.locat_name}
-		  , ${court.location.locat_city}, ${court.location.locat_state} ${court.location.locat_zip}`,
-          address: court.location.locat_address,
-          city: court.location.locat_city,
-          state: court.location.locat_state,
-          zip: court.location.locat_zip,
+          value: court.Location?.locat_name || "aa",
+          label: `${court.Location.locat_name}
+		  , ${court.Location.locat_city}, ${court.Location.locat_state} ${court.Location.locat_zip}` || "aaa",
+          address: court.Location.locat_address,
+          city: court.Location.locat_city,
+          state: court.Location.locat_state,
+          zip: court.Location.locat_zip,
       }))
     : [];
 
@@ -1075,10 +1130,11 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     const { data:ParticipantsData } = useGetParticipantsQuery(debouncedSearchParticipant, {
         skip: !debouncedSearchParticipant, // Skip query if debouncedBillTo is empty
     });
+	console.log(Array.isArray(customerData?.data) , "losss")
 	const optionsCustomer = Array.isArray(customerData?.data) 
     ? customerData?.data?.map((item: any) => ({
-        value: item?.location?.locat_name,
-        label: item?.location?.locat_name || 'Unknown',
+        value: item?.Location?.locat_name,
+        label: item?.Location?.locat_name || 'Unknown',
     })) 
     : [];
 	const optionsCaseType = Array.isArray(caseTypes?.data) 
@@ -1104,7 +1160,7 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     })) 
     : [];
 
-	const caseNameId = optionsCaseType.find(option => option.label === formik.values.caseType)
+	const caseNameId = optionsCaseType.find((option: any) => option.value === parseInt(formik.values.caseType))
 	console.log(caseNameId, "ParticipantsData")
 	useEffect(()=>{
 		setCaseTypeId(caseNameId?.value)
@@ -1404,13 +1460,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   placeholder="Select a Case Type"
   value={
     formik.values.caseType
-      ? optionsCaseType.find(option => option.label === formik.values.caseType) || 
+      ? optionsCaseType.find((option: any) => option.value === parseInt(formik.values.caseType)) || 
         { label: formik.values.caseType, value: formik.values.caseType }
       : null // Ensure placeholder appears when no value is selected
   }
   onChange={(selectedOption) => {
 	setCaseTypeId(selectedOption?.value)
-	formik.setFieldValue("caseType", selectedOption?.label)}}
+	formik.setFieldValue("caseType", selectedOption?.value)}}
   onBlur={() => formik.setFieldTouched("caseType", true)}
   styles={customStyles} // Optional: Apply custom styles
 />
@@ -2040,7 +2096,7 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 											<tr>
 												<th>Participants</th>
 												<th>Type</th>
-												<th>Represents</th>
+												{/* <th>Represents</th> */}
 												<th>Phone</th>
 												{/* <th>Attorney</th> */}
 												<th>Claim</th>
@@ -2052,13 +2108,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
         {caseParticipants?.length > 0 && (
             caseParticipants?.map((item: any, index) => (
                 <tr key={index}>
-                    <td>{item?.participant?.value || item?.participant || "N/A"}</td>
-                    <td>{item.type}</td>
-                    <td>{item.represents}</td>
-                    <td>{item.phone}</td>
+                    <td>{ item?.PartyName?.value || item?.PartyName || "N/A"}</td>
+                    <td>{item.PartyType}</td>
+                    {/* <td>{item.RepresentID}</td> */}
+                    <td>{item.PartyPhone}</td>
                     {/* <td>{item.attorney}</td> */}
-                    <td>{item.claim}</td>
-                    <td>{item.adjuster}</td>
+                    <td>{item.InsuranceClaim}</td>
+                    <td>{item.InsuranceAdjuster}</td>
                     <td>
                         <button className="btn btn-danger" onClick={() => removeParticipant(index)}>Remove</button>
                         <button className="btn btn-primary mx-2" type='button' onClick={() => setAddParticipants(true)}>Edit</button>
@@ -2121,15 +2177,15 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
                                         {documentLocationData?.length > 0 && (
             documentLocationData?.map((item, index) => (
                 <tr key={index}>
-                    <td>{item.name?.value || item?.name}</td>
-                    <td>{item.address}</td>
-                    <td>{item.city}</td>
-                    <td>{item.state}</td>
-                    <td>{item.zip}</td>
-                    <td>{item.process_type}</td>
-                    <td>{item.record_type}</td>
-                    <td>{item.action}</td>
-                    <td>{item.note}</td>
+                    <td>{item?.LocationName.value || item?.LocationName || "N/A"}</td>
+                    <td>{item?.LocationAddress}</td>
+                    <td>{item?.LocationCity}</td>
+                    <td>{item?.LocationState}</td>
+                    <td>{item?.LocationZip}</td>
+                    <td>{item?.ProcessType}</td>
+                    <td>{item?.RecordType}</td>
+                    <td>{item?.Action}</td>
+                    <td>{item?.Note}</td>
                     <td>
                         <button className="btn btn-danger" onClick={() => removeDocumentLocation(index)}>Remove</button>
                         <button className="btn btn-primary mx-2" type='button' onClick={() => setAddDocuments(true)}>Edit</button>
@@ -2236,14 +2292,14 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     isClearable
     onInputChange={(value) => setDebouncedParticipant(value)}
     onChange={(option) =>{
-        formik.setFieldValue(`participants[${index}].participant`, option);
-		formik.setFieldValue(`participants[${index}].address`, option?.address || "");
-        formik.setFieldValue(`participants[${index}].city`, option?.city || "");
-        formik.setFieldValue(`participants[${index}].state`, option?.state || "");
-        formik.setFieldValue(`participants[${index}].zip`, option?.zip || "");}
+        formik.setFieldValue(`participants[${index}].PartyName`, option);
+		formik.setFieldValue(`participants[${index}].PartyAddress`, option?.address || "");
+        formik.setFieldValue(`participants[${index}].PartyCity`, option?.city || "");
+        formik.setFieldValue(`participants[${index}].PartyState`, option?.state || "");
+        formik.setFieldValue(`participants[${index}].PartyZip`, option?.zip || "");}
     } // Store entire object
     onBlur={formik.handleBlur}
-	value={formik.values.participants?.[index]?.participant || null}
+	value={formik.values.participants?.[index]?.PartyName || null}
 	// Ensure it's an object or null
     isLoading={isFetching}
     noOptionsMessage={() => "No options available"}
@@ -2275,23 +2331,23 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={participantsType}
   placeholder="Choose Type..."
   value={
-    formik.values.participants?.[index]?.type
-      ? participantsType.find(option => option.value === formik.values.participants[index]?.type) || 
-        { label: formik.values.participants[index]?.type, value: formik.values.participants[index]?.type }
+    formik.values.participants?.[index]?.PartyType
+      ? participantsType.find(option => option.value === formik.values.participants[index]?.PartyType) || 
+        { label: formik.values.participants[index]?.PartyType, value: formik.values.participants[index]?.PartyType }
       : null // Ensure placeholder appears when no value is selected
   }
   onChange={(selectedOption) =>
-    formik.setFieldValue(`participants[${index}].type`, selectedOption?.value)
+    formik.setFieldValue(`participants[${index}].PartyType`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`participants[${index}].type`, true)}
+  onBlur={() => formik.setFieldTouched(`participants[${index}].PartyType`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
 
-        {formik.touched.participants?.[index]?.type && formik.errors.participants?.[index]?.type ? (
+        {/* {formik.touched.participants?.[index]?.type && formik.errors.participants?.[index]?.type ? (
           <div className="invalid-feedback">{formik.errors.participants[index].type}</div>
         ) : (
           <div className="valid-feedback">Looks good!</div>
-        )}
+        )} */}
       </FormGroup>
     </div>
 									<div className='col-6'>
@@ -2313,37 +2369,37 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={representsOptions}
   placeholder="Choose Represents..."
   value={
-    formik.values.participants?.[index]?.represents
-      ? representsOptions.find(option => option.value === formik.values.participants[index]?.represents) || 
-        { label: formik.values.participants[index]?.represents, value: formik.values.participants[index]?.represents }
+    formik.values.participants?.[index]?.RepresentID
+      ? representsOptions.find(option => option.value === parseInt(formik.values.participants[index]?.RepresentID)) || 
+        { label: formik.values.participants[index]?.RepresentID, value: formik.values.participants[index]?.RepresentID }
       : null // Ensures placeholder appears when no value is selected
   }
   onChange={(selectedOption) =>
-    formik.setFieldValue(`participants[${index}].represents`, selectedOption?.value)
+    formik.setFieldValue(`participants[${index}].RepresentID`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`participants[${index}].represents`, true)}
+  onBlur={() => formik.setFieldTouched(`participants[${index}].RepresentID`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
 
-      {formik.touched.participants?.[index]?.represents &&
+      {/* {formik.touched.participants?.[index]?.represents &&
       formik.errors.participants?.[index]?.represents ? (
         <div className="invalid-feedback">{formik.errors.participants[index].represents}</div>
       ) : (
         <div className="valid-feedback">Looks good!</div>
-      )}
+      )} */}
     </FormGroup>
 									</div>
 									<div className='col-12'>
 										<FormGroup id='phone' label='Phone' isFloating>
                                         <Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].phone`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].PartyPhone`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-													value={p.phone}
+													value={p.PartyPhone}
                         isValid={formik.isValid}
-                        isTouched={formik.touched.participants?.[index]?.phone}
-                        invalidFeedback={formik.errors.participants?.[index]?.phone}
+                        // isTouched={formik.touched.participants?.[index]?.phone}
+                        // invalidFeedback={formik.errors.participants?.[index]?.phone}
 													validFeedback='Looks good!'
 												/>
 										</FormGroup>
@@ -2352,13 +2408,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 										<FormGroup id='date' label='Address' isFloating>
                                         <Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].address`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].PartyAddress`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-                                                    value={p.address}
+                                                    value={p.PartyAddress}
                                                     isValid={formik.isValid}
-                                                    isTouched={formik.touched.participants?.[index]?.address}
-                                                    invalidFeedback={formik.errors.participants?.[index]?.address}
+                                                    // isTouched={formik.touched.participants?.[index]?.address}
+                                                    // invalidFeedback={formik.errors.participants?.[index]?.address}
                                                                                 validFeedback='Looks good!'
 												/>
 										</FormGroup>
@@ -2367,13 +2423,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 										<FormGroup id='time' label='City' isFloating>
                                         <Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].city`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].PartyCity`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-                                                    value={p.city}
+                                                    value={p.PartyCity}
                                                     isValid={formik.isValid}
-                                                    isTouched={formik.touched.participants?.[index]?.city}
-                                                    invalidFeedback={formik.errors.participants?.[index]?.city}
+                                                    // isTouched={formik.touched.participants?.[index]?.city}
+                                                    // invalidFeedback={formik.errors.participants?.[index]?.city}
                                                                                 validFeedback='Looks good!'
 												/>
 										</FormGroup>
@@ -2402,36 +2458,36 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={stateOptions}
   placeholder="Choose..."
   value={
-    formik.values.participants?.[index]?.state
-      ? stateOptions.find(option => option.value === formik.values.participants[index]?.state) || 
-        { label: formik.values.participants[index]?.state, value: formik.values.participants[index]?.state }
+    formik.values.participants?.[index]?.PartyState
+      ? stateOptions.find(option => option.value === formik.values.participants[index]?.PartyState) || 
+        { label: formik.values.participants[index]?.PartyState, value: formik.values.participants[index]?.PartyState }
       : null // Ensures placeholder appears when no value is selected
   }
   onChange={(selectedOption) => 
-    formik.setFieldValue(`participants[${index}].state`, selectedOption?.value)
+    formik.setFieldValue(`participants[${index}].PartyState`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`participants[${index}].state`, true)}
+  onBlur={() => formik.setFieldTouched(`participants[${index}].PartyState`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
-
+{/* 
         {formik.touched.participants?.[index]?.state && formik.errors.participants?.[index]?.state ? (
           <div className="invalid-feedback">{formik.errors.participants[index].state}</div>
         ) : (
           <div className="valid-feedback">Looks good!</div>
-        )}
+        )} */}
       </FormGroup>
     </div>
 										<div className='col-md-3'>
 											<FormGroup id='zip' label='Zip' isFloating>
 												<Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].zip`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].PartyZip`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-													value={p.zip}
+													value={p.PartyZip}
                                                     isValid={formik.isValid}
-                                                    isTouched={formik.touched.participants?.[index]?.zip}
-                                                    invalidFeedback={formik.errors.participants?.[index]?.zip}
+                                                    // isTouched={formik.touched.participants?.[index]?.zip}
+                                                    // invalidFeedback={formik.errors.participants?.[index]?.zip}
                                                                                 validFeedback='Looks good!'
 												/>
 											</FormGroup>
@@ -2440,13 +2496,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 										<FormGroup id='time' label='Attorney' isFloating>
                                         <Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].attorney`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].OpposingAttorney`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-													value={p.attorney}
+													value={p.OpposingAttorney}
                                                     isValid={formik.isValid}
-                                                    isTouched={formik.touched.participants?.[index]?.attorney}
-                                                    invalidFeedback={formik.errors.participants?.[index]?.attorney}
+                                                    // isTouched={formik.touched.participants?.[index]?.attorney}
+                                                    // invalidFeedback={formik.errors.participants?.[index]?.attorney}
                                                                                 validFeedback='Looks good!'
 												/>
 										</FormGroup>
@@ -2455,13 +2511,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 										<FormGroup id='time' label='Claim' isFloating>
                                         <Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].claim`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].InsuranceClaim`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-													value={p.claim}
+													value={p.InsuranceClaim}
                                                     isValid={formik.isValid}
-                                                    isTouched={formik.touched.participants?.[index]?.claim}
-                                                    invalidFeedback={formik.errors.participants?.[index]?.claim}
+                                                    // isTouched={formik.touched.participants?.[index]?.claim}
+                                                    // invalidFeedback={formik.errors.participants?.[index]?.claim}
                                                                                 validFeedback='Looks good!'
 												/>
 										</FormGroup>
@@ -2470,13 +2526,13 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 										<FormGroup id='time' label='Adjustor' isFloating>
                                         <Input
 													onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                        formik.setFieldValue(`participants[${index}].adjuster`, e.target.value)
+                                                        formik.setFieldValue(`participants[${index}].InsuranceAdjuster`, e.target.value)
                                                     }
 													onBlur={formik.handleBlur}
-													value={p.adjuster}
+													value={p.InsuranceAdjuster}
                                                     isValid={formik.isValid}
-                                                    isTouched={formik.touched.participants?.[index]?.adjuster}
-                                                    invalidFeedback={formik.errors.participants?.[index]?.adjuster}
+                                                    // isTouched={formik.touched.participants?.[index]?.adjuster}
+                                                    // invalidFeedback={formik.errors.participants?.[index]?.adjuster}
                                                                                 validFeedback='Looks good!'
 												/>
 										</FormGroup>
@@ -2489,9 +2545,9 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 														rows={8}
 														placeholder='note'
 														onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                                            formik.setFieldValue(`participants[${index}].note`, e.target.value)
+                                                            formik.setFieldValue(`participants[${index}].Note`, e.target.value)
                                                         }
-														value={p.note}
+														value={p.Note}
 													/>
 												</FormGroup>
 											
@@ -2567,14 +2623,14 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     isClearable
     onInputChange={(value) => setDebouncedParticipant(value)}
     onChange={(option) =>{
-        formik.setFieldValue(`documentLocation[${index}].name`, option);
-		formik.setFieldValue(`documentLocation[${index}].address`, option?.address || "");
-        formik.setFieldValue(`documentLocation[${index}].city`, option?.city || "");
-        formik.setFieldValue(`documentLocation[${index}].state`, option?.state || "");
-        formik.setFieldValue(`documentLocation[${index}].zip`, option?.zip || "");}
+        formik.setFieldValue(`documentLocation[${index}].LocationName`, option);
+		formik.setFieldValue(`documentLocation[${index}].LocationAddress`, option?.address || "");
+        formik.setFieldValue(`documentLocation[${index}].LocationCity`, option?.city || "");
+        formik.setFieldValue(`documentLocation[${index}].LocationState`, option?.state || "");
+        formik.setFieldValue(`documentLocation[${index}].LocationZip`, option?.zip || "");}
     } // Store entire object
     onBlur={formik.handleBlur}
-    value={formik?.values?.documentLocation?.[index]?.name || null} // Ensure it's an object or null
+    value={formik?.values?.documentLocation?.[index]?.LocationName || null} // Ensure it's an object or null
     isLoading={isFetching}
     noOptionsMessage={() => "No options available"}
     styles={customStyles}
@@ -2588,14 +2644,14 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
             <FormGroup id="address" label="Address" isFloating>
                 <Input
                     type="text"
-                    onChange={(e) =>
-                        formik.setFieldValue(`documentLocation[${index}].address`, e.target.value)
+                    onChange={(e: any) =>
+                        formik.setFieldValue(`documentLocation[${index}].LocationAddress`, e.target.value)
                     }
                     onBlur={formik.handleBlur}
-                    value={d.address}
+                    value={d.LocationAddress}
                     isValid={formik.isValid}
-                    isTouched={formik.touched.documentLocation?.[index]?.address}
-                    invalidFeedback={formik.errors.documentLocation?.[index]?.address}
+                    // isTouched={formik.touched.documentLocation?.[index]?.address}
+                    // invalidFeedback={formik.errors.documentLocation?.[index]?.address}
                     validFeedback="Looks good!"
                 />
             </FormGroup>
@@ -2605,14 +2661,14 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
             <FormGroup id="city" label="City" isFloating>
                 <Input
                     type="text"
-                    onChange={(e) =>
-                        formik.setFieldValue(`documentLocation[${index}].city`, e.target.value)
+                    onChange={(e: any) =>
+                        formik.setFieldValue(`documentLocation[${index}].LocationCity`, e.target.value)
                     }
                     onBlur={formik.handleBlur}
-                    value={d.city}
+                    value={d.LocationCity}
                     isValid={formik.isValid}
-                    isTouched={formik.touched.documentLocation?.[index]?.city}
-                    invalidFeedback={formik.errors.documentLocation?.[index]?.city}
+                    // isTouched={formik.touched.documentLocation?.[index]?.city}
+                    // invalidFeedback={formik.errors.documentLocation?.[index]?.city}
                     validFeedback="Looks good!"
                 />
             </FormGroup>
@@ -2642,24 +2698,24 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={stateOptions}
   placeholder="Choose..."
   value={
-    formik.values.documentLocation?.[index]?.state
-      ? stateOptions.find(option => option.value === formik.values.documentLocation[index]?.state) || 
-        { label: formik.values.documentLocation[index]?.state, value: formik.values.documentLocation[index]?.state }
+    formik.values.documentLocation?.[index]?.LocationState
+      ? stateOptions.find(option => option.value === formik.values.documentLocation[index]?.LocationState) || 
+        { label: formik.values.documentLocation[index]?.LocationState, value: formik.values.documentLocation[index]?.LocationState }
       : null // Ensures placeholder appears when no value is selected
   }
   onChange={(selectedOption) => 
-    formik.setFieldValue(`documentLocation[${index}].state`, selectedOption?.value)
+    formik.setFieldValue(`documentLocation[${index}].LocationState`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].state`, true)}
+  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].LocationState`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
-
+{/* 
         {formik.touched.documentLocation?.[index]?.state &&
         formik.errors.documentLocation?.[index]?.state ? (
           <div className="invalid-feedback">{formik.errors.documentLocation[index].state}</div>
         ) : (
           <div className="valid-feedback">Looks good!</div>
-        )}
+        )} */}
       </FormGroup>
     </div>
 
@@ -2667,14 +2723,14 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
             <FormGroup id="zip" label="Zip" isFloating>
                 <Input
                     type="text"
-                    onChange={(e) =>
-                        formik.setFieldValue(`documentLocation[${index}].zip`, e.target.value)
+                    onChange={(e: any) =>
+                        formik.setFieldValue(`documentLocation[${index}].LocationZip`, e.target.value)
                     }
                     onBlur={formik.handleBlur}
-                    value={d.zip}
+                    value={d.LocationZip}
                     isValid={formik.isValid}
-                    isTouched={formik.touched.documentLocation?.[index]?.zip}
-                    invalidFeedback={formik.errors.documentLocation?.[index]?.zip}
+                    // isTouched={formik.touched.documentLocation?.[index]?.zip}
+                    // invalidFeedback={formik.errors.documentLocation?.[index]?.zip}
                     validFeedback="Looks good!"
                 />
             </FormGroup>
@@ -2698,15 +2754,15 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={processTypeOptions}
   placeholder="Choose Process type..."
   value={
-    formik?.values?.documentLocation?.[index]?.process_type
-      ? processTypeOptions.find(option => option.value === formik.values.documentLocation[index]?.process_type) || 
-        { label: formik.values.documentLocation[index]?.process_type, value: formik.values.documentLocation[index]?.process_type }
+    formik?.values?.documentLocation?.[index]?.ProcessType
+      ? processTypeOptions.find((option: any) => option.value === parseInt(formik.values.documentLocation[index]?.ProcessType)) || 
+        { label: formik.values.documentLocation[index]?.ProcessType, value: formik.values.documentLocation[index]?.ProcessType }
       : null // Ensures placeholder appears when no value is selected
   }
   onChange={(selectedOption) => 
-    formik.setFieldValue(`documentLocation[${index}].process_type`, selectedOption?.label)
+    formik.setFieldValue(`documentLocation[${index}].ProcessType`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].process_type`, true)}
+  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].ProcessType`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
 
@@ -2731,15 +2787,15 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={recordTypeOption}
   placeholder="Choose Record type..."
   value={
-    formik?.values?.documentLocation?.[index]?.record_type
-      ? recordTypeOption.find(option => option.value === formik.values.documentLocation[index]?.record_type) || 
-        { label: formik.values.documentLocation[index]?.record_type, value: formik.values.documentLocation[index]?.record_type }
+    formik?.values?.documentLocation?.[index]?.RecordType
+      ? recordTypeOption.find(option => option.value === parseInt(formik.values.documentLocation[index]?.RecordType)) || 
+        { label: formik.values.documentLocation[index]?.RecordType, value: formik.values.documentLocation[index]?.RecordType }
       : null // Ensures placeholder appears when no value is selected
   }
   onChange={(selectedOption) => 
-    formik.setFieldValue(`documentLocation[${index}].record_type`, selectedOption?.value)
+    formik.setFieldValue(`documentLocation[${index}].RecordType`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].record_type`, true)}
+  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].RecordType`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
             </FormGroup>
@@ -2763,15 +2819,15 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
   options={actionOptions}
   placeholder="Choose Action..."
   value={
-    formik?.values?.documentLocation?.[index]?.action
-      ? actionOptions.find(option => option.value === formik.values.documentLocation[index]?.action) || 
-        { label: formik.values.documentLocation[index]?.action, value: formik.values.documentLocation[index]?.action }
+    formik?.values?.documentLocation?.[index]?.Action
+      ? actionOptions.find(option => option.value === parseInt(formik.values.documentLocation[index]?.Action)) || 
+        { label: formik.values.documentLocation[index]?.Action, value: formik.values.documentLocation[index]?.Action }
       : null // Ensures placeholder appears when no value is selected
   }
   onChange={(selectedOption) => 
-    formik.setFieldValue(`documentLocation[${index}].action`, selectedOption?.value)
+    formik.setFieldValue(`documentLocation[${index}].Action`, selectedOption?.value)
   }
-  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].action`, true)}
+  onBlur={() => formik.setFieldTouched(`documentLocation[${index}].Action`, true)}
   styles={customStyles} // Optional: Apply custom styles
 />
             </FormGroup>
@@ -2781,14 +2837,14 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
             <FormGroup id="note" label="Note" isFloating>
                 <Input
                     type="text"
-                    onChange={(e) =>
-                        formik.setFieldValue(`documentLocation[${index}].note`, e.target.value)
+                    onChange={(e: any) =>
+                        formik.setFieldValue(`documentLocation[${index}].Note`, e.target.value)
                     }
                     onBlur={formik.handleBlur}
-                    value={d.note}
+                    value={d.Note}
                     isValid={formik.isValid}
-                    isTouched={formik.touched.documentLocation?.[index]?.note}
-                    invalidFeedback={formik.errors.documentLocation?.[index]?.note}
+                    // isTouched={formik.touched.documentLocation?.[index]?.note}
+                    // invalidFeedback={formik.errors.documentLocation?.[index]?.note}
                     validFeedback="Looks good!"
                 />
             </FormGroup>
@@ -2801,12 +2857,12 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
                         type="checkbox"
                         className="form-check-input"
                         id={`review_request-${index}`}
-                        checked={d.review_request}
+                        checked={d.CopyForReview}
                         onChange={(e) =>
-                            formik.setFieldValue(`documentLocation[${index}].review_request`, e.target.checked)
+                            formik.setFieldValue(`documentLocation[${index}].CopyForReview`, e.target.checked)
                         }
                     />
-                    <label className="form-check-label" htmlFor={`review_request-${index}`}>
+                    <label className="form-check-label" htmlFor={`CopyForReview-${index}`}>
                         Send Email for Review
                     </label>
                 </div>
@@ -2834,11 +2890,11 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     <Input
       type="file"
       multiple
-      onChange={(e) => handleFileChange(e, index)}
+      onChange={(e: any) => handleFileChange(e, index)}
       onBlur={formik.handleBlur}
       isValid={formik.isValid}
-      isTouched={formik.touched.documentLocation?.[index]?.files}
-      invalidFeedback={formik.errors.documentLocation?.[index]?.files}
+    //   isTouched={formik.touched.documentLocation?.[index]?.files}
+    //   invalidFeedback={formik.errors.documentLocation?.[index]?.files}
       validFeedback="Looks good!"
     />
   </FormGroup>
@@ -2849,35 +2905,35 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
         </div>
       )}
   {/* Display uploaded files */}
-  {formik.values.documentLocation[index]?.files?.length > 0 && (
+  {formik.values.documentLocation[index]?.DocFilePath && (
     <div className="mt-2">
       <h6>Uploaded Files:</h6>
       <ul>
-	{(Array.isArray(formik?.values?.documentLocation?.[index]?.files) 
-  ? formik.values.documentLocation[index].files 
-  : []
-)?.map((fileUrl: string, i: number) => (
-  <li key={i}>
-    <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-      {decodeURIComponent(fileUrl.split("/").pop() || "File")}
+	{/* {(formik?.values?.documentLocation?.[index]?.DocFilePath) 
+  ? formik.values.documentLocation[index].DocFilePath 
+  : ""
+)?.map((fileUrl: string, i: number) => ( */}
+  <li >
+    <a href={formik.values.documentLocation[index].DocFilePath} target="_blank" rel="noopener noreferrer">
+      {decodeURIComponent(formik.values.documentLocation[index].DocFilePath.split("/").pop() || "File")}
 	  
     </a>
-	<Button
+	{/* <Button
 	icon='cancel'
 	isOutline
             type="submit"
             onClick={() => {
-              const updatedFiles = formik.values.documentLocation[index].files.filter(
+              const updatedFiles = formik.values.documentLocation[index].DocFilePath.filter(
                 (_: string, fileIndex: number) => fileIndex !== i
               );
-              formik.setFieldValue(`documentLocation[${index}].files`, updatedFiles);
+              formik.setFieldValue(`documentLocation[${index}].DocFilePath`, updatedFiles);
             }}
             className="text-red-500 hover:underline"
           >
             Remove
-          </Button>
+          </Button> */}
   </li>
-))}
+{/* ))} */}
 
 
       </ul>

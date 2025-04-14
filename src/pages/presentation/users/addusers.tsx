@@ -109,24 +109,29 @@ const AddUser = () => {
   const [create, { isLoading, error }] = useCreateUserMutation();
   const { id } = useParams();
   const [items, setItems] = useState<any>({});
-	const { data: user, isLoading:userLoading } = useGetSingleQuery({ type: 'user', id }, { skip: !id });
+	const { data: user, isLoading:userLoading , refetch} = useGetSingleQuery({ type: 'user', id }, { skip: !id });
   console.log(user)
 
-	
+	useEffect(()=>{
+    if(id){
+
+      refetch()
+    }
+  },[])
 
     const formik = useFormik({
         initialValues: {
-          username: items ? items.username :  "",
-          full_name: items ? items.full_name : "",
-          role: items ? items.role :  "",
-          app_acc_no: items ? items.app_acc_no : "",
-          firm_name: items ? items?.firm_name :  "",
-          phone: items ? items.phone : "",
-          email: items ? items.email : "",
-          address: items ? items.address : "",
-          city: items ? items.city : "",
-          state: items ? items.state :  "",
-          zip: items ? items.zip : "",
+          username: user ? user?.data?.UserName :  "",
+          full_name: user ? user?.data?.FullName : "",
+          role: user ? (user?.data?.Role).toLowerCase() :  "",
+          app_acc_no: user ? user?.data?.AppAcctNo : "",
+          firm_name: user ? user?.data?.FirmName :  "",
+          phone: user ? user.data?.Phone : "",
+          email: user ? user.data?.Email : "",
+          address: user ? user.data?.Address : "",
+          city: user ? user.data?.City : "",
+          state: user ? user.data?.State :  "",
+          zip: user ? user.data?.Zip : "",
           password: "",
         },
         enableReinitialize: true,
@@ -154,7 +159,7 @@ const AddUser = () => {
               }
               return acc;
             }, {} as Record<string, any>);
-            await create({ postData, id: items?.id })
+            await create({ postData, id: user?.data?.UserID })
               .unwrap()
               ?.then((res) => {
                 navigate('/users');

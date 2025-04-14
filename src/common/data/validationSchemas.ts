@@ -196,14 +196,14 @@ export const participantsType = [
   ];
 
  export  const representsOptions = [
-    { value: "Defendant", label: "Defendant" },
-    { value: "Plaintiff", label: "Plaintiff" },
-    { value: "Petitioner", label: "Petitioner" },
-    { value: "Respondent", label: "Respondent" },
-    { value: "Defendant & Cross Complaintant", label: "Defendant & Cross Complaintant" },
-    { value: "Plaintiff & Cross Defendant", label: "Plaintiff & Cross Defendant" },
-    { value: "Defendant In Et Al", label: "Defendant In Et Al" },
-    { value: "Plaintiff In Et Al", label: "Plaintiff In Et Al" },
-    { value: "Petitioner In Et AL", label: "Petitioner In Et AL" },
-    { value: "Respondent In Et AL", label: "Respondent In Et AL" },
+    { value: 1, label: "Defendant" },
+    { value: 2, label: "Plaintiff" },
+    { value: 3, label: "Petitioner" },
+    { value: 4, label: "Respondent" },
+    { value: 5, label: "Defendant & Cross Complaintant" },
+    { value: 6, label: "Plaintiff & Cross Defendant" },
+    { value: 7, label: "Defendant In Et Al" },
+    { value: 8, label: "Plaintiff In Et Al" },
+    { value: 9, label: "Petitioner In Et AL" },
+    { value: 10, label: "Respondent In Et AL" },
   ];

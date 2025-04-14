@@ -15,7 +15,7 @@ import { useSelector } from 'react-redux';
 const DefaultAside = () => {
 	const { asideStatus, setAsideStatus } = useContext(ThemeContext);
 	const userData = useSelector((state: any) => state.auth.user);
-	const dashboardPagesMenu = getDashboardMenu(userData?.role);
+	const dashboardPagesMenu = getDashboardMenu(userData?.Role);
 
 	const [doc, setDoc] = useState(
 		localStorage.getItem('facit_asideDocStatus') === 'true' || false,

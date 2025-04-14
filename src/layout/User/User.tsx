@@ -41,8 +41,8 @@ const User = () => {
 				onClick={() => setCollapseStatus(!collapseStatus)}>
 				<div className='user-avatar'>
 					<img
-						srcSet={userData?.profile_picture}
-						src={userData?.profile_picture}
+						srcSet={userData?.profile_picture || "https://facit-modern.omtanke.studio/static/media/wanna1.51c02a1922c3e8783871.webp"}
+						src={userData?.profile_picture || "https://facit-modern.omtanke.studio/static/media/wanna1.51c02a1922c3e8783871.webp"}
 						alt='Avatar'
 						width={128}
 						height={128}
@@ -50,7 +50,7 @@ const User = () => {
 				</div>
 				<div className='user-info'>
 					<div className='user-name'>
-						{`${userData?.username || 'User'} `}
+						{`${userData?.UserName || 'User'} `}
 					</div>
 				</div>
 			</div>

@@ -61,8 +61,9 @@ const OrderPage = () => {
 const [filteredData, setFilteredData] = useState(orderData?.order || []);
 const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
 
-    const toggleAccordion = (orderId: number) => {
-        setExpandedOrder(expandedOrder === orderId ? null : orderId);
+    const toggleAccordion = (orderId: any) => {
+		console.log(orderId)
+        setExpandedOrder(expandedOrder === orderId?.OrderID ? null : orderId?.OrderID);
     };
 
 
@@ -379,7 +380,7 @@ useEffect(() => {
 							</CardTitle>
 						</CardLabel>
 						<CardActions>
-						<Button
+						{/* <Button
 								onClick={() => setSearchModalStatus(true)}
 								color='secondary'
 								icon='CloudDownload'
@@ -391,7 +392,7 @@ useEffect(() => {
 								// download
 							>
 								Bulk Add
-							</Button>
+							</Button> */}
 						</CardActions>
 					</CardHeader>
 					<CardBody className='table-responsive'>
@@ -407,7 +408,7 @@ useEffect(() => {
 										Code
 										
 									</th>
-									{user?.role === "admin" &&
+									{user?.Role === "Administrator" &&
 									<th>Client</th>}
 									<th>Case Name</th>
 									<th>Case NO</th>
@@ -422,7 +423,8 @@ useEffect(() => {
 							</thead>
 							<tbody>
                             { filteredData && filteredData?.map((order: any, index: number) => {
-								const recordDetails = JSON?.parse(order?.record_details)
+								console.log(order?.OrderID)
+								// const recordDetails = order?.TblOrderDocLocations ?  JSON?.parse(order?.TblOrderDocLocations) : []
 								
 
 								return(
@@ -431,13 +433,13 @@ useEffect(() => {
 								   <td>
                                         <button
                                             className="btn btn-sm btn-light"
-                                            onClick={() => toggleAccordion(order.id)}
+                                            onClick={() => toggleAccordion(order)}
                                         >
-                                            {expandedOrder === order.id ? "−" : "+"}
+                                            {expandedOrder === order.OrderID ? "−" : "+"}
                                         </button>
                                     </td>
                                 <td className='position-relative' style={{maxWidth:"200px" ,width:"200px"}}>
-									{order.urgent &&
+									{order.IsRush &&
                                 <Icon
 							icon='Circle'
 							style={{left:"80%"}}
@@ -447,29 +449,29 @@ useEffect(() => {
 								'animate__animated animate__heartBeat animate__infinite animate__slower',
 							)}
 						/>}
-						{order.needed_by ? dayjs(order.needed_by).format("MMMM D, YYYY") : "N/A"}
+						{order.NeededBy ? dayjs(order.NeededBy).format("MMMM D, YYYY") : "N/A"}
 									</td>
-                                <td>{order.order_code}</td>
-								{user?.role === "admin" &&
+                                <td>{order.OrderCode}</td>
+								{user?.Role === "Administrator" &&
                                 <td>{order.orderByUser.username}</td>}
-                                <td>{order.case_name}</td>
-                                <td>{order.case_number}</td>
-                                <td>{order.file_number}</td>
+                                <td>{order.CaseName}</td>
+                                <td>{order.CaseNumber}</td>
+                                <td>{order.FileNumber}</td>
                                 <td>{order.case_type}</td>
                                 <td>{dayjs(order?.createdAt).format("MMM DD, YYYY HH:mm A")}</td>
-                                <td>{dayjs(recordDetails.date_of_injury.from).format("MMMM D, YYYY")}</td>
-                                <td>{dayjs(recordDetails.date_of_injury.to).format("MMMM D, YYYY")}</td>
+                                <td>{dayjs(order?.record_details?.date_of_injury.from).format("MMMM D, YYYY")}</td>
+                                <td>{dayjs(order?.record_details?.date_of_injury.to).format("MMMM D, YYYY")}</td>
                                 <td>
                                     <span
                                         className={`badge ${
-                                            order.status === 'Completed'
+                                            order.RequestStatus === 'Completed'
                                                 ? 'bg-success'
-                                                : order.status === 'Active'
+                                                : order.RequestStatus === 'Active'
                                                 ? 'bg-secondary'
                                                 : 'bg-danger'
                                         }`}
                                     >
-                                        {order.status}
+                                        {order.RequestStatus}
                                     </span>
                                 </td>
                                 <td >
@@ -483,21 +485,21 @@ useEffect(() => {
 								</DropdownToggle>
 								<DropdownMenu isAlignmentEnd>
 									<DropdownItem>
-										<Button onClick={() => navigate("/order/add-order", { state: { itemId: order.id } })} icon='Edit'>Edit</Button>
+										<Button onClick={() => navigate("/order/add-order", { state: { itemId: order.OrderID } })} icon='Edit'>Edit</Button>
 									</DropdownItem>
 									<DropdownItem>
-										<Button onClick={()=> navigate(`/order/${order.id}`)} icon='RemoveRedEye'>View</Button>
+										<Button onClick={()=> navigate(`/order/${order.OrderID}`)} icon='RemoveRedEye'>View</Button>
 									</DropdownItem>
 									{order?.status !== "Cancelled" &&
 									<DropdownItem>
-										<Button onClick={()=>handleCancelled(order?.id)} icon='Cancel'>Cancel</Button>
+										<Button onClick={()=>handleCancelled(order?.OrderID)} icon='Cancel'>Cancel</Button>
 									</DropdownItem>}
-                                     {user?.role === "admin" &&
+                                     {user?.Role === "Administrator" &&
 									<DropdownItem>
-										<Button onClick={()=>handleDelete(order?.id)} icon='Delete'>Delete</Button>
+										<Button onClick={()=>handleDelete(order?.OrderID)} icon='Delete'>Delete</Button>
 									</DropdownItem>}
 									<DropdownItem>
-										<Button  onClick={()=>handleComplete(order?.id)} icon='TaskAlt'>Mark As Completed</Button>
+										<Button  onClick={()=>handleComplete(order?.OrderID)} icon='TaskAlt'>Mark As Completed</Button>
 									</DropdownItem>
 								</DropdownMenu>
 							</Dropdown>
@@ -506,7 +508,7 @@ useEffect(() => {
 								 
                             </tr>
 
-							{expandedOrder === order.id && (
+							{expandedOrder === order.OrderID && (
     <tr>
         <td colSpan={13}>
             <div className="accordion-content p-3 border rounded bg-light">
@@ -524,43 +526,57 @@ useEffect(() => {
                         </tr>
                     </thead>
                     <tbody>
-                        {order?.DocumentLocations?.map((doc: any, docIndex: number) => {
+                        {order?.TblOrderDocLocations?.map((doc: any, docIndex: number) => {
 							// const filesDataToShow = doc
 							// ?.files?.map((it: any) => it?.dataValues?.files && JSON.parse(it.dataValues.files))
 							// ?.filter(Boolean) ?? [];
-							const filesDataToShow = doc?.dataValues?.files 
-    ? JSON.parse(doc?.dataValues?.files)
-    : [];
+							const filesDataToShow = `http://localhost:3000/api/uploads//1744485314579-23207316.png || http://localhost:3000/api/uploads//1744485314579-23207316.png`;
+
+  
 
 	console.log(filesDataToShow , "filesDataToShow")
 
 							return(
                             <tr key={`doc-${order.id}-${docIndex}`}>
-                                <td>{doc.dataValues?.name}</td>
-                                <td>{doc.dataValues?.address}, {doc.dataValues?.city}, {doc.dataValues?.state} {doc.dataValues?.zip}</td>
-                                <td>{doc.dataValues?.process_type}</td>
-                                <td>{doc.dataValues?.record_type}</td>
-                                <td>{doc.dataValues?.action}</td>
-								{/* <td>{doc?.dataValues?.status}</td> */}
+                                <td>{doc.LocationName}</td>
+                                <td>{doc.LocationAddress}, {doc.LocationCity}, {doc.LocationState} {doc.LocationZip}</td>
+                                <td>{doc.ProcessType}</td>
+                                <td>{doc.RecordType}</td>
+                                <td>{doc.Action}</td>
+								{/* <td>{doc?.DocFilePath}</td> */}
                                 <td> 
-								{filesDataToShow?.length > 0 ? (
+								{/* {doc?.DocFilePath ? (
     filesDataToShow.map((doc: any, docIndex: number) => {
         if (typeof doc !== "string") return null; // Ensure doc is a string before using split
         const fileName = doc.includes("/") ? doc.split("/").pop() : doc;
 
         return (
-            <a key={`file-${docIndex}`} href={doc} target="_blank" rel="noopener noreferrer">
-                {fileName} <br />
-            </a>
+          
         );
     })
 ) : (
     <p>No files available</p>
+)} */}
+{filesDataToShow ? (
+  filesDataToShow.split('||').map((file, idx) => (
+    <a
+      key={`file-${idx}`}
+      href={file}
+      target="_blank"
+      rel="noopener noreferrer"
+      download
+    >
+      {file} <br />
+    </a>
+  ))
+) : (
+  "N/A"
 )}
+
 
 		</td>
                                
-                                <td>{doc.dataValues?.note}</td>
+                                <td>{doc?.Note}</td>
                             </tr>
 
 							
@@ -609,9 +625,9 @@ useEffect(() => {
 					id='asasasasaaxzczxss'
 					data-tour='search-modal'
 					size={'xl'}>
-					<ModalHeader setIsOpen={setSearchModalStatus}>
+					{/* <ModalHeader setIsOpen={setSearchModalStatus}>
 						<ModalTitle id='bulkAddSites'>Bulk Add Sites</ModalTitle>
-					</ModalHeader>
+					</ModalHeader> */}
 					<ModalBody>
 						<>
 							<div className='d-flex justify-content-end mb-4'>

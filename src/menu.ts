@@ -31,7 +31,7 @@
 // };
 
 const allMenus: Record<string, any> = {
-	admin:{
+	Administrator:{
 		dashboard: {
 			id: 'dashboard',
 			text: 'Dashboard',

@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const authApi = createApi({
 	reducerPath: 'authApi',
 	baseQuery: fetchBaseQuery({
-		baseUrl: 'https://casemanagement.medbillcollections.net/api',
+		baseUrl: 'http://localhost:3000/api',
 		prepareHeaders: (headers) => {
 			headers.set('Content-Type', 'application/json');
 			// headers.set('Authorization', `Bearer ${getAuthTokenFromLocalStorage()}`);

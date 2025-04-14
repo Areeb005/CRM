@@ -4,7 +4,7 @@ import getAuthTokenFromLocalStorage from '../utils';
 export const userApi = createApi({
 	reducerPath: 'userApi',
 	baseQuery: fetchBaseQuery({
-		baseUrl: 'https://casemanagement.medbillcollections.net/api/',
+		baseUrl: 'http://localhost:3000/api/',
 		prepareHeaders: (headers) => {
 			headers.set('Content-Type', 'application/json');
 			headers.set('Authorization', `Bearer ${getAuthTokenFromLocalStorage()}`);
@@ -38,7 +38,7 @@ export const userApi = createApi({
 		}),
 		getOrganization: builder.query({
 			query: () => ({
-				url: `organization`, // Adjust the URL if needed
+				url: `smtp`, // Adjust the URL if needed
 				method: 'GET',
 			}),
 		}),
@@ -123,7 +123,7 @@ export const userApi = createApi({
 		updateOrginazation: builder?.mutation({
 			query: (postData) => {
 				return {
-					url: `organization`,
+					url: `smtp`,
 					method:'PATCH',
 					body: JSON.stringify(postData),
 				};

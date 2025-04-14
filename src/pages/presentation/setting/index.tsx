@@ -53,8 +53,8 @@ const SettingPage = () => {
 	const [lastSave, setLastSave] = useState<Dayjs | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const userData = useSelector((state: RootState) => state.auth.user);
-	const shouldSkip = !userData || userData.role === "attorney";
-console.log(userData)
+	const shouldSkip = !userData || userData.Role === "attorney";
+console.log(userData?.Role, "userData")
 const { data: organization } = useGetOrganizationQuery(undefined, {
   skip: shouldSkip,
 });
@@ -77,7 +77,7 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 		}, {} as Record<string, any>);
 	
 		// Filter out empty or unchanged values for organization update
-		const organizationFields = ["orginaztionName", "orginaztionContact", "orginaztionWebsite", "emailAddress", "favicon"];
+		const organizationFields = ["OrganizationName", "OrganizationContact", "OrganizationWebsite", "NotificationMail", "OrganizationLogo", "WebSettingsID"];
 		const updatedOrganizationValues = Object.keys(formik.values).reduce((acc, key) => {
 			if (organizationFields.includes(key) && formik.values[key] !== "" && formik.values[key] !== formik.initialValues[key]) {
 				acc[key] = formik.values[key];
@@ -92,10 +92,14 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 			  console.log(response)
 			   dispatch(setUser(response?.user));
 			}
+			const payload = {
+				...updatedOrganizationValues,
+				WebSettingsID : organization?.WebSettingsID
+			}
 	
 			// Update organization if there are changes in org-related fields
 			if (Object.keys(updatedOrganizationValues).length > 0) {
-				await updateOrgination({ body: updatedOrganizationValues, id: userData.id }).unwrap();
+				await updateOrgination(payload).unwrap();
 			}
 	
 			// Set last save time
@@ -119,7 +123,7 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 					<span>Update Failed</span>
 				</span>,
 				`There was an error updating the details. Please try again.
-				${error?.data?.error}
+				${error?.data?.message}
 				`,
 				"danger"
 			);
@@ -134,15 +138,16 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 
 	const formik = useFormik({
 		initialValues: {
-			orginaztionName: organization?.organization_name ||  '',
-			orginaztionContact: organization?.organization_contact || '',
-			orginaztionWebsite: organization?.organization_website ||  '',
-			emailAddress: organization?.notification_email  || 'johndoe@site.com',
+			WebSettingsID:  organization?.WebSettingsID || null,
+			OrganizationName: organization?.OrganizationName ||  '',
+			OrganizationContact: organization?.OrganizationContact || '',
+			OrganizationWebsite: organization?.OrganizationWebsite ||  '',
+			NotificationMail: organization?.NotificationMail  || 'johndoe@site.com',
 			phone: '',
 			oldPassword: '',
 			password: '',
 			// confirmPassword: '',
-			favicon: organization?.favicon || null,
+			OrganizationLogo: organization?.OrganizationLogo || null,
 			profile_picture: null
 		},
 		enableReinitialize: true,
@@ -167,7 +172,7 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 			try {
 				// Replace with your actual API endpoint
 				const response = await axios.post(
-					"https://casemanagement.medbillcollections.net/api/upload",
+					"http://localhost:3000/api/upload",
 					formData,
 					{
 						headers: {
@@ -180,12 +185,12 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 				console.log("✅ Upload response:", response.data);
 	
 				if (response.data?.files?.length > 0) {
-					const uploadedFileUrl = `https://casemanagement.medbillcollections.net/api/${response.data.files[0].path}`;
+					const uploadedFileUrl = `http://localhost:3000/api/${response.data.files[0].path}`;
 					
 					console.log("🖼️ Uploaded file URL:", uploadedFileUrl);
 	
 					// Update Formik with the new file URL (not an array)
-					formik.setFieldValue("favicon", uploadedFileUrl);
+					formik.setFieldValue("OrganizationLogo", uploadedFileUrl);
 					dispatch(setLogo(uploadedFileUrl))
 	
 					// Reset file input
@@ -218,7 +223,7 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 		try {
 			// Replace with your actual API endpoint
 			const response = await axios.post(
-				"https://casemanagement.medbillcollections.net/api/upload",
+				"http://localhost:3000/api/upload",
 				formData,
 				{
 					headers: {
@@ -231,7 +236,7 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 			console.log("✅ Upload response:", response.data);
 
 			if (response.data?.files?.length > 0) {
-				const uploadedFileUrl = `https://casemanagement.medbillcollections.net/api/${response.data.files[0].path}`;
+				const uploadedFileUrl = `http://localhost:3000/api/${response.data.files[0].path}`;
 				
 				console.log("🖼️ Uploaded file URL:", uploadedFileUrl);
 
@@ -260,7 +265,7 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 							<CardBody>
 								<div className='col-12'>
 									<div className='row g-4 align-items-center'>
-									{userData?.role !== "attorney" ?
+									{userData?.Role !== "attorney" ?
 									<>
 										<div className='col-lg-auto'>
 										{isUploading && (
@@ -269,8 +274,8 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 		</div>
 	)}
 											<Avatar
-												srcSet={ formik.values.favicon || USERS.JOHN.src }
-												src={formik.values.favicon || USERS.JOHN.src }
+												srcSet={ formik.values.OrganizationLogo || USERS.JOHN.src }
+												src={formik.values.OrganizationLogo || USERS.JOHN.src }
 												color={USERS.JOHN.color}
 												rounded={3}
 											/>
@@ -340,7 +345,7 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 								</div>
 							</CardBody>
 						</Card>
-						{userData?.role !== "attorney" &&
+						{userData?.Role !== "attorney" &&
 						<Card>
 							<CardHeader>
 								<CardLabel icon='Person' iconColor='success'>
@@ -355,38 +360,38 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 							<CardBody>
 								<div className='row g-4'>
 									<div className='col-md-6'>
-										<FormGroup id='orginaztionName' label='Organization Name' isFloating>
+										<FormGroup id='OrganizationName' label='Organization Name' isFloating>
 											<Input
 												placeholder='First Name'
 												autoComplete='additional-name'
 												onChange={formik.handleChange}
 												onBlur={formik.handleBlur}
-												value={formik.values.orginaztionName}
+												value={formik.values.OrganizationName}
 												isValid={formik.isValid}
-												isTouched={formik.touched.orginaztionName}
-												invalidFeedback={formik.errors.orginaztionName}
+												isTouched={formik.touched.OrganizationName}
+												invalidFeedback={formik.errors.OrganizationName}
 												validFeedback='Looks good!'
 											/>
 										</FormGroup>
 									</div>
 									<div className='col-md-6'>
-										<FormGroup id='lastName' label='Organization Contact' isFloating>
+										<FormGroup id='OrganizationContact' label='Organization Contact' isFloating>
 											<Input
 												placeholder='Last Name'
 												autoComplete='family-name'
 												onChange={formik.handleChange}
 												onBlur={formik.handleBlur}
-												value={formik.values.orginaztionContact}
+												value={formik.values.OrganizationContact}
 												isValid={formik.isValid}
-												isTouched={formik.touched.orginaztionContact}
-												invalidFeedback={formik.errors.orginaztionContact}
+												isTouched={formik.touched.OrganizationContact}
+												invalidFeedback={formik.errors.OrganizationContact}
 												validFeedback='Looks good!'
 											/>
 										</FormGroup>
 									</div>
 									<div className='col-12'>
 										<FormGroup
-											id='displayName'
+											id='OrganizationWebsite'
 											label='Organization Website'
 											isFloating
 											>
@@ -395,17 +400,17 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 												autoComplete='username'
 												onChange={formik.handleChange}
 												onBlur={formik.handleBlur}
-												value={formik.values.orginaztionWebsite}
+												value={formik.values.OrganizationWebsite}
 												isValid={formik.isValid}
-												isTouched={formik.touched.orginaztionWebsite}
-												invalidFeedback={formik.errors.orginaztionWebsite}
+												isTouched={formik.touched.OrganizationWebsite}
+												invalidFeedback={formik.errors.OrganizationWebsite}
 												validFeedback='Looks good!'
 											/>
 										</FormGroup>
 									</div>
 									<div className='col-12'>
 										<FormGroup
-											id='displayName'
+											id='NotificationMail'
 											label='Notifization Email'
 											isFloating
 											>
@@ -414,10 +419,10 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 												autoComplete='username'
 												onChange={formik.handleChange}
 												onBlur={formik.handleBlur}
-												value={formik.values.emailAddress}
+												value={formik.values.NotificationMail}
 												isValid={formik.isValid}
-												isTouched={formik.touched.emailAddress}
-												invalidFeedback={formik.errors.emailAddress}
+												isTouched={formik.touched.NotificationMail}
+												invalidFeedback={formik.errors.NotificationMail}
 												validFeedback='Looks good!'
 											/>
 										</FormGroup>

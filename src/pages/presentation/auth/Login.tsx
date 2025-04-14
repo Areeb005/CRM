@@ -93,11 +93,11 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 			doLogin({ username: values.loginUsername, password: values.loginPassword })
 				.unwrap()
 				.then((response: any) => {
-					const userRole = response?.data?.role;
+					const userRole = response?.data?.Role;
 
     if (userRole === "attorney") {
       navigate("/order");
-    } else if (userRole === "admin") {
+    } else if (userRole === "Administrator") {
       navigate("/dashboard");
     }
 					localStorage.setItem('token', response?.access_token);

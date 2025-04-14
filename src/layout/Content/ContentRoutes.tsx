@@ -32,12 +32,12 @@ const ContentRoutes = () => {
 	}
 	return (
 		<Routes>
-			{user !== null && userData?.role === "admin" &&
+			{user !== null && userData?.Role === "Administrator" &&
 				contents.map((page) => (
 					// eslint-disable-next-line react/jsx-props-no-spreading
 					<Route key={page.path} {...page} />
 				))}
-			{user !== null && userData?.role === "attorney" &&
+			{user !== null && userData?.Role === "attorney" &&
 				Attorney.map((page) => (
 					// eslint-disable-next-line react/jsx-props-no-spreading
 					<Route key={page.path} {...page} />

@@ -20,16 +20,17 @@ const handleDownloadAll = async (files: string[]) => {
       return;
     }
   
-    for (const [index, fileUrl] of files.entries()) {
-      await new Promise((resolve) => setTimeout(resolve, index * 500)); // Delay each download
+    // for (const [index, fileUrl] of files.entries()) {
+    //   await new Promise((resolve) => setTimeout(resolve, index * 500)); // Delay each download
   
       const link = document.createElement("a");
-      link.href = fileUrl;
-      link.setAttribute("download", fileUrl.split("/").pop() || "file"); // Ensure filename extraction
+      link.href = files;
+      link.target = "_blank"
+      link.setAttribute("download", files.split("/").pop() || "file"); // Ensure filename extraction
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }
+    // }
   };
   useEffect(()=>{
     refetch()
@@ -70,14 +71,14 @@ const handleDownloadAll = async (files: string[]) => {
           </CardHeader>
           <CardBody>
             <h4 className="text-primary">
-              <span className="text-black">Case Name: </span> {order?.case_name || "N/A"}
+              <span className="text-black">Case Name: </span> {order?.CaseName || "N/A"}
             </h4>
-            <p><strong>Case Type:</strong> {order?.case_type || "N/A"}</p>
-            <p><strong>File Number:</strong> {order?.file_number || "N/A"}</p>
-            <p><strong>Case Number:</strong> {order?.case_number || "N/A"}</p>
-            <p><strong>Status:</strong> {order?.status}</p>
-            <p><strong>Urgent:</strong> {order?.urgent ? "Yes" : "No"}</p>
-            <p><strong>Needed By:</strong> {dayjs(order?.needed_by).format("MMM DD, YYYY")}</p>
+            <p><strong>Case Type:</strong> {order?.CaseTypeID || "N/A"}</p>
+            <p><strong>File Number:</strong> {order?.FileNumber || "N/A"}</p>
+            <p><strong>Case Number:</strong> {order?.CaseNumber || "N/A"}</p>
+            <p><strong>Status:</strong> {order?.RequestStatus}</p>
+            <p><strong>Urgent:</strong> {order?.IsRush ? "Yes" : "No"}</p>
+            <p><strong>Needed By:</strong> { order?.NeededBy ? dayjs(order?.NeededBy).format("MMM DD, YYYY") : "N/A"}</p>
           </CardBody>
         </Card>
       </div>
@@ -89,11 +90,11 @@ const handleDownloadAll = async (files: string[]) => {
             <CardTitle>Court Details</CardTitle>
           </CardHeader>
           <CardBody>
-            <p><strong>Court Name:</strong> {order?.court_name || "N/A"}</p>
-            <p><strong>Address:</strong> {order?.court_address || "N/A"}</p>
-            <p><strong>City:</strong> {order?.court_city || "N/A"}</p>
-            <p><strong>State:</strong> {order?.court_state || "N/A"}</p>
-            <p><strong>Zip Code:</strong> {order?.court_zip || "N/A"}</p>
+            <p><strong>Court Name:</strong> {order?.CourtName || "N/A"}</p>
+            <p><strong>Address:</strong> {order?.CourtAddress || "N/A"}</p>
+            <p><strong>City:</strong> {order?.CourtCity || "N/A"}</p>
+            <p><strong>State:</strong> {order?.CourtState || "N/A"}</p>
+            <p><strong>Zip Code:</strong> {order?.CourtZip || "N/A"}</p>
           </CardBody>
         </Card>
       </div>
@@ -105,22 +106,22 @@ const handleDownloadAll = async (files: string[]) => {
             <CardTitle>Record Details</CardTitle>
           </CardHeader>
           <CardBody>
-            {order?.record_details ? (
+            {/* {order?.record_details ? ( */}
               <>
-                <p><strong>Record Type:</strong> {JSON.parse(order?.record_details).record_type}</p>
-                <p><strong>First Name:</strong> {JSON.parse(order?.record_details).first_name}</p>
-                <p><strong>Last Name:</strong> {JSON.parse(order?.record_details).last_name}</p>
-                <p><strong>AKA:</strong> {JSON.parse(order?.record_details).aka}</p>
-                <p><strong>SSN:</strong> {JSON.parse(order?.record_details).ssn}</p>
-                <p><strong>Address:</strong> {JSON.parse(order?.record_details).record_address}</p>
-                <p><strong>City:</strong> {JSON.parse(order?.record_details).record_city}</p>
-                <p><strong>State:</strong> {JSON.parse(order?.record_details).record_state}</p>
-                <p><strong>Zip Code:</strong> {JSON.parse(order?.record_details).record_zip}</p>
-                <p><strong>Date of Injury:</strong> {dayjs(JSON.parse(order?.record_details).date_of_injury.from).format("MMM DD, YYYY")} - {dayjs(JSON.parse(order?.record_details).date_of_injury.to).format("MMM DD, YYYY")}</p>
+                <p><strong>Record Type:</strong> {order?.record_details?.RecordType}</p>
+                <p><strong>First Name:</strong> {order?.record_details?.PFirstName}</p>
+                <p><strong>Last Name:</strong> {order?.record_details?.PLastName}</p>
+                <p><strong>AKA:</strong> {order?.record_details?.PAKA}</p>
+                <p><strong>SSN:</strong> {order?.record_details?.PSSN}</p>
+                <p><strong>Address:</strong> {order?.record_details?.PAddress}</p>
+                <p><strong>City:</strong> {order?.record_details?.PCity}</p>
+                <p><strong>State:</strong> {order?.record_details?.PState}</p>
+                <p><strong>Zip Code:</strong> {order?.record_details?.PZip}</p>
+                <p><strong>Date of Injury:</strong> {dayjs(order?.record_details?.date_of_injury.from).format("MMM DD, YYYY")} - {dayjs(order?.record_details?.date_of_injury.to).format("MMM DD, YYYY")}</p>
               </>
-            ) : (
+            {/* ) : (
               <p>No record details available.</p>
-            )}
+            )} */}
           </CardBody>
         </Card>
       </div>
@@ -132,16 +133,16 @@ const handleDownloadAll = async (files: string[]) => {
             <CardTitle>Participants</CardTitle>
           </CardHeader>
           <CardBody>
-            {order?.Participants && order?.Participants.length > 0 ? (
-              order?.Participants.map((participant, index) => (
+            {order?.tblOrderCaseParties && order?.tblOrderCaseParties.length > 0 ? (
+              order?.tblOrderCaseParties.map((participant, index) => (
                 <div key={index} className="border-bottom pb-2 mb-2">
-                  <p><strong>Type:</strong> {participant.type}</p>
-                  <p><strong>Represents:</strong> {participant.represents}</p>
-                  <p><strong>Phone:</strong> {participant.phone}</p>
-                  <p><strong>City:</strong> {participant.city}</p>
-                  <p><strong>State:</strong> {participant.state}</p>
-                  <p><strong>Claim:</strong> {participant.claim}</p>
-                  <p><strong>Adjuster:</strong> {participant.adjuster}</p>
+                  <p><strong>Type:</strong> {participant.PartyType}</p>
+                  <p><strong>Represents:</strong> {participant.RepresentID}</p>
+                  <p><strong>Phone:</strong> {participant.PartyPhone}</p>
+                  <p><strong>City:</strong> {participant.PartyCity}</p>
+                  <p><strong>State:</strong> {participant.PartyState}</p>
+                  <p><strong>Claim:</strong> {participant.InsuranceClaim}</p>
+                  <p><strong>Adjuster:</strong> {participant.InsuranceAdjuster}</p>
                 </div>
               ))
             ) : (
@@ -158,18 +159,18 @@ const handleDownloadAll = async (files: string[]) => {
             <CardTitle>Document Locations</CardTitle>
           </CardHeader>
           <CardBody>
-            {order?.DocumentLocations && order?.DocumentLocations?.length > 0 ? (
-              order?.DocumentLocations?.map((doc, index) =>{
-                const filesArray = doc?.files ? doc.files : [];
+            {order?.TblOrderDocLocations && order?.TblOrderDocLocations?.length > 0 ? (
+              order?.TblOrderDocLocations?.map((doc, index) =>{
+                const filesArray = doc?.DocFilePath ? doc.DocFilePath : "";
                 return (
                 <div key={index} className="border-bottom pb-2 mb-2">
-                  <p><strong>Name:</strong> {doc.name}</p>
-                  <p><strong>Address:</strong> {doc.address}</p>
-                  <p><strong>City:</strong> {doc.city}</p>
-                  <p><strong>State:</strong> {doc.state}</p>
-                  <p><strong>Zip Code:</strong> {doc.zip}</p>
-                  <p><strong>Process Type:</strong> {doc.process_type}</p>
-                  <p><strong>Record Type:</strong> {doc.record_type}</p>
+                  <p><strong>Name:</strong> {doc.LocationName}</p>
+                  <p><strong>Address:</strong> {doc.LocationAddress}</p>
+                  <p><strong>City:</strong> {doc.LocationCity}</p>
+                  <p><strong>State:</strong> {doc.LocationState}</p>
+                  <p><strong>Zip Code:</strong> {doc.LocationZip}</p>
+                  <p><strong>Process Type:</strong> {doc.ProcessType}</p>
+                  <p><strong>Record Type:</strong> {doc.RecordType}</p>
                   <p><strong>Review Request:</strong> {doc.review_request ? "Yes" : "No"}</p>
                   {filesArray.length > 0 && (
                 <button
