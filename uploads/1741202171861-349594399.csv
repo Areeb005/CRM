@@ -1,0 +1,14 @@
+Order By,Urgent,Case Type,Case Name,File Number,Case Number,Court Name,Court Address,Court City,Court State,Court Zip,Bill To
+2,true,Civil Litigation,Smith vs. Johnson Corp,FL-2025-123,CV-2025-789,Superior Court of California, County of Los Angeles,111 N Hill St, Los Angeles, CA 90012,Smith & Associates LLP
+
+Record Details
+Record Type, First Name, Last Name, AKA, SSN, Injury Date From, Injury Date To, Address, City, State, Zip
+Person, John, Smith, Johnny Smith, 123-45-6789, 2024-12-01, 2025-4-01, 456 Oak Street, Los Angeles, CA, 90045
+
+Participants
+Type, Participant, Attorney, Represents, Phone, Address, City, State, Zip, Note
+Attorney, abcd, bcda, Plaintiff, 555-123-4567, 789 Law Office Way, Los Angeles, CA, 90017, Lead counsel for plaintiff
+
+Document Locations
+Name, Address, City, State, Zip, Process Type, Record Type, Action, Review Request, Files, Note
+County Hospital, 100 Medical Center Dr, Los Angeles, CA, 90033, Subpoena, Medical Records, Request, true, "authorization.pdf; medical_release.pdf", Need complete medical records from 2024-2025

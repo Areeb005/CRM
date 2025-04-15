@@ -7,6 +7,7 @@ const { Sequelize } = require('sequelize');
 // });
 
 
+
 const sequelize = new Sequelize(
     process.env.SQL_SERVER_DB,
     process.env.SQL_SERVER_USERNAME,

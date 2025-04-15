@@ -795,10 +795,28 @@ const orderController = {
         where: whereClause,
         include: [
           { model: tblOrderCaseParties, required: false },
-          { model: TblOrderDocLocation, required: false },
+          {
+            model: TblOrderDocLocation,
+            required: false,
+            include: [
+              {
+                model: Statlog,
+                as: 'statusLogs',
+                required: false,
+                include: [
+                  {
+                    model: TStatus,
+                    attributes: ['Status_ID', 'Name'],
+                    where: { ShowToClient: true },
+                    required: true
+                  }
+                ]
+              }
+            ]
+          },
           { model: User, as: "orderByUser", attributes: userAttributes },
-          { model: User, as: "createdByUser", attributes: userAttributes },
-        ]
+          { model: User, as: "createdByUser", attributes: userAttributes }
+        ],
       });
 
       if (!order) {
@@ -810,7 +828,12 @@ const orderController = {
         TblOrderDocLocations: (order.toJSON().TblOrderDocLocations || []).map(doc => ({
           ...doc,
           // Parse files if they exist, otherwise set to empty array
-          files: doc.files ? JSON.parse(doc.files) : []
+          files: doc.files ? JSON.parse(doc.files) : [],
+          statusLogs: (doc.statusLogs || []).map(log => ({
+            Record_ID: log.Record_ID,
+            StatDate: log.statdate,
+            AStatus: log.ClientStatus || (log.TStatus?.Name ?? null)
+          }))
         }))
       };
 
