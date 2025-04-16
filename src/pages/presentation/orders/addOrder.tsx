@@ -625,7 +625,7 @@ const AddOrder = () => {
 	Note: d?.Note || "",
 	CopyForReview: d?.CopyForReview ?? false, // Ensuring boolean value
 	// DocFilePath: Array.isArray(d.files) ? d.files : [], // Ensuring an array
-	DocFilePath: d?.DocFilePath, // Ensuring an array
+	DocFilePath: d?.DocFilePath || "", // Ensuring an array
     }))
   : [
       {
@@ -1035,7 +1035,7 @@ const AddOrder = () => {
 	  
 		try {
 		  const response = await axios.post(
-			"http://localhost:3000/api/upload",
+			`${import.meta.env.VITE_BASE_URL}/upload`,
 			formData,
 			{
 			  headers: {
@@ -1048,7 +1048,7 @@ const AddOrder = () => {
 		  console.log("✅ Upload response:", response.data);
 	  
 		//   if (response.data?.files[0].path) {
-			const uploadedFileUrl = `http://localhost:3000/api/${response.data?.files[0].path}`;
+			const uploadedFileUrl = `${import.meta.env.VITE_BASE_URL}/${response.data?.files[0].path}`;
 			console.log("🖼️ Processed uploaded file:", uploadedFileUrl);
 	  
 			formik.setFieldValue(

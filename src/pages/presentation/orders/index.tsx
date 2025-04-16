@@ -40,6 +40,7 @@ import Modal, { ModalBody, ModalFooter, ModalHeader, ModalTitle } from '../../..
 
 const OrderPage = () => {
 	const navigate = useNavigate();
+	const [showAllStatus, setShowAllStatus] = React.useState(false);
 	const user = useSelector((state: RootState) => state?.auth?.user)
 	const [searchModalStatus, setSearchModalStatus] = useState(false);
 	const [createBulkOrders, {isLoading: orderBulkLoading}] = useCreateBulkOrderMutation()
@@ -76,13 +77,10 @@ useEffect(() => {
   // Filter logic (case insensitive search)
   const lowerCaseInput = inputVal.toLowerCase();
   const filtered = orderData?.orders?.filter((order: any) =>
-    order.case_name.toLowerCase().includes(lowerCaseInput) ||
-    order.case_number.toLowerCase().includes(lowerCaseInput) ||
-    order.file_number.toLowerCase().includes(lowerCaseInput) ||
-    order.case_type.toLowerCase().includes(lowerCaseInput) ||
-    order.status.toLowerCase().includes(lowerCaseInput) ||
-    order.orderByUser.username.toLowerCase().includes(lowerCaseInput) ||
-    dayjs(order.needed_by).format("MMMM D, YYYY").toLowerCase().includes(lowerCaseInput)
+    order.CourtName.toLowerCase().includes(lowerCaseInput) ||
+    order.CaseNumber.toLowerCase().includes(lowerCaseInput) ||
+    order.FileNumber.toLowerCase().includes(lowerCaseInput) ||
+    dayjs(order.NeededBy).format("MMMM D, YYYY").toLowerCase().includes(lowerCaseInput)
   );
 
   setFilteredData(filtered);
@@ -312,6 +310,7 @@ useEffect(() => {
 	}
 	  
  }
+ const [showModal, setShowModal] = useState(false);
     
   if (orderLoading || completOrderLoading) {
 	return (
@@ -408,8 +407,8 @@ useEffect(() => {
 										Code
 										
 									</th>
-									{user?.Role === "Administrator" &&
-									<th>Client</th>}
+									{/* {user?.Role === "Administrator" &&
+									<th>Client</th>} */}
 									<th>Case Name</th>
 									<th>Case NO</th>
 									<th>File NO</th>
@@ -452,8 +451,8 @@ useEffect(() => {
 						{order.NeededBy ? dayjs(order.NeededBy).format("MMMM D, YYYY") : "N/A"}
 									</td>
                                 <td>{order.OrderCode}</td>
-								{user?.Role === "Administrator" &&
-                                <td>{order.orderByUser.username}</td>}
+								{/* {user?.Role === "Administrator" &&
+                                <td>{order.orderByUser.username}</td>} */}
                                 <td>{order.CaseName}</td>
                                 <td>{order.CaseNumber}</td>
                                 <td>{order.FileNumber}</td>
@@ -520,7 +519,7 @@ useEffect(() => {
                             <th>Process Type</th>
                             <th>Record Type</th>
                             <th>Action</th>
-                            {/* <th>Status</th> */}
+                            <th>Status</th>
                             <th>Files</th>
                             <th>Note</th>
                         </tr>
@@ -531,8 +530,11 @@ useEffect(() => {
 							// ?.files?.map((it: any) => it?.dataValues?.files && JSON.parse(it.dataValues.files))
 							// ?.filter(Boolean) ?? [];
 							const filesDataToShow = `http://localhost:3000/api/uploads//1744485314579-23207316.png || http://localhost:3000/api/uploads//1744485314579-23207316.png`;
+							
 
-  
+							const statusHistory = doc?.statusLogs ?? []; // assuming this holds your array
+							const firstStatus = statusHistory[0]?.AStatus;
+							const remainingStatuses = statusHistory.slice(1);
 
 	console.log(filesDataToShow , "filesDataToShow")
 
@@ -543,6 +545,105 @@ useEffect(() => {
                                 <td>{doc.ProcessType}</td>
                                 <td>{doc.RecordType}</td>
                                 <td>{doc.Action}</td>
+								<td>
+      {/* First AStatus */}
+      <span
+        style={{
+          background: "#e0e7ff",
+          color: "#1e3a8a",
+          fontWeight: "500",
+          fontSize: "13px",
+          padding: "4px 10px",
+          borderRadius: "12px",
+          display: "inline-block",
+        }}
+      >
+        {doc?.statusLogs[0]?.AStatus || "N/A"}
+      </span>
+
+      {/* Toggle Button */}
+      {doc?.statusLogs?.length > 0 && (
+        <div style={{ marginTop: "6px" }}>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#2563eb",
+              cursor: "pointer",
+              fontSize: "12px",
+              textDecoration: "underline",
+            }}
+          >
+            + View History
+          </button>
+        </div>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            height: "100vh",
+            width: "100vw",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: "20px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            }}
+          >
+            <h3 style={{ marginBottom: "10px" }}>Status History</h3>
+            {doc?.statusLogs?.map((status, idx) => (
+              <div
+                key={idx}
+                style={{
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  color: "#333",
+                }}
+              >
+                <strong>{status.AStatus}</strong> <br />
+                <span style={{ color: "#666", fontSize: "12px" }}>
+                  {dayjs(status.StatDate).format("MMM D, YYYY - h:mm A")}
+                </span>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                marginTop: "12px",
+                padding: "6px 12px",
+                background: "#1e3a8a",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "13px",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </td>
 								{/* <td>{doc?.DocFilePath}</td> */}
                                 <td> 
 								{/* {doc?.DocFilePath ? (
@@ -557,11 +658,11 @@ useEffect(() => {
 ) : (
     <p>No files available</p>
 )} */}
-{filesDataToShow ? (
-  filesDataToShow.split('||').map((file, idx) => (
+{doc?.CopyServiceFiles ? (
+  doc?.CopyServiceFiles?.split('||').map((file: any, idx: any) => (
     <a
       key={`file-${idx}`}
-      href={file}
+      href={`${import.meta.env.VITE_BASE_URL}/uploads/${file}`}
       target="_blank"
       rel="noopener noreferrer"
       download

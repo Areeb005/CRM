@@ -17,7 +17,7 @@ const Logo: FC<ILogoProps> = ({ width, height }) => {
 	return (
 		<img
 		style={{objectFit:"cover"}}
-		src={logoimg || data?.favicon || Logos}
+		src={logoimg || data?.OrganizationLogo || Logos}
 		width={height !== 854 && !!height ? height * (2155 / 854) : width}
 		height={width !== 2155 && !!width ? width * (854 / 2155) : height}
 	/>

@@ -172,7 +172,7 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 			try {
 				// Replace with your actual API endpoint
 				const response = await axios.post(
-					"http://localhost:3000/api/upload",
+					`${import.meta.env.VITE_BASE_URL}/upload`,
 					formData,
 					{
 						headers: {
@@ -185,7 +185,7 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 				console.log("✅ Upload response:", response.data);
 	
 				if (response.data?.files?.length > 0) {
-					const uploadedFileUrl = `http://localhost:3000/api/${response.data.files[0].path}`;
+					const uploadedFileUrl = `${import.meta.env.VITE_BASE_URL}/${response.data.files[0].path}`;
 					
 					console.log("🖼️ Uploaded file URL:", uploadedFileUrl);
 	
@@ -223,7 +223,7 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 		try {
 			// Replace with your actual API endpoint
 			const response = await axios.post(
-				"http://localhost:3000/api/upload",
+				`${import.meta.env.VITE_BASE_URL}/upload`,
 				formData,
 				{
 					headers: {
@@ -236,7 +236,7 @@ const handleFileChangeProfile = async (event: React.ChangeEvent<HTMLInputElement
 			console.log("✅ Upload response:", response.data);
 
 			if (response.data?.files?.length > 0) {
-				const uploadedFileUrl = `http://localhost:3000/api/${response.data.files[0].path}`;
+				const uploadedFileUrl = `${import.meta.env.VITE_BASE_URL}/${response.data.files[0].path}`;
 				
 				console.log("🖼️ Uploaded file URL:", uploadedFileUrl);
 

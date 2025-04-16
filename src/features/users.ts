@@ -4,9 +4,11 @@ import getAuthTokenFromLocalStorage from '../utils';
 export const userApi = createApi({
 	reducerPath: 'userApi',
 	baseQuery: fetchBaseQuery({
-		baseUrl: 'http://localhost:3000/api/',
+		baseUrl: import.meta.env.VITE_BASE_URL,
 		prepareHeaders: (headers) => {
 			headers.set('Content-Type', 'application/json');
+			headers.set('User-Agent', 'MyAppFrontend/1.0');
+			headers.set('ngrok-skip-browser-warning', 'true');
 			headers.set('Authorization', `Bearer ${getAuthTokenFromLocalStorage()}`);
 			return headers;
 		},
