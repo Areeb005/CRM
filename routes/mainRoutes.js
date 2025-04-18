@@ -11,6 +11,7 @@ const OrganizationController = require('../controllers/organization');
 const locationCtrl = require('../controllers/location');
 const CaseTypeCtrl = require('../controllers/casetype');
 const ProcTypeCtrl = require('../controllers/proctype');
+const fileCtrl = require('../controllers/files');
 
 
 const router = express.Router();
@@ -58,6 +59,8 @@ router.get("/proctypes/:casetypeid", Auth, ProcTypeCtrl.get_proctypes_by_casetyp
 
 
 router.post('/upload', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), uploadFile.array('files', 5), uploadCtrl.upload);
+
+router.get('/files/:filename', Auth, allowedUsers(["Administrator", "attorney"]), fileCtrl.getFileByName);
 
 
 

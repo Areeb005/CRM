@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const uploadToRemote = require("../../helpers/uploadToRemote");
 
 const uploadCtrl = {
   // Create a single work type
@@ -8,27 +9,35 @@ const uploadCtrl = {
         return res.status(400).json({ error: 'No files were uploaded' });
       }
 
-      // Process uploaded files
-      const uploadedFiles = req.files.map(file => ({
-        filename: file.filename,
-        originalname: file.originalname,
-        size: file.size,
-        mimetype: file.mimetype,
-        path: file.path
-      }));
+      const uploadedFiles = [];
 
-      // Here you would typically save file information to your database
-      // For example: await File.create(uploadedFiles);
+      for (const file of req.files) {
+        const filename = Date.now() + '-' + file.originalname;
+        const result = await uploadToRemote(file.buffer, filename);
+
+        if (result.success) {
+          uploadedFiles.push({
+            filename,
+            originalname: file.originalname,
+            size: file.size,
+            mimetype: file.mimetype,
+            remotePath: result.path
+          });
+        } else {
+          return res.status(500).json({ error: `❌ Failed to upload ${file.originalname}`, details: result.error });
+        }
+      }
 
       res.status(200).json({
-        success: 'Files uploaded successfully',
+        success: '✅ Files uploaded successfully',
         files: uploadedFiles
       });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'File upload failed', details: error.message });
+      console.error('❌ Upload Error:', error);
+      res.status(500).json({ error: 'Upload failed', details: error.message });
     }
-  },
+  }
 
 };
 
