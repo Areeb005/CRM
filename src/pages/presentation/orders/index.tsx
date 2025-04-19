@@ -530,7 +530,7 @@ useEffect(() => {
 							// const filesDataToShow = doc
 							// ?.files?.map((it: any) => it?.dataValues?.files && JSON.parse(it.dataValues.files))
 							// ?.filter(Boolean) ?? [];
-							const filesDataToShow = `Artboard_3.png || Artboard_3.png`;
+							const filesDataToShow = doc?.CopyServiceFiles ?? ``;
 							
 
 							const statusHistory = doc?.statusLogs ?? []; // assuming this holds your array
