@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import PageWrapper from "../../../layout/PageWrapper/PageWrapper";
 import Page from "../../../layout/Page/Page";
 import Spinner from "../../../components/bootstrap/Spinner";
+import getAuthTokenFromLocalStorage from "../../../utils";
 
 
 const OrderDetails = () => {
@@ -14,24 +15,67 @@ const {id} = useParams()
 console.log(id)
 const { data: order , isLoading ,refetch} = useGetSingleQuery({ type: 'order', id }, { skip: !id });
 
-const handleDownloadAll = async (files: string[]) => {
-    if (!files || files.length === 0) {
-      alert("No files available for download.");
-      return;
+const handleDownloadAll = async (file: string) => {
+  try {
+    // 1. First fetch the file metadata/URL from your endpoint
+    const response = await fetch(
+      `${import.meta.env.VITE_BASE_URL}/files/${file}?location=writeable`,
+      {
+        method: 'GET',
+        headers: {
+          // Add any required headers (auth tokens etc)
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${getAuthTokenFromLocalStorage()}`
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.statusText}`);
     }
+
+    // 2. Get the actual file URL from the response
+    // (Adjust this based on your API response structure)
+    const fileData = await response.blob();
+    const fileUrl = window.URL.createObjectURL(fileData);
+    // const fileUrl = fileData // Modify according to your API response
+    console.log(fileUrl, "fileUrl")
+
+    // 3. Create and trigger download link
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.setAttribute('download', file.split('/').pop() || 'download');
+    link.target = '_blank'; // Open in new tab
+    link.style.display = 'none';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+      window.URL.revokeObjectURL(fileUrl);
+
+  } catch (error) {
+    console.error('Download failed:', error);
+    alert(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+};
+// const handleDownloadAll = async (files: string[]) => {
+//     if (!files || files.length === 0) {
+//       alert("No files available for download.");
+//       return;
+//     }
   
-    // for (const [index, fileUrl] of files.entries()) {
-    //   await new Promise((resolve) => setTimeout(resolve, index * 500)); // Delay each download
+//     // for (const [index, fileUrl] of files.entries()) {
+//     //   await new Promise((resolve) => setTimeout(resolve, index * 500)); // Delay each download
   
-      const link = document.createElement("a");
-      link.href = files;
-      link.target = "_blank"
-      link.setAttribute("download", files.split("/").pop() || "file"); // Ensure filename extraction
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    // }
-  };
+//       const link = document.createElement("a");
+//       link.href = `${import.meta.env.VITE_BASE_URL}/files/${files}?location=writeable`;
+//       link.target = "_blank"
+//       link.setAttribute("download", files.split("/").pop() || "file"); // Ensure filename extraction
+//       document.body.appendChild(link);
+//       link.click();
+//       document.body.removeChild(link);
+//     // }
+//   };
   useEffect(()=>{
     refetch()
   },[])

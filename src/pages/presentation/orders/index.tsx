@@ -36,6 +36,7 @@ import showNotification from '../../../components/extras/showNotification';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import Modal, { ModalBody, ModalFooter, ModalHeader, ModalTitle } from '../../../components/bootstrap/Modal';
+import getAuthTokenFromLocalStorage from '../../../utils';
 
 
 const OrderPage = () => {
@@ -529,7 +530,7 @@ useEffect(() => {
 							// const filesDataToShow = doc
 							// ?.files?.map((it: any) => it?.dataValues?.files && JSON.parse(it.dataValues.files))
 							// ?.filter(Boolean) ?? [];
-							const filesDataToShow = `http://localhost:3000/api/uploads//1744485314579-23207316.png || http://localhost:3000/api/uploads//1744485314579-23207316.png`;
+							const filesDataToShow = `Artboard_3.png || Artboard_3.png`;
 							
 
 							const statusHistory = doc?.statusLogs ?? []; // assuming this holds your array
@@ -658,18 +659,64 @@ useEffect(() => {
 ) : (
     <p>No files available</p>
 )} */}
-{doc?.CopyServiceFiles ? (
-  doc?.CopyServiceFiles?.split('||').map((file: any, idx: any) => (
+{filesDataToShow ? (
+  filesDataToShow?.split('||').map((file: any, idx: any) => {
+	const handleDownloadAll = async (e : any, file: string) => {
+		e.preventDefault();
+		try {
+		  // 1. First fetch the file metadata/URL from your endpoint
+		  const response = await fetch(
+			`${import.meta.env.VITE_BASE_URL}/files/${file}?location=readable`,
+			{
+			  method: 'GET',
+			  headers: {
+				// Add any required headers (auth tokens etc)
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${getAuthTokenFromLocalStorage()}`
+			  },
+			}
+		  );
+	  
+		  if (!response.ok) {
+			throw new Error(`Failed to fetch file: ${response.statusText}`);
+		  }
+	  
+		  // 2. Get the actual file URL from the response
+		  // (Adjust this based on your API response structure)
+		  const fileData = await response.blob();
+		  const fileUrl = window.URL.createObjectURL(fileData);
+		  // const fileUrl = fileData // Modify according to your API response
+		  console.log(fileUrl, "fileUrl")
+	  
+		  // 3. Create and trigger download link
+		  const link = document.createElement('a');
+		  link.href = fileUrl;
+		  link.setAttribute('download', file.split('/').pop() || 'download');
+		  link.target = '_blank'; // Open in new tab
+		  link.style.display = 'none';
+		  
+		  document.body.appendChild(link);
+		  link.click();
+		  document.body.removeChild(link);
+			window.URL.revokeObjectURL(fileUrl);
+	  
+		} catch (error) {
+		  console.error('Download failed:', error);
+		  alert(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	  };
+	return(
     <a
       key={`file-${idx}`}
-      href={`${import.meta.env.VITE_BASE_URL}/uploads/${file}`}
+	  onClick={(e) => handleDownloadAll(e ,file)}
+	  href='#'
       target="_blank"
       rel="noopener noreferrer"
       download
     >
       {file} <br />
     </a>
-  ))
+  )})
 ) : (
   "N/A"
 )}

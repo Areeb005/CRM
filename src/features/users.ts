@@ -131,6 +131,15 @@ export const userApi = createApi({
 				};
 			},
 		}),
+		createOrginazation: builder?.mutation({
+			query: (postData) => {
+				return {
+					url: `smtp`,
+					method:'POST',
+					body: JSON.stringify(postData),
+				};
+			},
+		}),
 		cancelOrder: builder?.mutation({
 			query: (id) => {
 				return {
@@ -182,5 +191,6 @@ export const {
     useDeleteOrdersMutation,
     useCompleteOrderMutation,
     useCreateBulkOrderMutation,
-    useGetCaseTypeQuery
+    useGetCaseTypeQuery,
+	useCreateOrginazationMutation
 } = userApi;

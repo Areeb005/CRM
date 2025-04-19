@@ -37,7 +37,7 @@ import USERS from '../../../common/data/userDummyData';
 // import CommonDesc from '../../../common/other/CommonDesc';
 import Label from '../../../components/bootstrap/forms/Label';
 import Checks, { ChecksGroup } from '../../../components/bootstrap/forms/Checks';
-import { useGetOrganizationQuery, useUpdateMeMutation, useUpdateOrginazationMutation, useUpdateUserMutation } from '../../../features/users';
+import { useCreateOrginazationMutation, useGetOrganizationQuery, useUpdateMeMutation, useUpdateOrginazationMutation, useUpdateUserMutation } from '../../../features/users';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import axios from 'axios';
@@ -55,13 +55,14 @@ const SettingPage = () => {
 	const userData = useSelector((state: RootState) => state.auth.user);
 	const shouldSkip = !userData || userData.Role === "attorney";
 console.log(userData?.Role, "userData")
-const { data: organization } = useGetOrganizationQuery(undefined, {
+const { data: organization , isError} = useGetOrganizationQuery(undefined, {
   skip: shouldSkip,
 });
 
 const dispatch = useDispatch()
 
 const [updateUser , {isLoading: uploadLoading}] = useUpdateMeMutation()
+const [CreateOrganization , {isLoading: CreateOrganizationLoading}] = useCreateOrginazationMutation()
 const [updateOrgination] = useUpdateOrginazationMutation()
 	console.log(organization, "organization")
 	const handleSave = async () => {
@@ -86,6 +87,9 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 		}, {} as Record<string, any>);
 	
 		try {
+			if(isError) {
+				await CreateOrganization(updatedOrganizationValues).unwrap()
+			}
 			// Update user if there are changes in password fields
 			if (Object.keys(updatedUserValues).length > 0) {
 			  const response = 	await updateUser(updatedUserValues).unwrap();
@@ -101,6 +105,8 @@ const [updateOrgination] = useUpdateOrginazationMutation()
 			if (Object.keys(updatedOrganizationValues).length > 0) {
 				await updateOrgination(payload).unwrap();
 			}
+
+			
 	
 			// Set last save time
 			setLastSave(dayjs());

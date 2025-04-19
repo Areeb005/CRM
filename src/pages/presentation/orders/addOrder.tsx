@@ -568,8 +568,8 @@ const AddOrder = () => {
 				zip: order?.record_details?.record_zip || recordDetails?.record_zip ||  "",
 				SSN: order?.record_details?.PSSN || recordDetails?.PSSN || "",
 				AKA: order?.record_details?.PAKA || recordDetails?.PAKA || "",
-				dateOfInjuryFrom: order?.record_details?.date_of_injury?.from ||  dayjs(recordDetails?.date_of_injury?.from).format("YYYY-MM-DD")   ||  "",
-				dateOfInjuryTo: order?.record_details?.date_of_injury?.to ||  dayjs(recordDetails?.date_of_injury?.to).format("YYYY-MM-DD") || "",
+				dateOfInjuryFrom: dayjs(order?.record_details?.date_of_injury?.from).format("YYYY-MM-DD") ||  dayjs(recordDetails?.date_of_injury?.from).format("YYYY-MM-DD")   ||  "",
+				dateOfInjuryTo: dayjs(order?.record_details?.date_of_injury?.to).format("YYYY-MM-DD") ||  dayjs(recordDetails?.date_of_injury?.to).format("YYYY-MM-DD") || "",
 			},
 			recordTypeEntity: {
 				name: order?.record_details?.name || "",
@@ -1048,7 +1048,7 @@ const AddOrder = () => {
 		  console.log("✅ Upload response:", response.data);
 	  
 		//   if (response.data?.files[0].path) {
-			const uploadedFileUrl = `${import.meta.env.VITE_BASE_URL}/${response.data?.files[0].path}`;
+			const uploadedFileUrl = `${response.data?.files[0].filename}`;
 			console.log("🖼️ Processed uploaded file:", uploadedFileUrl);
 	  
 			formik.setFieldValue(
@@ -1912,7 +1912,7 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 															name='continuous_trauma'
 															label={"Continuous Trauma"}
 															onChange={formik.handleChange}
-															checked={formik.values.recordTypeEntity.continuous_trauma}
+															checked={formik.values.recordTypeEntity.continuous_trauma || false}
 														/>
 											</FormGroup>
 											</div>
@@ -2886,7 +2886,7 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
             </FormGroup>
         </div> */}
 		<div className="col-12">
-  <FormGroup id="files" label="Document Upload">
+  {/* <FormGroup id="files" label="Document Upload">
     <Input
       type="file"
       multiple
@@ -2897,7 +2897,73 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
     //   invalidFeedback={formik.errors.documentLocation?.[index]?.files}
       validFeedback="Looks good!"
     />
-  </FormGroup>
+  </FormGroup> */}
+  <FormGroup id="files" label="Document Upload">
+  <div
+  onClick={() => document.getElementById(`file-upload-${index}`)?.click()}
+    className={`dropzone ${formik.touched.documentLocation?.[index]?.files ? 'is-touched' : ''} ${
+      formik.errors.documentLocation?.[index]?.files ? 'is-invalid' : ''
+    }`}
+    onDragOver={(e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      e.currentTarget.classList.add('dragover')
+    }}
+    onDragLeave={(e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      e.currentTarget.classList.remove('dragover')
+    }}
+    onDrop={(e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      e.currentTarget.classList.remove('dragover')
+      const files = Array.from(e.dataTransfer.files)
+      handleFileChange({ target: { files } }, index)
+    }}
+  >
+    <div className="dropzone-content">
+      {/* <CloudUpload size={48} className="text-primary" /> */}
+      <div className="mt-2">
+        Drag & drop files here or <span className="text-primary">browse</span>
+      </div>
+      {/* <small className="text-muted">Supports: PDF, DOCX, JPG, PNG </small> */}
+    </div>
+    <input
+      type="file"
+      multiple
+      onChange={(e) => handleFileChange(e, index)}
+      onBlur={formik.handleBlur}
+      className="d-none"
+      id={`file-upload-${index}`}
+    />
+  </div>
+  
+  {/* Display selected files */}
+  {/* {formik.values.documentLocation?.[index]?.files?.length > 0 && (
+    <div className="mt-3">
+      <h6>Selected Files:</h6>
+      <ul className="list-group">
+        {Array.from(formik.values.documentLocation[index].files).map((file, i) => (
+          <li key={i} className="list-group-item d-flex justify-content-between align-items-center">
+            <span>{file.name}</span>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => {
+                const newFiles = [...formik.values.documentLocation[index].files]
+                newFiles.splice(i, 1)
+                formik.setFieldValue(`documentLocation.${index}.files`, newFiles)
+              }}
+            >
+              Remove
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )} */}
+</FormGroup>
   {loading[index] && (
         <div className="text-center my-2">
           <Spinner isGrow variant="primary" />

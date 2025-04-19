@@ -95,7 +95,7 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 				.then((response: any) => {
 					const userRole = response?.data?.Role;
 
-    if (userRole === "attorney") {
+    if (userRole === "attorney" || userRole === "Attorney") {
       navigate("/order");
     } else if (userRole === "Administrator") {
       navigate("/dashboard");
