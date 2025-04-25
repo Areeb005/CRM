@@ -108,6 +108,99 @@ const usersCrtl = {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   },
+  create_bulk: async (req, res) => {
+    try {
+      const schema = Joi.object({
+        username: Joi.string().min(1).max(255).required(),
+        full_name: Joi.string().min(1).max(255).required(),
+        profile_picture: Joi.string()
+          .uri()
+          .max(255)
+          .optional()
+          .default("https://cdn-icons-png.flaticon.com/256/6522/6522516.png"),
+        email: Joi.string().email().required(),
+        password: Joi.string()
+          .pattern(new RegExp("^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9]).{8,}$"))
+          .required()
+          .messages({
+            "string.pattern.base": "Password must contain at least one uppercase letter, one special character, one number, and be at least 8 characters long.",
+          }),
+        firm_name: Joi.string().required(),
+        phone: Joi.number().integer().required(),
+        address: Joi.string().required(),
+        state: Joi.string().required(),
+        city: Joi.string().required(),
+        zip: Joi.string().required(),
+        app_acc_no: Joi.number().integer().required(),
+        role: Joi.string().valid("Administrator", "attorney").required(),
+      });
+
+      if (!Array.isArray(req.body.users) || req.body.users.length === 0) {
+        return res.status(400).json({ error: "Please send users array in request body." });
+      }
+
+      const validUsers = [];
+      const failedUsers = [];
+
+      for (const userData of req.body.users) {
+        const { error, value } = schema.validate(userData);
+
+        if (error) {
+          failedUsers.push({ userData, error: error.details[0].message });
+          continue;
+        }
+
+        const { username, email } = value;
+
+        // Check if email or username already exists
+        const existing = await User.findOne({
+          where: { Email: email },
+        });
+
+        const existingUsername = await User.findOne({
+          where: { UserName: username },
+        });
+
+        if (existing || existingUsername) {
+          failedUsers.push({ userData, error: "Email or Username already registered." });
+          continue;
+        }
+
+        // Prepare user for bulk insert
+        validUsers.push({
+          UserName: value.username,
+          FullName: value.full_name,
+          Email: value.email,
+          PasswordHash: generatePasswordHash(value.password),
+          FirmName: value.firm_name,
+          Phone: value.phone.toString(),
+          Address: value.address,
+          State: value.state,
+          City: value.city,
+          Zip: value.zip,
+          AppAcctNo: value.app_acc_no.toString(),
+          Role: value.role == "Attorney" ? value.role.toLowerCase() : value.role,
+          IsApproved: false,
+          IsDeleted: false,
+          CreatedUserID: req.user.UserID, // Assuming req.user is set by your auth middleware
+        });
+      }
+
+      // Insert all valid users at once
+      if (validUsers.length > 0) {
+        await User.bulkCreate(validUsers);
+      }
+
+      return res.status(200).json({
+        success: `${validUsers.length} users created successfully.`,
+        failed: failedUsers.length ? failedUsers : undefined,
+      });
+
+    } catch (error) {
+      console.error("Error bulk creating users:", error.message);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
   get_all: async (req, res) => {
     try {
       const schema = Joi.object({

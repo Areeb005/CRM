@@ -24,6 +24,7 @@ router.get('/me', Auth, authCrtl.get_me);
 router.patch('/me', Auth, authCrtl.update_me);
 
 router.post('/user', Auth, allowedUsers(["Administrator"]), usersCrtl.create);
+router.post('/users', Auth, allowedUsers(["Administrator"]), usersCrtl.create_bulk);
 router.get('/users', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), usersCrtl.get_all);
 router.get('/user/:id', Auth, allowedUsers(["Administrator", "attorney", "Attorney"]), usersCrtl.get_one);
 router.patch('/user/:id', Auth, allowedUsers(["Administrator"]), usersCrtl.update_one);
