@@ -14,6 +14,7 @@ interface IBrandProps {
 const Brand: FC<IBrandProps> = ({ asideStatus, setAsideStatus }) => {
 		const user = useSelector((state: RootState) => state?.auth?.user)
 		console.log(user?.role, "User")
+		
 	return (
 		<div className='brand'>
 			<div className='brand-logo'>

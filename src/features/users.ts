@@ -68,6 +68,24 @@ export const userApi = createApi({
 				method: 'GET',
 			}),
 		}),
+		getActions: builder.query({
+			query: () => ({
+				url: `procactions`, // Adjust the URL if needed
+				method: 'GET',
+			}),
+		}),
+		getRecordType: builder.query({
+			query: () => ({
+				url: `recordtypes`, // Adjust the URL if needed
+				method: 'GET',
+			}),
+		}),
+		getRepresents: builder.query({
+			query: () => ({
+				url: `represents`, // Adjust the URL if needed
+				method: 'GET',
+			}),
+		}),
 		updateMe: builder.mutation({
 			query: (body) => {
 				return {
@@ -108,6 +126,15 @@ export const userApi = createApi({
 			query: (postData) => {
 				return {
 					url: `bulk-orders`,
+					method:'POST',
+					body: JSON.stringify(postData),
+				};
+			},
+		}),
+		createBulkUsers: builder?.mutation({
+			query: (postData) => {
+				return {
+					url: `users`,
 					method:'POST',
 					body: JSON.stringify(postData),
 				};
@@ -192,5 +219,7 @@ export const {
     useCompleteOrderMutation,
     useCreateBulkOrderMutation,
     useGetCaseTypeQuery,
-	useCreateOrginazationMutation
+	useCreateOrginazationMutation,
+	useCreateBulkUsersMutation,
+	useGetActionsQuery,useGetRepresentsQuery, useGetRecordTypeQuery
 } = userApi;

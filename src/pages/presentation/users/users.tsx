@@ -24,18 +24,24 @@ import Icon from '../../../components/icon/Icon';
 import Avatar from '../../../components/Avatar';
 import Checks from '../../../components/bootstrap/forms/Checks';
 import { useNavigate } from 'react-router-dom';
-import { useGetUsersQuery, useUpdateUserMutation } from '../../../features/users';
+import { useCreateBulkUsersMutation, useGetUsersQuery, useUpdateUserMutation } from '../../../features/users';
 import Alert from '../../../components/bootstrap/Alert';
 import useSortableData from '../../../hooks/useSortableData';
 import PaginationButtons from '../../../components/PaginationButtons';
 import Spinner from '../../../components/bootstrap/Spinner';
 import Swal from 'sweetalert2';
+import Modal, { ModalBody, ModalFooter, ModalHeader, ModalTitle } from '../../../components/bootstrap/Modal';
+import Papa from 'papaparse';
+import showNotification from '../../../components/extras/showNotification';
 
 const UsersPage = () => {
 	const navigate = useNavigate();
 	const [currentPage, setCurrentPage] = useState(1);
+	const [searchModalStatus, setSearchModalStatus] = useState(false);
 	const [perPage, setPerPage] = useState(10);
 	const [inputVal, setInputVal] = useState('');
+	const [csvData, setCsvData] = useState([]);
+	const [bulkUsers, { isLoading: usersLoad, isSuccess }] = useCreateBulkUsersMutation();
 	const {
 		data: userData,
 		isFetching,
@@ -155,6 +161,111 @@ const UsersPage = () => {
 			}
 		});
 	};
+
+
+	const downloadSampleCSV = () => {
+		const headers = [
+			'username',
+			'full_name',
+			'email',
+			'password',
+			'firm_name',
+			'phone',
+			'address',
+			'state',
+			'city',
+			'zip',
+			'app_acc_no',
+			'role',
+		];
+		const sampleData = [
+			[
+				'john_doe',
+				'John Doe',
+				'john@example.com',
+				'StrongP@ss1',
+				'John Law Firm',
+				'1234567890',
+				'123 Main St',
+				'CA',
+				'Los Angeles',
+				'90001',
+				'101',
+				'attorney',
+			],
+		];
+
+		let csvContent = 'data:text/csv;charset=utf-8,';
+		csvContent += headers.join(',') + '\n';
+		csvContent += sampleData.map((row) => row.join(',')).join('\n');
+
+		const encodedUri = encodeURI(csvContent);
+		const link = document.createElement('a');
+		link.setAttribute('href', encodedUri);
+		link.setAttribute('download', 'sample_users.csv');
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+	};
+
+	const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (file) {
+			Papa.parse<any>(file, {
+				header: true,
+				skipEmptyLines: true,
+				complete: (results: any) => {
+					// Filter out empty rows
+					const filteredData = results?.data?.filter((row: any) =>
+						Object.values(row).some((value) => value !== null && value !== ''),
+					);
+					setCsvData(filteredData);
+				},
+				error: (error: any) => {
+					console.error('Error reading CSV file:', error);
+				},
+			});
+		}
+	};
+	const transformCsvToApiFormat = (): any[] => {
+		return csvData;
+	};
+	const handleSaveData = async () => {
+		const formattedData = transformCsvToApiFormat();
+		const cleanedData = formattedData
+			?.map((obj: any) =>
+				Object?.fromEntries(Object?.entries(obj)?.filter(([_, value]) => value !== '')),
+			)
+			?.map((item: any) => ({
+				...item,
+				email: item?.email?.trim(),
+			}));
+		try {
+			await bulkUsers({ users: cleanedData })
+				.unwrap()
+				?.then(() => {
+					refetch();
+					setCsvData([]);
+					setSearchModalStatus(false);
+					showNotification(
+						<span className='d-flex align-items-center'>
+							<Icon icon='CheckCircle' size='lg' className='me-1' />
+							<span>Success!</span>
+						</span>,
+						'Users added successfully!',
+						'success',
+					);
+					// }
+				});
+		} catch (error) {
+			console.error('Error saving data:', error);
+		}
+	};
+	const handleDelete = (email: string): void => {
+		const updatedData = csvData.filter((item: any) => item?.email !== email);
+		setCsvData(updatedData); // Assuming you're using state to manage csvData
+	};
+	
 	if (userLoading) {
 		return (
 			<div
@@ -237,6 +348,21 @@ const UsersPage = () => {
 								Export
 							</Button>
 						</CardActions> */}
+						<CardActions>
+							<Button
+								onClick={() => setSearchModalStatus(true)}
+								color='secondary'
+								icon='CloudDownload'
+								// isLight
+								tag='a'
+								className='bg-gradient '
+								// to='/somefile.txt'
+								target='_blank'
+								// download
+							>
+								Bulk Add
+							</Button>
+						</CardActions>
 					</CardHeader>
 					<CardBody className='table-responsive'>
 						<table className='table table-modern '>
@@ -355,6 +481,137 @@ const UsersPage = () => {
 				</Card>
 
 				{/* modal */}
+				<Modal
+					setIsOpen={setSearchModalStatus}
+					isOpen={searchModalStatus}
+					isStaticBackdrop
+					isScrollable
+					id='asasasasaaxzczxss'
+					data-tour='search-modal'
+					size={'xl'}>
+					<ModalHeader setIsOpen={setSearchModalStatus}>
+						<ModalTitle id='bulkAddSites'>Bulk Add Users</ModalTitle>
+					</ModalHeader>
+					<ModalBody>
+						<>
+							<div className='d-flex justify-content-end mb-4'>
+								<Button
+									className='d-flex align-items-center p-0' // Align items and remove padding
+									onClick={downloadSampleCSV}>
+									<i className='bi bi-download me-2'></i>{' '}
+									{/* Change this to 'fas fa-download' for Font Awesome */}
+									Download Sample
+								</Button>
+							</div>
+							<input
+								id='file-input'
+								style={{ display: 'none' }}
+								type='file'
+								accept='.csv'
+								onChange={handleFileUpload}
+								className='mb-3'
+							/>
+							<div
+								onClick={() => document.getElementById('file-input')?.click()}
+								className='file_input text-center'
+								style={{
+									cursor: 'pointer',
+									border: '1px dashed #ededf5',
+									borderRadius: '5px',
+									width: '100%',
+									height: '100px',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+									color: '#000',
+									fontSize: '1rem',
+									borderRight: '8px',
+								}}>
+								Click here to upload CSV File
+							</div>
+
+							{csvData.length > 0 && (
+								<div>
+									<table
+										style={{ maxWidth: 2400 }}
+										className='table table-bordered mt-5'>
+										<thead>
+											<tr>
+												<th>Username</th>
+												<th>Full Name</th>
+												<th>Email</th>
+												<th>Password</th>
+												<th>Firm Name</th>
+												
+												<th>Phone</th>
+												<th>Address</th>
+												<th>State</th>
+												<th>City</th>
+												<th>Zip</th>
+												<th>App Acc No</th>
+												<th>Role</th>
+											</tr>
+										</thead>
+										<tbody>
+											{csvData.map((item: any, index) => (
+												<tr key={index}>
+													<td>
+																{item?.username || "N/A"}
+													</td>
+													<td>
+																{item?.full_name || "N/A"}
+													</td>
+													<td className=''>{item?.email}</td>
+													<td className=''>{item?.password}</td>
+													<td >
+														{item?.firm_name}
+													</td>
+													<td>{item?.phone}</td>
+													<td>{item?.address}</td>
+													<td>{item?.state}</td>
+													<td>{item?.city}</td>
+													<td>{item?.zip}</td>
+													<td>{item?.app_acc_no}</td>
+													<td>{item?.role}</td>
+													<td>
+														<Icon
+															onClick={() =>
+																handleDelete(item?.email)
+															}
+															icon='Delete'
+															size={'2x'}
+															color='danger'
+															className='ms-3'
+														/>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+									
+									<div className='w-100 d-flex justify-content-end '>
+										<Button
+											className='my-4 '
+											color='secondary'
+											onClick={handleSaveData}
+											isDisable={usersLoad}>
+											{usersLoad ? 'Saving...' : 'Save Data'}
+										</Button>
+									</div>
+
+									{isSuccess && (
+										<p className='text-success mt-2'>
+											Data saved successfully!
+										</p>
+									)}
+								</div>
+							)}
+						</>
+					</ModalBody>
+					<ModalFooter>
+						<></>
+					</ModalFooter>
+				</Modal>
 			</Page>
 		</PageWrapper>
 	);

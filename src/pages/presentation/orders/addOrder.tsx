@@ -37,7 +37,7 @@ import Modal, { ModalBody, ModalFooter, ModalHeader } from '../../../components/
 import { OffCanvasTitle } from '../../../components/bootstrap/OffCanvas';
 import Textarea from '../../../components/bootstrap/forms/Textarea';
 import { caseOptions, participantsType, representsOptions, states, step1Schema, step2Schema, step3Schema } from '../../../common/data/validationSchemas';
-import { useCreateOrderMutation, useDeleteOrderMutation, useGetBillToQuery, useGetCaseTypeQuery, useGetCourtNameQuery, useGetParticipantsQuery, useGetSingleQuery, useGetUsersQuery } from '../../../features/users';
+import { useCreateOrderMutation, useDeleteOrderMutation, useGetActionsQuery, useGetBillToQuery, useGetCaseTypeQuery, useGetCourtNameQuery, useGetParticipantsQuery, useGetRecordTypeQuery, useGetRepresentsQuery, useGetSingleQuery, useGetUsersQuery } from '../../../features/users';
 import getAuthTokenFromLocalStorage from '../../../utils';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -81,79 +81,79 @@ import CreatableSelect from "react-select/creatable";
 //     { label: "Subpoena To Appear With Records At A Deposition", value: "Subpoena To Appear With Records At A Deposition" },
 // ];
 
-const actionOptions= [
-    { label: "Prepare Subpoena - Serve - Copy", value: 2001 },
-    { label: "Prepare Subpoena - Serve", value: 2002 },
-    { label: "Prepare Subpoena - Copy", value: 2003 },
-    { label: "Subpoena Attached - Serve - Copy", value: 2004 },
-    { label: "Subpoena Attached - Serve", value: 2005 },
-    { label: "Subpoena Attached - Copy", value: 2006 },
-    { label: "Copy", value: 2007 }
-];
+// const actionOptions= [
+//     { label: "Prepare Subpoena - Serve - Copy", value: 2001 },
+//     { label: "Prepare Subpoena - Serve", value: 2002 },
+//     { label: "Prepare Subpoena - Copy", value: 2003 },
+//     { label: "Subpoena Attached - Serve - Copy", value: 2004 },
+//     { label: "Subpoena Attached - Serve", value: 2005 },
+//     { label: "Subpoena Attached - Copy", value: 2006 },
+//     { label: "Copy", value: 2007 }
+// ];
 
 
 
-const recordTypeOption: any[] = [
-    { label: "ADDENDUM", value: 1001 },
-    { label: "DENTAL", value: 1002 },
-    { label: "EMPLOYMENT/ CIVIL", value: 1003 },
-    { label: "HEALTH CLUB", value: 1004 },
-    { label: "INSURANCE/ CIVIL", value: 1005 },
-    { label: "ATTORNEY", value: 1006 },
-    { label: "MEDICAL/ CIVIL", value: 1007 },
-    { label: "PHARMACY", value: 1008 },
-    { label: "PSYCHIATRIC", value: 1009 },
-    { label: "SCHOLASTIC", value: 1010 },
-    { label: "X-RAY", value: 1011 },
-    { label: "BILLING", value: 1012 },
-    { label: "MEDICAL/ W.C.", value: 1013 },
-    { label: "PARAMEDIC", value: 1014 },
-    { label: "EMPLOYMENT/ W.C.", value: 1015 },
-    { label: "INSURANCE/ W.C.", value: 1016 },
-    { label: "ATTACHMENT 3", value: 1017 },
-    { label: "SCR-SANTA ANA-2", value: 1018 },
-    { label: "EMPLOYMENT RECORDS #1", value: 1019 },
-    { label: "SCR MED/INVESTIGATION", value: 1020 },
-    { label: "MEDICAL RECORDS #4", value: 1021 },
-    { label: "EMPLOYMENT RECORDS #3", value: 1022 },
-    { label: "INSURANCE RECORDS #1", value: 1023 },
-    { label: "INSURANCE RECORDS AUTO", value: 1024 },
-    { label: "MEDICAL RECORDS #5", value: 1025 },
-    { label: "MEDICAL RECORDS #2", value: 1026 },
-    { label: "INSURANCE RECORDS #3", value: 1027 },
-    { label: "MEDICAL RECORDS #7", value: 1028 },
-    { label: "MEDICAL RECORDS #1", value: 1029 },
-    { label: "DENTAL RECORDS #1", value: 1030 },
-    { label: "MEDICAL/INSURANCE RECORDS", value: 1031 },
-    { label: "EMPLOYMENT RECORDS #2", value: 1032 },
-    { label: "MEDICAL RECORDS-BILL-XRAYS", value: 1033 },
-    { label: "MEDICAL RECORDS #6", value: 1034 },
-    { label: "INSURANCE RECORDS #2", value: 1035 },
-    { label: "PHYSICAL THERAPY RECORDS", value: 1036 },
-    { label: "BUSINESS RECORDS", value: 1037 },
-    { label: "BILLING RECORDS #2", value: 1038 },
-    { label: "SCHOOL RECORDS", value: 1039 },
-    { label: "SHERIFF RECORDS", value: 1040 },
-    { label: "SCR-SANTA ANA-1", value: 1041 },
-    { label: "MEDICAL RECORDS #3", value: 1042 },
-    { label: "ADDITIONAL INFO NEEDED", value: 1043 },
-    { label: "INSURANCE RECORDS - BENEFITS P", value: 1044 },
-    { label: "CORONER", value: 1045 },
-    { label: "CAL OSHA", value: 1046 },
-    { label: "EDD", value: 1047 },
-    { label: "SECURITY / SURVEILLANCE", value: 1048 },
-    { label: "WCAB FILE", value: 1049 },
-    { label: "MATERIAL SAFETY DATA SHEETS", value: 1050 },
-    { label: "RATINGS BUREAU W/C", value: 1051 },
-    { label: "WCIRB REQUEST", value: 1052 },
-    { label: "PAYROLL", value: 1053 },
-    { label: "ORTHOPEDIC", value: 1054 },
-    { label: "AUTOMOBILE INSURANCE", value: 1055 },
-    { label: "HEALTH PLAN PROVIDER", value: 1056 },
-    { label: "SPECIAL NOTICE OF LAWSUIT", value: 1057 },
-    { label: "SKIP TRACE SEARCH", value: 1058 },
-    { label: "SOCIAL SECURITY RECORDS", value: 1059 }
-];
+// const recordTypeOption: any[] = [
+//     { label: "ADDENDUM", value: 1001 },
+//     { label: "DENTAL", value: 1002 },
+//     { label: "EMPLOYMENT/ CIVIL", value: 1003 },
+//     { label: "HEALTH CLUB", value: 1004 },
+//     { label: "INSURANCE/ CIVIL", value: 1005 },
+//     { label: "ATTORNEY", value: 1006 },
+//     { label: "MEDICAL/ CIVIL", value: 1007 },
+//     { label: "PHARMACY", value: 1008 },
+//     { label: "PSYCHIATRIC", value: 1009 },
+//     { label: "SCHOLASTIC", value: 1010 },
+//     { label: "X-RAY", value: 1011 },
+//     { label: "BILLING", value: 1012 },
+//     { label: "MEDICAL/ W.C.", value: 1013 },
+//     { label: "PARAMEDIC", value: 1014 },
+//     { label: "EMPLOYMENT/ W.C.", value: 1015 },
+//     { label: "INSURANCE/ W.C.", value: 1016 },
+//     { label: "ATTACHMENT 3", value: 1017 },
+//     { label: "SCR-SANTA ANA-2", value: 1018 },
+//     { label: "EMPLOYMENT RECORDS #1", value: 1019 },
+//     { label: "SCR MED/INVESTIGATION", value: 1020 },
+//     { label: "MEDICAL RECORDS #4", value: 1021 },
+//     { label: "EMPLOYMENT RECORDS #3", value: 1022 },
+//     { label: "INSURANCE RECORDS #1", value: 1023 },
+//     { label: "INSURANCE RECORDS AUTO", value: 1024 },
+//     { label: "MEDICAL RECORDS #5", value: 1025 },
+//     { label: "MEDICAL RECORDS #2", value: 1026 },
+//     { label: "INSURANCE RECORDS #3", value: 1027 },
+//     { label: "MEDICAL RECORDS #7", value: 1028 },
+//     { label: "MEDICAL RECORDS #1", value: 1029 },
+//     { label: "DENTAL RECORDS #1", value: 1030 },
+//     { label: "MEDICAL/INSURANCE RECORDS", value: 1031 },
+//     { label: "EMPLOYMENT RECORDS #2", value: 1032 },
+//     { label: "MEDICAL RECORDS-BILL-XRAYS", value: 1033 },
+//     { label: "MEDICAL RECORDS #6", value: 1034 },
+//     { label: "INSURANCE RECORDS #2", value: 1035 },
+//     { label: "PHYSICAL THERAPY RECORDS", value: 1036 },
+//     { label: "BUSINESS RECORDS", value: 1037 },
+//     { label: "BILLING RECORDS #2", value: 1038 },
+//     { label: "SCHOOL RECORDS", value: 1039 },
+//     { label: "SHERIFF RECORDS", value: 1040 },
+//     { label: "SCR-SANTA ANA-1", value: 1041 },
+//     { label: "MEDICAL RECORDS #3", value: 1042 },
+//     { label: "ADDITIONAL INFO NEEDED", value: 1043 },
+//     { label: "INSURANCE RECORDS - BENEFITS P", value: 1044 },
+//     { label: "CORONER", value: 1045 },
+//     { label: "CAL OSHA", value: 1046 },
+//     { label: "EDD", value: 1047 },
+//     { label: "SECURITY / SURVEILLANCE", value: 1048 },
+//     { label: "WCAB FILE", value: 1049 },
+//     { label: "MATERIAL SAFETY DATA SHEETS", value: 1050 },
+//     { label: "RATINGS BUREAU W/C", value: 1051 },
+//     { label: "WCIRB REQUEST", value: 1052 },
+//     { label: "PAYROLL", value: 1053 },
+//     { label: "ORTHOPEDIC", value: 1054 },
+//     { label: "AUTOMOBILE INSURANCE", value: 1055 },
+//     { label: "HEALTH PLAN PROVIDER", value: 1056 },
+//     { label: "SPECIAL NOTICE OF LAWSUIT", value: 1057 },
+//     { label: "SKIP TRACE SEARCH", value: 1058 },
+//     { label: "SOCIAL SECURITY RECORDS", value: 1059 }
+// ];
 
 
 
@@ -325,6 +325,10 @@ const AddOrder = () => {
 		skip: shouldSkip
 	})
 	const {data:caseTypes}= useGetCaseTypeQuery({})
+	const {data:actionsData}= useGetActionsQuery({})
+	const {data:representData}= useGetRepresentsQuery({})
+	const {data:recordTypeData}= useGetRecordTypeQuery({})
+	console.log('====================================', actionsData);
 	const { data: order , isLoading, refetch: orderRefetch} = useGetSingleQuery({ type: 'order', id: itemId }, { skip: !itemId });
 	const [caseParticipants , setCasePArticipants] = useState<any[]> (order?.tblOrderCaseParties || [])
     const [documentLocationData , setdocumentLocationData] = useState <any[]>(order?.TblOrderDocLocations || [])
@@ -545,6 +549,15 @@ const AddOrder = () => {
 			urgent: order?.IsRush || false,
 			neededBy: order?.NeededBy ? dayjs(order?.NeededBy).format("YYYY-MM-DD") :  null,
 			caseType: order?.CaseTypeID || '',
+			ClaimNo: order?.ClaimNo || '',
+			DOB: order?.DOB || '',
+			Cros: order?.Cros || '',
+			FilingDistrict: order?.FilingDistrict || '',
+			CourtRoomNo: order?.CourtRoomNo || '',
+			CourtDepartment: order?.CourtDepartment || '',
+			Representing: order?.Representing ? { value: order.Representing, label: order.Representing }
+			: "",
+			
 			billTo: order?.BillTo ? { value: order.BillTo, label: order.BillTo }
         : "",
 			caseName: order?.CaseName || '',
@@ -759,6 +772,13 @@ const AddOrder = () => {
 					CourtCity: values.CourtCity || "",
 					CourtState: values.CourtState || "",
 					CourtZip: values.CourtZip || "",
+					ClaimNo: values.ClaimNo || "",
+					DOB: values.DOB || "",
+					Representing: values.Representing || "",
+					Cros: values.Cros || "",
+					FilingDistrict: values.FilingDistrict || "",
+					CourtRoomNo: values.CourtRoomNo || "",
+					CourtDepartment: values.CourtDepartment || "",
 					BranchID: 5,
 					record_details: {
 						RecordType: values.person ? "Person" : values.entity ? "Entity" : "Person",
@@ -1149,6 +1169,24 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
         label: item?.procname || 'Unknown',
     })) 
     : [];
+	const actionOptions = Array.isArray(actionsData?.data) 
+    ? actionsData?.data?.map((item: any) => ({
+        value: item?.id,
+        label: item?.Action || 'Unknown',
+    })) 
+    : [];
+	const representOptions = Array.isArray(representData?.data) 
+    ? representData?.data?.map((item: any) => ({
+        value: item?.id,
+        label: item?.name || 'Unknown',
+    })) 
+    : [];
+	const recordTypeOption = Array.isArray(recordTypeData?.data) 
+    ? recordTypeData?.data?.map((item: any) => ({
+        value: item?.Word_ID,
+        label: item?.Word_Name || 'Unknown',
+    })) 
+    : [];
 	const optionsParticipants = Array.isArray(ParticipantsData?.data) 
     ? ParticipantsData?.data?.map((item: any) => ({
         value: item?.locat_name,
@@ -1532,6 +1570,19 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 											</FormGroup>
 										</div>
 										<div className='col-lg-6'>
+											<FormGroup id='caseNumber' label='CaseNumber' isFloating>
+												<Input
+													onChange={formik.handleChange}
+													onBlur={formik.handleBlur}
+													value={formik.values.caseNumber}
+													isValid={formik.isValid}
+													isTouched={formik.touched.caseNumber}
+													invalidFeedback={formik.errors.caseNumber}
+													validFeedback='Looks good!'
+												/>
+											</FormGroup>
+										</div>
+										<div className='col-lg-6'>
 											<FormGroup
 												id='fileNumber'
 												label='File Number'
@@ -1547,20 +1598,126 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 												/>
 											</FormGroup>
 										</div>
-
 										<div className='col-lg-6'>
-											<FormGroup id='caseNumber' label='CaseNumber' isFloating>
+											<FormGroup
+												id='ClaimNo'
+												label='Claim Number'
+												isFloating>
 												<Input
 													onChange={formik.handleChange}
 													onBlur={formik.handleBlur}
-													value={formik.values.caseNumber}
+													value={formik.values.ClaimNo}
 													isValid={formik.isValid}
-													isTouched={formik.touched.caseNumber}
-													invalidFeedback={formik.errors.caseNumber}
+													isTouched={formik.touched.ClaimNo}
+													invalidFeedback={formik.errors.ClaimNo}
 													validFeedback='Looks good!'
 												/>
 											</FormGroup>
 										</div>
+										<div className='col-lg-6'>
+											<FormGroup
+												id='DOB'
+												label='DOB'
+												isFloating>
+												<Input
+												type='date'
+													onChange={formik.handleChange}
+													onBlur={formik.handleBlur}
+													value={formik.values.DOB}
+													isValid={formik.isValid}
+													isTouched={formik.touched.DOB}
+													invalidFeedback={formik.errors.DOB}
+													validFeedback='Looks good!'
+												/>
+											</FormGroup>
+										</div>
+										<div className='col-lg-6'>
+											<FormGroup
+												id='Cros'
+												label='Cros'
+												isFloating>
+												<Input
+													onChange={formik.handleChange}
+													onBlur={formik.handleBlur}
+													value={formik.values.Cros}
+													isValid={formik.isValid}
+													isTouched={formik.touched.Cros}
+													invalidFeedback={formik.errors.Cros}
+													validFeedback='Looks good!'
+												/>
+											</FormGroup>
+										</div>
+										<div className='col-lg-6'>
+											<FormGroup
+												id='FilingDistrict'
+												label='Filing District'
+												isFloating>
+												<Input
+													onChange={formik.handleChange}
+													onBlur={formik.handleBlur}
+													value={formik.values.FilingDistrict}
+													isValid={formik.isValid}
+													isTouched={formik.touched.FilingDistrict}
+													invalidFeedback={formik.errors.FilingDistrict}
+													validFeedback='Looks good!'
+												/>
+											</FormGroup>
+										</div>
+										<div className='col-lg-6'>
+											<FormGroup
+												id='CourtRoomNo'
+												label='Court Room No'
+												isFloating>
+												<Input
+													onChange={formik.handleChange}
+													onBlur={formik.handleBlur}
+													value={formik.values.CourtRoomNo}
+													isValid={formik.isValid}
+													isTouched={formik.touched.CourtRoomNo}
+													invalidFeedback={formik.errors.CourtRoomNo}
+													validFeedback='Looks good!'
+												/>
+											</FormGroup>
+										</div>
+										<div className='col-lg-6'>
+											<FormGroup
+												id='CourtDepartment'
+												label='Court Department'
+												isFloating>
+												<Input
+													onChange={formik.handleChange}
+													onBlur={formik.handleBlur}
+													value={formik.values.CourtDepartment}
+													isValid={formik.isValid}
+													isTouched={formik.touched.CourtDepartment}
+													invalidFeedback={formik.errors.CourtDepartment}
+													validFeedback='Looks good!'
+												/>
+											</FormGroup>
+										</div>
+										<div className='col-lg-6'>
+											<FormGroup
+												id='CourtDepartment'
+												label=''
+												>
+														<Select
+  options={representOptions}
+  placeholder="Choose Represents..."
+  value={
+    formik.values.Representing
+      ? representOptions.find((option: any) => option.value === parseInt(formik.values.Representing)) || 
+        { label: formik.values.Representing, value: formik.values.Representing }
+      : null // Ensures placeholder appears when no value is selected
+  }
+  onChange={(selectedOption) =>
+    formik.setFieldValue(`Representing`, selectedOption?.value)
+  }
+  styles={customStyles} // Optional: Apply custom styles
+/>
+											</FormGroup>
+										</div>
+
+										
 										{/* <div className='col-lg-6'>
 											<FormGroup id='courtName' label='Court Name' isFloating>
                                             <Input
@@ -1575,7 +1732,7 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 												/>
 											</FormGroup>
 										</div> */}
-												<div className='col-6'>
+												<div className='col-12'>
             <FormGroup id='courtName' >
 			{/* <Select
     placeholder="Select Court Name..."
@@ -2366,11 +2523,11 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
 										</FormGroup> */}
 										<FormGroup id="employee" label="" >
 										<Select
-  options={representsOptions}
+  options={representOptions}
   placeholder="Choose Represents..."
   value={
     formik.values.participants?.[index]?.RepresentID
-      ? representsOptions.find(option => option.value === parseInt(formik.values.participants[index]?.RepresentID)) || 
+      ? representOptions.find(option => option.value === parseInt(formik.values.participants[index]?.RepresentID)) || 
         { label: formik.values.participants[index]?.RepresentID, value: formik.values.participants[index]?.RepresentID }
       : null // Ensures placeholder appears when no value is selected
   }

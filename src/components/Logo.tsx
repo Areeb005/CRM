@@ -1,9 +1,10 @@
 import React, { FC } from 'react';
 import PropTypes from 'prop-types';
-import Logos from '../assets/logoimg.png'
+import Logos from '../assets/logoimg.jpeg'
 import { useGetOrganizationQuery } from '../features/users';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { useFavicon } from 'react-use';
 
 interface ILogoProps {
 	width?: number;
@@ -17,7 +18,7 @@ const Logo: FC<ILogoProps> = ({ width, height }) => {
 	return (
 		<img
 		style={{objectFit:"cover"}}
-		src={logoimg || data?.OrganizationLogo || Logos}
+		src={Logos ||logoimg || data?.OrganizationLogo}
 		width={height !== 854 && !!height ? height * (2155 / 854) : width}
 		height={width !== 2155 && !!width ? width * (854 / 2155) : height}
 	/>
