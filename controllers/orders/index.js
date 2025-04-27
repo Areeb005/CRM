@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { User, ActivityLog, Court, Location, TblOrder, tblOrderCaseParties, TblOrderDocLocation, Statlog, TStatus } = require('../../models');
+const { User, ActivityLog, Court, Location, TblOrder, tblOrderCaseParties, TblOrderDocLocation, Statlog, TStatus, Proctype, ProcAction, Represent, Supword } = require('../../models');
 const sequelize = require('../../config/dbConfig');
 const crypto = require('crypto');
 const { DateTime } = require('luxon');
@@ -92,6 +92,15 @@ const orderSchema = Joi.object({
   CourtTypeId: Joi.number().integer().allow(null).optional(),
   BranchID: Joi.number().integer().allow(null).optional(),
 
+  // ✅ Newly Added fields
+  ClaimNo: Joi.string().max(40).required(),  // VARCHAR(40)
+  DOB: Joi.date().optional(),                // Date
+  Representing: Joi.number().integer().allow(null).optional(), // Integer dropdown
+  Cros: Joi.string().max(60).optional(),      // VARCHAR(60)
+  FilingDistrict: Joi.string().max(60).optional(), // VARCHAR(60)
+  CourtRoomNo: Joi.string().max(20).optional(),    // VARCHAR(20)
+  CourtDepartment: Joi.string().max(20).optional(),// VARCHAR(20)
+
   record_details: recordDetailsSchema.required(),
   participants: Joi.array().items(participantSchema),
   document_locations: Joi.array().items(documentLocationSchema)
@@ -148,174 +157,114 @@ const orderController = {
       const randomString = crypto.randomBytes(3).toString("hex");
       const OrderCode = `ORD-${timestamp}-${randomString}`;
 
-      const [existingCourtLoc] = await sequelize.query(
-        `SELECT TOP 1 * FROM dbo.location WHERE locat_name = :locat_name AND locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
-        {
-          replacements: {
-            locat_name: CourtName,
-            locat_address: CourtAddress,
-            locat_city: CourtCity,
-            locat_state: CourtState,
-            locat_zip: CourtZip
-          },
-          type: sequelize.QueryTypes.SELECT
+      // ✅ 1. Handle Court Location
+      let courtLocation = await Location.findOne({
+        where: {
+          locat_name: CourtName,
+          locat_address: CourtAddress,
+          locat_city: CourtCity,
+          locat_state: CourtState,
+          locat_zip: CourtZip,
         }
-      );
+      });
 
-      if (!existingCourtLoc) {
-        await sequelize.query(
-          `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip)`,
-          {
-            replacements: {
-              locat_name: CourtName,
-              locat_contact: "CUSTODIAN OF RECORDS",
-              locat_address: CourtAddress,
-              locat_city: CourtCity,
-              locat_state: CourtState,
-              locat_zip: CourtZip
-            },
-            type: sequelize.QueryTypes.INSERT
-          }
-        );
+
+      if (!courtLocation) {
+        courtLocation = await Location.create({
+          locat_name: CourtName,
+          locat_contact: "CUSTODIAN OF RECORDS",
+          locat_address: CourtAddress,
+          locat_city: CourtCity,
+          locat_state: CourtState,
+          locat_zip: CourtZip,
+          locat_fee: 0,
+          locat_notes: '',
+          acceptfax: false,
+          badlocation: false,
+        }, { returning: true });
       }
 
-      const [courtLocation] = await sequelize.query(
-        `SELECT TOP 1 * FROM dbo.location WHERE locat_name = :locat_name AND locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
-        {
-          replacements: {
-            locat_name: CourtName,
-            locat_address: CourtAddress,
-            locat_city: CourtCity,
-            locat_state: CourtState,
-            locat_zip: CourtZip
-          },
-          type: sequelize.QueryTypes.SELECT
-        }
-      );
-
       const [court] = await Court.findOrCreate({
-        where: { locatid: courtLocation?.locatid },
+        where: { locatid: courtLocation.locatid },
         defaults: {
-          locatid: courtLocation?.locatid,
+          locatid: courtLocation.locatid,
           court_type: null,
           branchid: branchid || null,
           CourtTypeId: CourtTypeId || null
         }
       });
 
+      // ✅ 2. Handle Participants
       if (participants?.length) {
         for (const p of participants) {
-          const [existingLoc] = await sequelize.query(
-            `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip AND locat_phone = :locat_phone`,
-            {
-              replacements: {
-                locat_address: p.PartyAddress,
-                locat_city: p.PartyCity,
-                locat_state: p.PartyState,
-                locat_zip: p.PartyZip,
-                locat_phone: p.PartyPhone
-              },
-              type: sequelize.QueryTypes.SELECT
+          const participantLocation = await Location.findOne({
+            where: {
+              locat_address: p.PartyAddress,
+              locat_city: p.PartyCity,
+              locat_state: p.PartyState,
+              locat_zip: p.PartyZip,
+              locat_phone: p.PartyPhone
             }
-          );
+          });
 
-          if (!existingLoc) {
-            await sequelize.query(
-              `INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip, locat_phone) VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip, :locat_phone)`,
-              {
-                replacements: {
-                  locat_name: p.PartyName,
-                  locat_contact: "CUSTODIAN OF RECORDS",
-                  locat_address: p.PartyAddress,
-                  locat_city: p.PartyCity,
-                  locat_state: p.PartyState,
-                  locat_zip: p.PartyZip,
-                  locat_phone: p.PartyPhone
-                },
-                type: sequelize.QueryTypes.INSERT
-              }
-            );
+          if (!participantLocation) {
+            await Location.create({
+              locat_name: p.PartyName,
+              locat_contact: "CUSTODIAN OF RECORDS",
+              locat_address: p.PartyAddress,
+              locat_city: p.PartyCity,
+              locat_state: p.PartyState,
+              locat_zip: p.PartyZip,
+              locat_phone: p.PartyPhone
+            }, { returning: true });
           }
         }
       }
 
       const documentLocationData = [];
 
+      // ✅ 3. Handle Document Locations
       if (document_locations?.length) {
         for (const d of document_locations) {
-          let locationId;
-
-          const [existingDocLoc] = await sequelize.query(
-            `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
-            {
-              replacements: {
-                locat_address: d.LocationAddress,
-                locat_city: d.LocationCity,
-                locat_state: d.LocationState,
-                locat_zip: d.LocationZip
-              },
-              type: sequelize.QueryTypes.SELECT
+          let location = await Location.findOne({
+            where: {
+              locat_address: d.LocationAddress,
+              locat_city: d.LocationCity,
+              locat_state: d.LocationState,
+              locat_zip: d.LocationZip
             }
-          );
+          });
 
-          if (!existingDocLoc) {
-            await sequelize.query(`
-              INSERT INTO dbo.location (locat_name, locat_contact, locat_address, locat_city, locat_state, locat_zip)
-              VALUES (:locat_name, :locat_contact, :locat_address, :locat_city, :locat_state, :locat_zip)`,
-              {
-                replacements: {
-                  locat_name: d.LocationName,
-                  locat_contact: d.contact || "Unknown",
-                  locat_address: d.LocationAddress,
-                  locat_city: d.LocationCity,
-                  locat_state: d.LocationState,
-                  locat_zip: d.LocationZip
-                },
-                type: sequelize.QueryTypes.INSERT
-              }
-            );
-
-            // 🔁 Then fetch locatid after insert
-            const [fetched] = await sequelize.query(`
-              SELECT TOP 1 locatid FROM dbo.location
-              WHERE locat_name = :locat_name AND locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip
-              ORDER BY locatid DESC`, {
-              replacements: {
-                locat_name: d.LocationName,
-                locat_address: d.LocationAddress,
-                locat_city: d.LocationCity,
-                locat_state: d.LocationState,
-                locat_zip: d.LocationZip
-              },
-              type: sequelize.QueryTypes.SELECT
-            });
-
-            locationId = fetched?.locatid;
-          } else {
-            locationId = existingDocLoc.locatid;
+          if (!location) {
+            location = await Location.create({
+              locat_name: d.LocationName,
+              locat_contact: d.contact || "Unknown",
+              locat_address: d.LocationAddress,
+              locat_city: d.LocationCity,
+              locat_state: d.LocationState,
+              locat_zip: d.LocationZip
+            }, { returning: true });
           }
 
           documentLocationData.push({
             ...d,
-            LocationID: locationId,
+            LocationID: location.locatid,
             Uploaded: false,
             Downloaded: false
           });
         }
-
       }
 
+      // ✅ 4. Save Order + Relations inside a Transaction
       const result = await sequelize.transaction(async (t) => {
         let parsed;
         const dateInput = record_details?.date_of_injury?.from;
-
         if (dateInput) {
           parsed = new Date(dateInput);
           if (isNaN(parsed)) parsed = new Date();
         } else {
           parsed = new Date();
         }
-
         const formattedDate = parsed.toISOString().slice(0, 19).replace('T', ' ');
 
         const order = await TblOrder.create(
@@ -333,7 +282,8 @@ const orderController = {
             CourtID: court?.court_id
           },
           {
-            fields: [...Object.keys(orderData).filter(k => k !== 'record_details'),
+            fields: [
+              ...Object.keys(orderData).filter(k => k !== 'record_details'),
               'OrderCode', 'CourtName', 'CourtAddress', 'CourtCity', 'CourtState', 'CourtZip', 'CourtID', 'DateOfIncident', 'CreatedUserID', 'RequestStatus'
             ],
             transaction: t
@@ -357,30 +307,11 @@ const orderController = {
 
         if (documentLocationData?.length) {
           await Promise.all(
-            document_locations.map(async (d) => {
-              // Get LocationID properly
-              const [locationRow] = await sequelize.query(
-                `SELECT TOP 1 * FROM dbo.location WHERE locat_address = :locat_address AND locat_city = :locat_city AND locat_state = :locat_state AND locat_zip = :locat_zip`,
-                {
-                  replacements: {
-                    locat_address: d.LocationAddress,
-                    locat_city: d.LocationCity,
-                    locat_state: d.LocationState,
-                    locat_zip: d.LocationZip
-                  },
-                  type: sequelize.QueryTypes.SELECT,
-                  transaction: t
-                }
-              );
-
-              if (!locationRow?.locatid) {
-                throw new Error("❌ Document Location not found or created — locatid is null.");
-              }
-
-              await TblOrderDocLocation.create(
+            documentLocationData.map((d) =>
+              TblOrderDocLocation.create(
                 {
                   OrderID: order.OrderID,
-                  LocationID: locationRow.locatid,
+                  LocationID: d.LocationID,
                   LocationName: d.LocationName,
                   LocationAddress: d.LocationAddress,
                   LocationCity: d.LocationCity,
@@ -397,15 +328,13 @@ const orderController = {
                   DocRequestStatus: "New"
                 },
                 { transaction: t }
-              );
-            })
+              )
+            )
           );
-
         }
 
         return order;
       });
-
 
       const completeOrder = await TblOrder.findByPk(result.OrderID, {
         include: [
@@ -415,7 +344,6 @@ const orderController = {
           { model: User, as: "createdByUser", attributes: userAttributes },
         ]
       });
-
 
       await ActivityLog.create({
         order_id: completeOrder?.OrderID,
@@ -427,6 +355,7 @@ const orderController = {
       });
 
       res.status(201).json(completeOrder);
+
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error" });
@@ -717,6 +646,7 @@ const orderController = {
       const { count, rows } = await TblOrder.findAndCountAll({
         where: whereClause,
         include: [
+          { model: Represent, required: false }, // 👈 Get Represent data automatically
           { model: tblOrderCaseParties, required: false },
           {
             model: TblOrderDocLocation,
@@ -734,6 +664,21 @@ const orderController = {
                     required: true
                   }
                 ]
+              },
+              {
+                model: Proctype,
+                attributes: ['processid', 'procname'],
+                required: false,
+              },
+              {
+                model: ProcAction,
+                attributes: ['id', 'Action'],
+                required: false,
+              },
+              {
+                model: Supword,
+                attributes: ["Word_ID", "Word_Name"],
+                required: false,
               }
             ]
           },
@@ -747,6 +692,37 @@ const orderController = {
       });
 
 
+      // Fetch all RecordIDs that exist in the result
+      const allRecordIDs = rows.flatMap(order =>
+        (order.TblOrderDocLocations || []).map(doc => doc.RecordID)
+      ).filter(id => id);
+
+      let woMapping = {};
+      let locationSourceMapping = {};
+
+      if (allRecordIDs.length) {
+        const recLocatData = await Reclocat.findAll({
+          attributes: ['Record_ID', [sequelize.literal("STR(OrderNo,10) + '-' + RIGHT(STR(10000 + Location_Nbr,5),4)"), 'WO']],
+          where: {
+            Record_ID: {
+              [Op.in]: allRecordIDs
+            }
+          },
+          raw: true
+        });
+
+        // Build RecordID => WO mapping
+        woMapping = recLocatData.reduce((acc, item) => {
+          acc[item.Record_ID] = item.WO;
+          return acc;
+        }, {});
+
+        locationSourceMapping = recLocatData.reduce((acc, item) => {
+          acc[item.Record_ID] = item.LocationSource;
+          return acc;
+        }, {});
+      }
+
 
       const formattedOrders = rows.map(order => {
         const json = order.toJSON();
@@ -757,6 +733,8 @@ const orderController = {
           TblOrderDocLocations: (json.TblOrderDocLocations || []).map(doc => ({
             ...doc,
             files: doc.files ? JSON.parse(doc.files) : [],
+            wo: woMapping[doc.RecordID] || null, // Attach WO here
+            locationSource: locationSourceMapping[doc.RecordID] || null, // 🛠 Attach LocationSource
             statusLogs: (doc.statusLogs || []).map(log => ({
               Record_ID: log.Record_ID,
               StatDate: log.statdate,

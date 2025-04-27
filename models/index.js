@@ -21,6 +21,8 @@ const Proctype = require("./proctype_model");
 const Statlog = require("./StatLog_model");
 const TblWebSettings = require("./tblWebsettings_model");
 const TStatus = require("./tstatus_model");
+const Supword = require("./supwords");
+
 
 
 // // Define Associations
@@ -116,6 +118,38 @@ TblOrderDocLocation.hasMany(Statlog, {
 });
 
 
+
+TblOrderDocLocation.belongsTo(Proctype, {
+    foreignKey: 'ProcessType',
+    targetKey: 'processid'
+});
+Proctype.hasMany(TblOrderDocLocation, {
+    foreignKey: 'ProcessType',
+    sourceKey: 'processid'
+});
+
+
+TblOrderDocLocation.belongsTo(ProcAction, {
+    foreignKey: 'Action',
+    targetKey: 'id'
+});
+ProcAction.hasMany(TblOrderDocLocation, {
+    foreignKey: 'Action',
+    sourceKey: 'id'
+});
+
+
+TblOrder.belongsTo(Represent, { foreignKey: 'Representing', targetKey: 'id' });
+Represent.hasMany(TblOrder, { foreignKey: 'Representing', sourceKey: 'id' });
+
+TblOrderDocLocation.belongsTo(Supword, {
+    foreignKey: 'RecordType',
+    targetKey: 'Word_ID'
+});
+Supword.hasMany(TblOrderDocLocation, {
+    foreignKey: 'RecordType',
+    sourceKey: 'Word_ID'
+});
 module.exports = {
     User,
     tblOrderCaseParties,
@@ -138,5 +172,6 @@ module.exports = {
     Represent,
     Statlog,
     TblWebSettings,
-    TStatus
+    TStatus,
+    Supword
 };

@@ -12,6 +12,9 @@ const locationCtrl = require('../controllers/location');
 const CaseTypeCtrl = require('../controllers/casetype');
 const ProcTypeCtrl = require('../controllers/proctype');
 const fileCtrl = require('../controllers/files');
+const ProcActionCtrl = require('../controllers/procAction');
+const RepresentCtrl = require('../controllers/represent');
+const SupwordsCtrl = require('../controllers/supword');
 
 
 const router = express.Router();
@@ -56,6 +59,9 @@ router.get("/locations", Auth, locationCtrl.get_locations);
 router.get("/customers", Auth, locationCtrl.get_customers);
 router.get("/courts", Auth, locationCtrl.get_courts);
 router.get("/casetypes", Auth, CaseTypeCtrl.get_all_casetypes);
+router.get("/procactions", Auth, ProcActionCtrl.get_all_proc_action);
+router.get("/represents", Auth, RepresentCtrl.get_all_represent);
+router.get("/recordtypes", Auth, SupwordsCtrl.get_all_supwords);
 router.get("/proctypes/:casetypeid", Auth, ProcTypeCtrl.get_proctypes_by_casetype);
 
 

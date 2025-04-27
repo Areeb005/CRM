@@ -103,7 +103,9 @@ const Location = sequelize.define("Location", {
 }, {
     tableName: "location", // Matches SQL Server's table name exactly
     schema: "dbo",         // ✅ specify schema separately
-    timestamps: false
+    timestamps: false,
+    hasTrigger: true,
+    modelName: "Location",
 });
 
 module.exports = Location;

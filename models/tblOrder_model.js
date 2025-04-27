@@ -220,7 +220,37 @@ const TblOrder = sequelize.define("TblOrder", {
     set(value) {
       this.setDataValue("record_details", JSON.stringify(value));
     }
-  }
+  },
+
+  // ✨ New fields added here
+  ClaimNo: {
+    type: DataTypes.STRING(40),
+    allowNull: true
+  },
+  DOB: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  Representing: {
+    type: DataTypes.BIGINT,
+    allowNull: true
+  },
+  Cros: {
+    type: DataTypes.STRING(60),
+    allowNull: true
+  },
+  FilingDistrict: {
+    type: DataTypes.STRING(60),
+    allowNull: true
+  },
+  CourtRoomNo: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  CourtDepartment: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
 }, {
   tableName: "tblOrder",
   schema: "dbo",         // ✅ specify schema separately
