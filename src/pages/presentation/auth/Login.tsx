@@ -493,7 +493,7 @@ const Login: FC<ILoginProps> = ({ isSignUp }) => {
 												<FormGroup
 													id='loginUsername'
 													isFloating
-													label='Your email or username'
+													label='Your username'
 													className={classNames({
 														'd-none': signInPassword,
 													})}>

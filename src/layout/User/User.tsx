@@ -51,6 +51,7 @@ const User = () => {
 				<div className='user-info'>
 					<div className='user-name'>
 						{`${userData?.UserName || 'User'} `}
+						{/* {`Purus Copy`} */}
 					</div>
 				</div>
 			</div>

@@ -19,7 +19,7 @@ const Logo: FC<ILogoProps> = ({ width, height }) => {
 		<img
 		style={{objectFit:"cover"}}
 		src={Logos ||logoimg || data?.OrganizationLogo}
-		width={height !== 854 && !!height ? height * (2155 / 854) : width}
+		width={height !== 854 && !!height ? height * (2155 / 554) : width}
 		height={width !== 2155 && !!width ? width * (854 / 2155) : height}
 	/>
 	);

@@ -37,7 +37,21 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import Modal, { ModalBody, ModalFooter, ModalHeader, ModalTitle } from '../../../components/bootstrap/Modal';
 import getAuthTokenFromLocalStorage from '../../../utils';
-
+const useDebounce = (value, delay) => {
+	const [debouncedValue, setDebouncedValue] = useState(value);
+  
+	useEffect(() => {
+	  const handler = setTimeout(() => {
+		setDebouncedValue(value);
+	  }, delay);
+  
+	  return () => {
+		clearTimeout(handler);
+	  };
+	}, [value, delay]);
+  
+	return debouncedValue;
+  };
 
 const OrderPage = () => {
 	const navigate = useNavigate();
@@ -50,6 +64,7 @@ const OrderPage = () => {
 		const [perPage, setPerPage] = useState(10);
 		const [updateOrder, {isLoading: UpdateLoading}] = useDeleteOrderMutation()
 		const [inputVal, setInputVal] = useState('');
+			const searchTerms = useDebounce(inputVal, "500")
 		const {
 			data: orderData,
 			isFetching,
@@ -58,6 +73,7 @@ const OrderPage = () => {
 		} = useGetOrdersQuery({
 			page: currentPage,
 		limit: perPage,
+		search: searchTerms,
 		});
 	console.log(orderData)
 const [filteredData, setFilteredData] = useState(orderData?.order || []);
@@ -78,10 +94,13 @@ useEffect(() => {
   // Filter logic (case insensitive search)
   const lowerCaseInput = inputVal.toLowerCase();
   const filtered = orderData?.orders?.filter((order: any) =>
-    order.CourtName.toLowerCase().includes(lowerCaseInput) ||
-    order.CaseNumber.toLowerCase().includes(lowerCaseInput) ||
-    order.FileNumber.toLowerCase().includes(lowerCaseInput) ||
-    dayjs(order.NeededBy).format("MMMM D, YYYY").toLowerCase().includes(lowerCaseInput)
+    order?.CourtName?.toLowerCase()?.includes(lowerCaseInput) ||
+    order?.CaseNumber?.toLowerCase()?.includes(lowerCaseInput) ||
+    order?.FileNumber?.toLowerCase()?.includes(lowerCaseInput) ||
+    order?.CaseName?.toLowerCase()?.includes(lowerCaseInput) ||
+    order?.ClaimNo?.toLowerCase()?.includes(lowerCaseInput) ||
+    order?.DOB?.toLowerCase()?.includes(lowerCaseInput) ||
+    dayjs(order?.NeededBy).format("MMMM D, YYYY").toLowerCase().includes(lowerCaseInput)
   );
 
   setFilteredData(filtered);
@@ -312,6 +331,54 @@ useEffect(() => {
 	  
  }
  const [showModal, setShowModal] = useState(false);
+ const [showModalData, setShowModalData] = useState([]);
+ const [showDocScanModal, setShowDocScanModal] = useState(false);
+ const [showDocScanModalData, setShowDocScanModalData] = useState([]);
+
+ const handleDownloadAll = async (e : any, file: any[]) => {
+	e.preventDefault();
+	try {
+	  // 1. First fetch the file metadata/URL from your endpoint
+	  const response = await fetch(
+		`${import.meta.env.VITE_BASE_URL}/files/${file?.ScanFile}?location=readable&fullPath=${file?.ScanDir}`,
+		{
+		  method: 'GET',
+		  headers: {
+			// Add any required headers (auth tokens etc)
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${getAuthTokenFromLocalStorage()}`
+		  },
+		}
+	  );
+  
+	  if (!response.ok) {
+		throw new Error(`Failed to fetch file: ${response.statusText}`);
+	  }
+  
+	  // 2. Get the actual file URL from the response
+	  // (Adjust this based on your API response structure)
+	  const fileData = await response.blob();
+	  const fileUrl = window.URL.createObjectURL(fileData);
+	  // const fileUrl = fileData // Modify according to your API response
+	  console.log(fileUrl, "fileUrl")
+  
+	  // 3. Create and trigger download link
+	  const link = document.createElement('a');
+	  link.href = fileUrl;
+	  link.setAttribute('download', file?.ScanFile?.split('/').pop() || 'download');
+	  link.target = '_blank'; // Open in new tab
+	  link.style.display = 'none';
+	  
+	  document.body.appendChild(link);
+	  link.click();
+	  document.body.removeChild(link);
+		window.URL.revokeObjectURL(fileUrl);
+  
+	} catch (error) {
+	  console.error('Download failed:', error);
+	  alert(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+	}
+  };
     
   if (orderLoading || completOrderLoading) {
 	return (
@@ -401,36 +468,40 @@ useEffect(() => {
 								<tr>
 									<th></th>
 									<th >
-										Deadline
+										Order Number
 										
 									</th>
 									<th >
-										Code
+										Order Date
 										
 									</th>
 									{/* {user?.Role === "Administrator" &&
 									<th>Client</th>} */}
+									<th>Due Date</th>
 									<th>Case Name</th>
 									<th>Case NO</th>
 									<th>File NO</th>
-									<th>Type</th>
-									<th>Created on</th>
-									<th>Injury Date</th>
-									<th>Till</th>
+									<th>ClaimNo</th>
+									<th>Applicant/Plantiff</th>
+									<th>DOB</th>
+									<th>DOI(from-till)</th>
+									{/* <th>Till</th> */}
 									<th>Status</th>
 									<th>Action</th>
 								</tr>
 							</thead>
 							<tbody>
-                            { filteredData && filteredData?.map((order: any, index: number) => {
+                            {orderData?.orders?.map((order: any, index: number) => {
 								console.log(order?.OrderID)
 								// const recordDetails = order?.TblOrderDocLocations ?  JSON?.parse(order?.TblOrderDocLocations) : []
-								
+								const plaintiff = order?.CaseName?.split(/\s[vV][sS]?\.?\s|\sv\.\s/i)[0];
 
 								return(
 									<>
-                            <tr key={index}>
-								   <td>
+                            <tr key={index + 1}>
+								  
+                               
+								<td>
                                         <button
                                             className="btn btn-sm btn-light"
                                             onClick={() => toggleAccordion(order)}
@@ -438,6 +509,7 @@ useEffect(() => {
                                             {expandedOrder === order.OrderID ? "−" : "+"}
                                         </button>
                                     </td>
+									 <td>{order?.OrderNo}</td>
                                 <td className='position-relative' style={{maxWidth:"200px" ,width:"200px"}}>
 									{order.IsRush &&
                                 <Icon
@@ -449,18 +521,22 @@ useEffect(() => {
 								'animate__animated animate__heartBeat animate__infinite animate__slower',
 							)}
 						/>}
-						{order.NeededBy ? dayjs(order.NeededBy).format("MMMM D, YYYY") : "N/A"}
+						{order.CreatedDate ? dayjs(order.CreatedDate).format("MMMM D, YYYY") : "N/A"}
 									</td>
-                                <td>{order.OrderCode}</td>
+									<td>
+									{order.NeededBy ? dayjs(order.NeededBy).format("MMMM D, YYYY") : "N/A"}
+									</td>
+                                {/* <td>{order.OrderCode}</td> */}
 								{/* {user?.Role === "Administrator" &&
                                 <td>{order.orderByUser.username}</td>} */}
                                 <td>{order.CaseName}</td>
                                 <td>{order.CaseNumber}</td>
                                 <td>{order.FileNumber}</td>
-                                <td>{order.case_type}</td>
-                                <td>{dayjs(order?.createdAt).format("MMM DD, YYYY HH:mm A")}</td>
-                                <td>{dayjs(order?.record_details?.date_of_injury.from).format("MMMM D, YYYY")}</td>
-                                <td>{dayjs(order?.record_details?.date_of_injury.to).format("MMMM D, YYYY")}</td>
+                                <td>{order?.ClaimNo}</td>
+                                <td>{plaintiff}</td>
+                                <td>{dayjs(order?.DOB).format("MMMM D, YYYY") || "N/A"}</td>
+                                <td>{dayjs(order?.record_details?.date_of_injury.from).format("MMMM D, YYYY")} - {dayjs(order?.record_details?.date_of_injury.to).format("MMMM D, YYYY")}</td>
+                                {/* <td></td> */}
                                 <td>
                                     <span
                                         className={`badge ${
@@ -515,14 +591,17 @@ useEffect(() => {
                 <table className="table table-bordered">
                     <thead>
                         <tr>
+                            <th>Wo#</th>
                             <th>Name</th>
                             <th>Address</th>
+                            <th>Order Date</th>
+                            <th>Due Date</th>
                             <th>Process Type</th>
                             <th>Record Type</th>
                             <th>Action</th>
                             <th>Status</th>
                             <th>Files</th>
-                            <th>Note</th>
+                            <th>Location Source</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -536,16 +615,22 @@ useEffect(() => {
 							const statusHistory = doc?.statusLogs ?? []; // assuming this holds your array
 							const firstStatus = statusHistory[0]?.AStatus;
 							const remainingStatuses = statusHistory.slice(1);
+							const scanDocs = doc?.scanDocs?.filter(doc => doc.ScanFile) || [];
 
 	console.log(filesDataToShow , "filesDataToShow")
 
 							return(
                             <tr key={`doc-${order.id}-${docIndex}`}>
+                                <td>{doc.wo}</td>
                                 <td>{doc.LocationName}</td>
                                 <td>{doc.LocationAddress}, {doc.LocationCity}, {doc.LocationState} {doc.LocationZip}</td>
-                                <td>{doc.ProcessType}</td>
-                                <td>{doc.RecordType}</td>
-                                <td>{doc.Action}</td>
+								{/* <td>{daysj(doc.Reclocat?.location_order_date)}</td> */}
+								<td>{doc.Reclocat?.location_order_date ? dayjs(doc.Reclocat?.location_order_date).format("MMMM D, YYYY") : "N/A"}</td>
+								
+								<td>{doc.Reclocat?.location_due_date ? dayjs(doc.Reclocat?.location_due_date).format("MMMM D, YYYY") : "N/A"}</td>
+                                <td>{doc.Proctype?.procname}</td>
+                                <td>{doc.Supword?.Word_Name}</td>
+                                <td>{doc.ProcAction?.Action}</td>
 								<td>
       {/* First AStatus */}
       <span
@@ -559,20 +644,22 @@ useEffect(() => {
           display: "inline-block",
         }}
       >
-        {doc?.statusLogs[0]?.AStatus || "N/A"}
+        {doc?.statusLogs[doc?.statusLogs?.length -1]?.AStatus || "N/A"}
       </span>
 
       {/* Toggle Button */}
       {doc?.statusLogs?.length > 0 && (
         <div style={{ marginTop: "6px" }}>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+				setShowModalData(doc?.statusLogs)
+				setShowModal(true)}}
             style={{
               background: "none",
               border: "none",
               color: "#2563eb",
               cursor: "pointer",
-              fontSize: "12px",
+              fontSize: "10px",
               textDecoration: "underline",
             }}
           >
@@ -582,68 +669,7 @@ useEffect(() => {
       )}
 
       {/* Modal */}
-      {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            height: "100vh",
-            width: "100vw",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: "20px",
-              borderRadius: "8px",
-              maxWidth: "400px",
-              width: "90%",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
-            }}
-          >
-            <h3 style={{ marginBottom: "10px" }}>Status History</h3>
-            {doc?.statusLogs?.map((status, idx) => (
-              <div
-                key={idx}
-                style={{
-                  fontSize: "14px",
-                  marginBottom: "8px",
-                  color: "#333",
-                }}
-              >
-                <strong>{status.AStatus}</strong> <br />
-                <span style={{ color: "#666", fontSize: "12px" }}>
-                  {dayjs(status.StatDate).format("MMM D, YYYY - h:mm A")}
-                </span>
-              </div>
-            ))}
-
-            <button
-              onClick={() => setShowModal(false)}
-              style={{
-                marginTop: "12px",
-                padding: "6px 12px",
-                background: "#1e3a8a",
-                color: "#fff",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: "13px",
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+    
     </td>
 								{/* <td>{doc?.DocFilePath}</td> */}
                                 <td> 
@@ -659,7 +685,7 @@ useEffect(() => {
 ) : (
     <p>No files available</p>
 )} */}
-{filesDataToShow ? (
+{/* {filesDataToShow ? (
   filesDataToShow?.split('||').map((file: any, idx: any) => {
 	const handleDownloadAll = async (e : any, file: string) => {
 		e.preventDefault();
@@ -719,12 +745,36 @@ useEffect(() => {
   )})
 ) : (
   "N/A"
-)}
+)} */}
+        {scanDocs.length > 0 ? (
+          <div className="d-flex flex-column">
+            {/* Show first document */}
+            <div className="text-truncate" style={{maxWidth: '200px'}}>
+              {scanDocs[0].DocType || 'Document'}
+			   {/* - {scanDocs[0].ScanFile.split('/').pop()} */}
+            </div>
+            
+            {/* Show "View All" button if more documents exist */}
+            {scanDocs.length > 1 && (
+              <button
+                className="btn btn-link btn-sm p-0 text-decoration-none"
+                onClick={() => {
+                  setShowDocScanModalData(scanDocs);
+                  setShowDocScanModal(true);
+                }}
+              >
+                + {scanDocs.length - 1} more
+              </button>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted">No scan docs</span>
+        )}
 
 
 		</td>
                                
-                                <td>{doc?.Note}</td>
+                                <td>{doc?.locationSource}</td>
                             </tr>
 
 							
@@ -745,12 +795,12 @@ useEffect(() => {
 							
 						</table>
 
-						{!filteredData?.length && 
+						{!orderData?.orders?.length && 
 							<Alert color='warning' isLight icon='Report' className=''>
 							No Orders on database
 						</Alert>}
 					</CardBody>
-					{filteredData?.length > 0 &&
+					{orderData?.orders?.length > 0 &&
 					<PaginationButtons
 						data={orderData?.order}
 						label='items'
@@ -851,6 +901,267 @@ useEffect(() => {
 						</>
 					</ModalFooter>
 				</Modal>
+
+				{/* modal */}
+				{showModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            height: "100vh",
+            width: "100vw",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: "20px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            }}
+          >
+            <h3 style={{ marginBottom: "10px" }}>Status History</h3>
+            {/* {showModalData?.map((status, idx) => {
+				return(
+              <div
+                key={idx}
+                style={{
+                  fontSize: "14px",
+                  marginBottom: "8px",
+                  color: "#333",
+                }}
+              >
+                <strong>{status.AStatus}</strong> <br />
+                <span style={{ color: "#666", fontSize: "12px" }}>
+                  {dayjs(status.StatDate).format("MMM D, YYYY - h:mm A")}
+                </span>
+              </div>
+            )})} */}
+			<div style={{ maxHeight: "300px", overflowY: "auto", padding: "10px" }}>
+  {showModalData
+    ?.slice() // Create a copy of the array
+    .sort((a, b) => {
+      // Sort by date in descending order (newest first)
+      const dateA = new Date(a?.StatDate);
+      const dateB = new Date(b?.StatDate);
+      return dateB - dateA;
+    })
+    .map((status, idx) => (
+      <div
+        key={idx}
+        style={{
+          fontSize: "14px",
+          marginBottom: "8px",
+          color: "#333",
+          padding: "8px",
+          borderBottom: "1px solid #eee",
+          backgroundColor: idx % 2 === 0 ? "#f9f9f9" : "white",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <strong style={{ color: "#2c3e50" }}>{status?.AStatus}</strong>
+          <span style={{ color: "#666", fontSize: "12px" }}>
+            {dayjs(status?.StatDate).format("MMM D, YYYY - h:mm A")}
+          </span>
+        </div>
+        
+        {/* Optional: Add time difference between status updates */}
+        {idx < showModalData?.length - 1 && (
+          <div style={{ 
+            fontSize: "11px", 
+            color: "#999",
+            marginTop: "4px",
+            fontStyle: "italic"
+          }}>
+            {/* {calculateTimeDifference(status.StatDate, showModalData[idx + 1].StatDate)} */}
+          </div>
+        )}
+      </div>
+    ))}
+</div>
+
+            <button
+              onClick={() => setShowModal(false)}
+              style={{
+                marginTop: "12px",
+                padding: "6px 12px",
+                background: "#1e3a8a",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "13px",
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+{showDocScanModal && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      height: "100vh",
+      width: "100vw",
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        background: "#fff",
+        padding: "20px",
+        borderRadius: "8px",
+        maxWidth: "600px",
+        width: "90%",
+        maxHeight: "80vh",
+        overflow: "hidden",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      }}
+    >
+      {/* Header */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "15px",
+        paddingBottom: "10px",
+        borderBottom: "1px solid #eee"
+      }}>
+        <h3 style={{ margin: 0, color: "#1e3a8a" }}>Scan Documents</h3>
+        <button
+          onClick={() => setShowDocScanModal(false)}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#666",
+            fontSize: "20px",
+            cursor: "pointer"
+          }}
+        >
+          &times;
+        </button>
+      </div>
+
+      {/* Document List */}
+      <div style={{ 
+        maxHeight: "calc(70vh - 60px)", 
+        overflowY: "auto",
+        marginBottom: "15px"
+      }}>
+        {showDocScanModalData?.length > 0 ? (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+            gap: "10px"
+          }}>
+            {showDocScanModalData?.map((doc: any, index: number) => (
+              <div 
+                key={index}
+                style={{
+                  border: "1px solid #eee",
+                  borderRadius: "6px",
+                  padding: "12px",
+                  backgroundColor: "#f9f9f9"
+                }}
+              >
+                <div style={{ marginBottom: "8px" }}>
+                  <strong style={{ color: "#333" }}>Type:</strong> {doc.DocType || "N/A"}
+                </div>
+                <div style={{ marginBottom: "8px" }}>
+                  <strong style={{ color: "#333" }}>File:</strong>
+                  <div 
+                    style={{
+                      color: "#1e3a8a",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      wordBreak: "break-all"
+                    }}
+                    // onClick={() => handleDownload(doc.ScanFile)}
+                  >
+                    {doc.ScanFile?.split('/').pop() || "N/A"}
+                  </div>
+                </div>
+                {doc.ScanDir && (
+                  <div style={{ marginBottom: "8px" }}>
+                    <strong style={{ color: "#333" }}>Directory:</strong>
+                    <div style={{ wordBreak: "break-all" }}>{doc.ScanDir}</div>
+                  </div>
+                )}
+                <button
+                  onClick={(e) => handleDownloadAll(e ,doc)}
+                  style={{
+                    width: "100%",
+                    padding: "6px",
+                    background: "#1e3a8a",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    marginTop: "8px"
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+            color: "#666"
+          }}>
+            No scan documents available
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        display: "flex",
+        justifyContent: "flex-end",
+        borderTop: "1px solid #eee",
+        paddingTop: "15px"
+      }}>
+        <button
+          onClick={() => setShowDocScanModal(false)}
+          style={{
+            padding: "8px 16px",
+            background: "#1e3a8a",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "14px",
+          }}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 			</Page>
 		</PageWrapper>
 	);

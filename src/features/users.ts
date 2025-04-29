@@ -14,18 +14,49 @@ export const userApi = createApi({
 		},
 	}),
 	endpoints: (builder) => ({
+		// getUsers: builder.query({
+		// 	query: () => ({
+		// 		url: `users`, // Adjust the URL if needed
+		// 		method: 'GET',
+		// 	}),
+		// }),
 		getUsers: builder.query({
-			query: () => ({
-				url: `users`, // Adjust the URL if needed
-				method: 'GET',
-			}),
-		}),
-		getOrders: builder.query({
-			query: ({page, limit}) => ({
-				url: `orders?page=${page}&limit=${limit}`, // Adjust the URL if needed
-				method: 'GET',
-			}),
-		}),
+			query: ({ page, limit, search }) => {
+			  const params = new URLSearchParams();
+			  
+			  // Only add parameters if they have values
+			  if (page) params.append('page', page);
+			  if (limit) params.append('limit', limit);
+			  if (search) params.append('search', search);
+			  
+			  return {
+				url: `users?${params.toString()}`,
+				method: "GET",
+			  };
+			},
+		  }),
+		  getOrders: builder.query({
+			query: ({ page, limit, search }) => {
+			  const params = new URLSearchParams();
+			  
+			  // Only add parameters if they have values
+			  if (page) params.append('page', page);
+			  if (limit) params.append('limit', limit);
+			  if (search) params.append('search', search);
+			  
+			  return {
+				url: `orders?${params.toString()}`,
+				method: "GET",
+			  };
+			},
+		  }),
+		// getOrders: builder.query({
+		// 	query: ({page, limit}) => ({
+
+		// 		url: `orders?page=${page}&limit=${limit}`, // Adjust the URL if needed
+		// 		method: 'GET',
+		// 	}),
+		// }),
 		getOverview: builder.query({
 			query: () => ({
 				url: `overview`, // Adjust the URL if needed

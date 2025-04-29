@@ -555,8 +555,10 @@ const AddOrder = () => {
 			FilingDistrict: order?.FilingDistrict || '',
 			CourtRoomNo: order?.CourtRoomNo || '',
 			CourtDepartment: order?.CourtDepartment || '',
-			Representing: order?.Representing ? { value: order.Representing, label: order.Representing }
-			: "",
+			Representing: 
+			// order?.Representing ? { value: order.Representing, label: order.Representing }
+			// : 
+			"",
 			
 			billTo: order?.BillTo ? { value: order.BillTo, label: order.BillTo }
         : "",
@@ -2339,9 +2341,12 @@ const debouncedSearchParticipant = useDebounce(debouncedParticipant, 200);
                     <td>{item?.LocationCity}</td>
                     <td>{item?.LocationState}</td>
                     <td>{item?.LocationZip}</td>
-                    <td>{item?.ProcessType}</td>
+                    {/* <td>{item?.ProcessType}</td>
                     <td>{item?.RecordType}</td>
-                    <td>{item?.Action}</td>
+                    <td>{item?.Action}</td> */}
+					 <td>{item?.Proctype?.procname || item?.ProcessType || "N/A"}</td>
+                    <td>{item?.Supword?.Word_Name || item?.RecordType || "NA"}</td>
+                    <td>{item?.ProcAction?.Action || item?.Action || "N/A"}</td>
                     <td>{item?.Note}</td>
                     <td>
                         <button className="btn btn-danger" onClick={() => removeDocumentLocation(index)}>Remove</button>

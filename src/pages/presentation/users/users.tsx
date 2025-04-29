@@ -34,12 +34,29 @@ import Modal, { ModalBody, ModalFooter, ModalHeader, ModalTitle } from '../../..
 import Papa from 'papaparse';
 import showNotification from '../../../components/extras/showNotification';
 
+
+const useDebounce = (value, delay) => {
+	const [debouncedValue, setDebouncedValue] = useState(value);
+  
+	useEffect(() => {
+	  const handler = setTimeout(() => {
+		setDebouncedValue(value);
+	  }, delay);
+  
+	  return () => {
+		clearTimeout(handler);
+	  };
+	}, [value, delay]);
+  
+	return debouncedValue;
+  };
 const UsersPage = () => {
 	const navigate = useNavigate();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [searchModalStatus, setSearchModalStatus] = useState(false);
 	const [perPage, setPerPage] = useState(10);
 	const [inputVal, setInputVal] = useState('');
+	const searchTerms = useDebounce(inputVal, "500")
 	const [csvData, setCsvData] = useState([]);
 	const [bulkUsers, { isLoading: usersLoad, isSuccess }] = useCreateBulkUsersMutation();
 	const {
@@ -47,7 +64,11 @@ const UsersPage = () => {
 		isFetching,
 		isLoading: userLoading,
 		refetch,
-	} = useGetUsersQuery({});
+	} = useGetUsersQuery({
+		page: currentPage,
+		limit: perPage,
+		search: searchTerms,
+	});
 
 	const [deleteUser] = useUpdateUserMutation()
 	useEffect(()=>{
@@ -457,7 +478,7 @@ const UsersPage = () => {
 															</Alert>
 														)}
 					</CardBody>
-					{items.length > 0 &&
+					{userData?.data?.length > 0 &&
 							<PaginationButtons
 								data={userData?.data}
 								label='items'
