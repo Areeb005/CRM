@@ -144,8 +144,8 @@ const handleDownloadAll = async (file: string) => {
               <p><strong>Claim Number:</strong> {order?.ClaimNo || "N/A"}</p>
               <p><strong>Status:</strong> {order?.RequestStatus || "N/A"}</p>
               <p><strong>Urgent:</strong> {order?.IsRush ? "Yes" : "No"}</p>
-              <p><strong>Needed By:</strong> {order?.NeededBy ? dayjs(order?.NeededBy).format("MMM DD, YYYY") : "N/A"}</p>
-              <p><strong>Date of Birth:</strong> {order?.DOB ? dayjs(order?.DOB).format("MMM DD, YYYY") : "N/A"}</p>
+              <p><strong>Needed By:</strong> {order?.NeededBy ? dayjs(order?.NeededBy).format("MM/DD/YYYY") : "N/A"}</p>
+              <p><strong>Date of Birth:</strong> {order?.DOB ? dayjs(order?.DOB).format("MM/DD/YYYY") : "N/A"}</p>
               <p><strong>Representing:</strong> {order?.Represent?.name || "N/A"}</p>
             </CardBody>
           </Card>
@@ -189,7 +189,7 @@ const handleDownloadAll = async (file: string) => {
               <p><strong>Continuous Trauma:</strong> {order?.record_details?.continuous_trauma ? "Yes" : "No"}</p>
               <p><strong>Date of Injury:</strong> 
                 {order?.record_details?.date_of_injury ? 
-                  `${dayjs(order?.record_details?.date_of_injury.from).format("MMM DD, YYYY")} - ${dayjs(order?.record_details?.date_of_injury.to).format("MMM DD, YYYY")}` : 
+                  `${dayjs(order?.record_details?.date_of_injury.from).format("MM/DD/YYYY")} - ${dayjs(order?.record_details?.date_of_injury.to).format("MM/DD/YYYY")}` : 
                   "N/A"}
               </p>
             </CardBody>
@@ -267,7 +267,7 @@ const handleDownloadAll = async (file: string) => {
                           <div className="d-flex justify-content-between align-items-center">
                             <span className="fw-semibold">{log.AStatus}</span>
                             <small className="text-muted">
-                              {dayjs(log.StatDate).format("MMM DD, YYYY h:mm A")}
+                              {dayjs(log.StatDate).format("MM/DD/YYYY")}
                             </small>
                           </div>
                           {logIndex < sortedLogs.length - 1 && (
@@ -311,8 +311,8 @@ const handleDownloadAll = async (file: string) => {
             <CardBody>
               <p><strong>Created By:</strong> {order?.createdByUser?.FullName || "N/A"} ({order?.createdByUser?.Email})</p>
               <p><strong>Order By:</strong> {order?.orderByUser?.FullName || "N/A"} ({order?.orderByUser?.Email})</p>
-              <p><strong>Created Date:</strong> {order?.CreatedDate ? dayjs(order?.CreatedDate).format("MMM DD, YYYY HH:mm A") : "N/A"}</p>
-              <p><strong>Completed Date:</strong> {order?.CompletedDate ? dayjs(order?.CompletedDate).format("MMM DD, YYYY HH:mm A") : "N/A"}</p>
+              <p><strong>Created Date:</strong> {order?.CreatedDate ? dayjs(order?.CreatedDate).format("MM/DD/YYYY") : "N/A"}</p>
+              <p><strong>Completed Date:</strong> {order?.CompletedDate ? dayjs(order?.CompletedDate).format("MM/DD/YYYY") : "N/A"}</p>
               <p><strong>Bill To:</strong> {order?.BillTo || "N/A"}</p>
               <p><strong>Firm Name:</strong> {order?.orderByUser?.FirmName || "N/A"}</p>
               <p><strong>Firm Phone:</strong> {order?.orderByUser?.Phone || "N/A"}</p>

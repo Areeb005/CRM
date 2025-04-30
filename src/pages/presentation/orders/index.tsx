@@ -100,7 +100,7 @@ useEffect(() => {
     order?.CaseName?.toLowerCase()?.includes(lowerCaseInput) ||
     order?.ClaimNo?.toLowerCase()?.includes(lowerCaseInput) ||
     order?.DOB?.toLowerCase()?.includes(lowerCaseInput) ||
-    dayjs(order?.NeededBy).format("MMMM D, YYYY").toLowerCase().includes(lowerCaseInput)
+    dayjs(order?.NeededBy).format("MM/DD/YYYY").toLowerCase().includes(lowerCaseInput)
   );
 
   setFilteredData(filtered);
@@ -521,10 +521,10 @@ useEffect(() => {
 								'animate__animated animate__heartBeat animate__infinite animate__slower',
 							)}
 						/>}
-						{order.CreatedDate ? dayjs(order.CreatedDate).format("MMMM D, YYYY") : "N/A"}
+						{order.CreatedDate ? dayjs(order.CreatedDate).format("MM/DD/YYYY") : "N/A"}
 									</td>
 									<td>
-									{order.NeededBy ? dayjs(order.NeededBy).format("MMMM D, YYYY") : "N/A"}
+									{order.NeededBy ? dayjs(order.NeededBy).format("MM/DD/YYYY") : "N/A"}
 									</td>
                                 {/* <td>{order.OrderCode}</td> */}
 								{/* {user?.Role === "Administrator" &&
@@ -534,8 +534,8 @@ useEffect(() => {
                                 <td>{order.FileNumber}</td>
                                 <td>{order?.ClaimNo}</td>
                                 <td>{plaintiff}</td>
-                                <td>{dayjs(order?.DOB).format("MMMM D, YYYY") || "N/A"}</td>
-                                <td>{dayjs(order?.record_details?.date_of_injury.from).format("MMMM D, YYYY")} - {dayjs(order?.record_details?.date_of_injury.to).format("MMMM D, YYYY")}</td>
+                                <td>{dayjs(order?.DOB).format("MM/DD/YYYY") || "N/A"}</td>
+                                <td>{dayjs(order?.record_details?.date_of_injury.from).format("MM/DD/YYYY")} - {dayjs(order?.record_details?.date_of_injury.to).format("MM/DD/YYYY")}</td>
                                 {/* <td></td> */}
                                 <td>
                                     <span
@@ -625,9 +625,9 @@ useEffect(() => {
                                 <td>{doc.LocationName}</td>
                                 <td>{doc.LocationAddress}, {doc.LocationCity}, {doc.LocationState} {doc.LocationZip}</td>
 								{/* <td>{daysj(doc.Reclocat?.location_order_date)}</td> */}
-								<td>{doc.Reclocat?.location_order_date ? dayjs(doc.Reclocat?.location_order_date).format("MMMM D, YYYY") : "N/A"}</td>
+								<td>{doc.Reclocat?.location_order_date ? dayjs(doc.Reclocat?.location_order_date).format("MM/DD/YYYY") : "N/A"}</td>
 								
-								<td>{doc.Reclocat?.location_due_date ? dayjs(doc.Reclocat?.location_due_date).format("MMMM D, YYYY") : "N/A"}</td>
+								<td>{doc.Reclocat?.location_due_date ? dayjs(doc.Reclocat?.location_due_date).format("MM/DD/YYYY") : "N/A"}</td>
                                 <td>{doc.Proctype?.procname}</td>
                                 <td>{doc.Supword?.Word_Name}</td>
                                 <td>{doc.ProcAction?.Action}</td>
@@ -1099,10 +1099,10 @@ useEffect(() => {
                     {doc.ScanFile?.split('/').pop() || "N/A"}
                   </div>
                 </div>
-                {doc.ScanDir && (
+                {doc.DateAssigned && (
                   <div style={{ marginBottom: "8px" }}>
-                    <strong style={{ color: "#333" }}>Directory:</strong>
-                    <div style={{ wordBreak: "break-all" }}>{doc.ScanDir}</div>
+                    <strong style={{ color: "#333" }}>Date Assigned:</strong>
+                    <div style={{ wordBreak: "break-all" }}>{dayjs(doc.DateAssigned).format("MM/DD/YYYY")}</div>
                   </div>
                 )}
                 <button
