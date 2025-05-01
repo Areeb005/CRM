@@ -379,6 +379,65 @@ useEffect(() => {
 	  alert(`Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
 	}
   };
+
+  const handleFileOpen = async (file) => {
+	try {
+	  const response = await fetch(
+		`${import.meta.env.VITE_BASE_URL}/files/${file?.ScanFile}?location=readable&fullPath=${file?.ScanDir}`,
+		{
+		  method: 'GET',
+		  headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${getAuthTokenFromLocalStorage()}`
+		  },
+		}
+	  );
+  
+	  if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	  }
+  
+	  const blob = await response.blob();
+	  const fileExtension = file.ScanFile.split('.').pop()?.toLowerCase();
+	  const fileUrl = URL.createObjectURL(blob);
+  
+	  // Files that can be viewed in browser
+	  const browserViewable = ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'txt'];
+  
+	  if (browserViewable.includes(fileExtension)) {
+		// Open in new tab for viewable files
+		const newWindow = window.open('', '_blank');
+		if (fileExtension === 'pdf') {
+		  newWindow.location.href = fileUrl;
+		} else {
+		  // For images and text files
+		  const reader = new FileReader();
+		  reader.onload = (e) => {
+			newWindow.document.write(
+			  fileExtension === 'txt' 
+				? `<pre>${e.target.result}</pre>`
+				: `<img src="${e.target.result}" style="max-width: 100%; height: auto;">`
+			);
+		  };
+		  reader.readAsDataURL(blob);
+		}
+	  } else {
+		// Force download for other file types
+		const a = document.createElement('a');
+		a.href = fileUrl;
+		a.download = file.ScanFile.split('/').pop();
+		document.body.appendChild(a);
+		a.click();
+		setTimeout(() => {
+		  document.body.removeChild(a);
+		  URL.revokeObjectURL(fileUrl); // Clean up memory
+		}, 100);
+	  }
+	} catch (error) {
+	  console.error('Error opening file:', error);
+	  alert('Failed to open file. Please try again.');
+	}
+  };
     
   if (orderLoading || completOrderLoading) {
 	return (
@@ -484,9 +543,9 @@ useEffect(() => {
 									<th>ClaimNo</th>
 									<th>Applicant/Plantiff</th>
 									<th>DOB</th>
-									<th>DOI(from-till)</th>
+									<th>DOI</th>
 									{/* <th>Till</th> */}
-									<th>Status</th>
+									{/* <th>Status</th> */}
 									<th>Action</th>
 								</tr>
 							</thead>
@@ -524,7 +583,7 @@ useEffect(() => {
 						{order.CreatedDate ? dayjs(order.CreatedDate).format("MM/DD/YYYY") : "N/A"}
 									</td>
 									<td>
-									{order.NeededBy ? dayjs(order.NeededBy).format("MM/DD/YYYY") : "N/A"}
+									{order?.Order?.duedate ? dayjs(order?.Order?.duedate).format("MM/DD/YYYY") : "N/A"}
 									</td>
                                 {/* <td>{order.OrderCode}</td> */}
 								{/* {user?.Role === "Administrator" &&
@@ -535,9 +594,15 @@ useEffect(() => {
                                 <td>{order?.ClaimNo}</td>
                                 <td>{plaintiff}</td>
                                 <td>{dayjs(order?.DOB).format("MM/DD/YYYY") || "N/A"}</td>
-                                <td>{dayjs(order?.record_details?.date_of_injury.from).format("MM/DD/YYYY")} - {dayjs(order?.record_details?.date_of_injury.to).format("MM/DD/YYYY")}</td>
+                                {/* <td>{dayjs(order?.record_details?.date_of_injury.from).format("MM/DD/YYYY")} - {dayjs(order?.record_details?.date_of_injury.to).format("MM/DD/YYYY")}</td> */}
+								<td>
+  {order?.Order?.claimant_doi ? dayjs(order.Order.claimant_doi).format("MM/DD/YYYY") : "N/A"}
+  {order?.Order?.Claimant_DOIEnds && (
+    <> - {dayjs(order.Order.Claimant_DOIEnds).format("MM/DD/YYYY")}</>
+  )}
+</td>
                                 {/* <td></td> */}
-                                <td>
+                                {/* <td>
                                     <span
                                         className={`badge ${
                                             order.RequestStatus === 'Completed'
@@ -549,7 +614,7 @@ useEffect(() => {
                                     >
                                         {order.RequestStatus}
                                     </span>
-                                </td>
+                                </td> */}
                                 <td >
 									<Dropdown className='d-inline'>
 								<DropdownToggle hasIcon={false}>
@@ -755,7 +820,7 @@ useEffect(() => {
             </div>
             
             {/* Show "View All" button if more documents exist */}
-            {scanDocs.length > 1 && (
+            {scanDocs.length > 0 && (
               <button
                 className="btn btn-link btn-sm p-0 text-decoration-none"
                 onClick={() => {
@@ -763,7 +828,8 @@ useEffect(() => {
                   setShowDocScanModal(true);
                 }}
               >
-                + {scanDocs.length - 1} more
+                {/* + {scanDocs.length	} more */}
+				View More
               </button>
             )}
           </div>
@@ -1094,7 +1160,8 @@ useEffect(() => {
                       cursor: "pointer",
                       wordBreak: "break-all"
                     }}
-                    // onClick={() => handleDownload(doc.ScanFile)}
+                    onClick={() => handleFileOpen(doc)}
+					
                   >
                     {doc.ScanFile?.split('/').pop() || "N/A"}
                   </div>
